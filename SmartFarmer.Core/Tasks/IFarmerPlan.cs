@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartFarmer
+namespace SmartFarmer.Tasks
 {
 
     public interface IFarmerPlan

@@ -1,8 +1,7 @@
-﻿using SmartFarmer.Plants;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace SmartFarmer
+namespace SmartFarmer.Plants
 {
     public interface IFarmerPlantInstance
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SmartFarmer
+namespace SmartFarmer.Tasks
 {
     public interface IFarmerPlanStep
     {

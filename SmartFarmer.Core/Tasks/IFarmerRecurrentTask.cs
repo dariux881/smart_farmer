@@ -1,4 +1,4 @@
-﻿namespace SmartFarmer
+﻿namespace SmartFarmer.Tasks
 {
     public interface IFarmerRecurrentTask : IFarmerTask
     {

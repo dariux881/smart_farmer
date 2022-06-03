@@ -1,8 +1,8 @@
-﻿using SmartFarmer.Utils;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Utils;
 
-namespace SmartFarmer
+namespace SmartFarmer.Tasks
 {
     public interface IFarmerTask
     {
