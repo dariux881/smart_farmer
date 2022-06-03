@@ -4,7 +4,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks
 {
-    public interface IFarmerTask
+    public interface IFarmerTask : IHasProgressCheckInfo
     {
         FarmerTool RequiredTool { get; }
         Task Execute(object[] parameters, CancellationToken token);

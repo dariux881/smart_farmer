@@ -7,5 +7,7 @@ namespace SmartFarmer.Tasks
         public IFarmerTask Job { get; set; }
 
         public TimeSpan Delay { get; set; }
+        public bool IsInProgress { get; set; }
+        public Exception? LastException { get; set; }
     }
 }

@@ -14,11 +14,12 @@ namespace SmartFarmer.Tasks
         }
 
         public IList<IFarmerPlanStep> Steps { get; private set; }
-        public bool IsPlanInProgress { get; set; }
+        public bool IsInProgress { get; set; }
+        public Exception? LastException { get; set; }
 
         public async Task Execute(CancellationToken token)
         {
-            IsPlanInProgress = true;
+            IsInProgress = true;
             try
             {
                 foreach (var step in Steps)
@@ -39,7 +40,7 @@ namespace SmartFarmer.Tasks
             }
             finally
             {
-                IsPlanInProgress = false;
+                IsInProgress = false;
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace SmartFarmer.Tests
 {
-    public class Tests
+    public class GroundLoadingTests
     {
         private IFarmerGround _ground;
 
