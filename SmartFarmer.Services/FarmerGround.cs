@@ -2,6 +2,8 @@
 using SmartFarmer.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer
 {

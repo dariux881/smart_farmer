@@ -1,5 +1,5 @@
 ﻿
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Irrigation
 {
     public interface IFarmerIrrigationTaskInfo
     {

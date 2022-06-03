@@ -1,7 +1,7 @@
 ﻿using System;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Generic
 {
     public interface IFarmerPlanStep : IHasProgressCheckInfo
     {

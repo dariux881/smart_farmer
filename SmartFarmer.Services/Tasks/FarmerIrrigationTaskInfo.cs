@@ -1,4 +1,6 @@
 ﻿
+using SmartFarmer.Tasks.Irrigation;
+
 namespace SmartFarmer.Tasks
 {
     public class FarmerIrrigationTaskInfo : IFarmerIrrigationTaskInfo

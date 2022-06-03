@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Tasks
 {

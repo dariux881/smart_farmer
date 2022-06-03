@@ -1,4 +1,5 @@
 ﻿using System;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Tasks
 {

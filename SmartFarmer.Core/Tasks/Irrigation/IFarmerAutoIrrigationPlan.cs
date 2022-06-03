@@ -1,6 +1,7 @@
 ﻿using System;
+using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Irrigation
 {
     public interface IFarmerAutoIrrigationPlan : IFarmerPlan
     {

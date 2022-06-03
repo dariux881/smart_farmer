@@ -1,5 +1,6 @@
 ﻿
 using SmartFarmer.Tasks;
+using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer.Plants
 {

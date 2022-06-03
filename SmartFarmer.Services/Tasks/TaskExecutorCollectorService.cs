@@ -1,6 +1,7 @@
 ﻿using SmartFarmer.Utils;
 using System;
 using System.Collections.Generic;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Tasks
 {
@@ -19,7 +20,7 @@ namespace SmartFarmer.Tasks
             TaskMapper = new Dictionary<FarmerTool, IFarmerTask>();
         }
 
-        public IFarmerTask GetExecutorByTool(FarmerTool tool)
+        public IFarmerTask? GetExecutorByTool(FarmerTool tool)
         {
             if (TaskMapper.TryGetValue(tool, out var task))
             {

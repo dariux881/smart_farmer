@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Generic
 {
     public interface IFarmerTask : IHasProgressCheckInfo
     {
