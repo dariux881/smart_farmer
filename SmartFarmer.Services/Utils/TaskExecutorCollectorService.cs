@@ -1,9 +1,8 @@
-﻿using SmartFarmer.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Utils
 {
     public class TaskExecutorCollectorService
     {

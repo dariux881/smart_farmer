@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Generic
@@ -7,5 +9,7 @@ namespace SmartFarmer.Tasks.Generic
     {
         IFarmerTask Job { get; }
         TimeSpan Delay { get; }
+
+        Task Execute(object[] parameters, CancellationToken token);
     }
 }

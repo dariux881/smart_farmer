@@ -7,16 +7,15 @@ using SmartFarmer.Tasks.Generic;
 namespace SmartFarmer.Tasks
 {
 
-    public class FarmerPlan : IFarmerPlan
+    public abstract class FarmerPlan : IFarmerPlan
     {
-        public FarmerPlan()
+        protected FarmerPlan()
         {
-            Steps = new List<IFarmerPlanStep>();
         }
 
-        public IList<IFarmerPlanStep> Steps { get; private set; }
-        public bool IsInProgress { get; set; }
-        public Exception? LastException { get; set; }
+        public IList<IFarmerPlanStep> Steps { get; protected init; }
+        public bool IsInProgress { get; private set; }
+        public Exception? LastException { get; private set; }
 
         public async Task Execute(CancellationToken token)
         {
@@ -25,19 +24,16 @@ namespace SmartFarmer.Tasks
             {
                 foreach (var step in Steps)
                 {
-                    var task = TaskExecutorCollectorService.Instance.GetExecutorByTool(step.Job.RequiredTool);
-                    if (step.Job.RequiredTool != Utils.FarmerTool.None || task == null)
-                    {
-                        return;
-                    }
-
-                    await Task.Delay(step.Delay);
-                    await task.Execute(null, token);
+                    await step.Execute(null, token);
                 }
             }
             catch (TaskCanceledException taskCanceled)
             {
 
+            }
+            catch (Exception ex)
+            {
+                LastException = ex;
             }
             finally
             {
