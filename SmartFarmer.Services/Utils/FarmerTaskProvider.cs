@@ -32,6 +32,8 @@ namespace SmartFarmer.Utils
                     taskType.IsAssignableFrom(p) && 
                     p.IsClass && 
                     !p.IsAbstract);
+
+            throw new NotImplementedException();
         }
     }
 }

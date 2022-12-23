@@ -6,7 +6,9 @@ namespace SmartFarmer.Plants
 {
     public interface IFarmerPlant
     {
-        string Name { get; }
+        string ID { get; }
+        string Code { get; }
+        string FriendlyName { get; }
         IFarmerIrrigationTaskInfo IrrigationInfo { get; }
 
         /// <summary>

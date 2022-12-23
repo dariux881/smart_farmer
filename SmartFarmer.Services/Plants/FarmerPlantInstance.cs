@@ -13,11 +13,12 @@ namespace SmartFarmer.Plants
             IrrigationHistory = new List<DateTime>();
 
             this.Plant = plant;
-            this.PlantName = plant.Name;
+            this.PlantName = plant.FriendlyName;
         }
 
         public IFarmerPlant Plant { get; }
 
+        public string ID { get; set; }
         public string PlantName { get; set; }
         public int PlantX { get; set; }
         public int PlantY { get; set; }

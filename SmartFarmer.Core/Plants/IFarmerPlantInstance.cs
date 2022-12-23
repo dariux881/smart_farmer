@@ -5,6 +5,7 @@ namespace SmartFarmer.Plants
 {
     public interface IFarmerPlantInstance
     {
+        string ID { get; }
         string PlantName { get; }
         IFarmerPlant Plant { get; }
         int PlantX { get; }
