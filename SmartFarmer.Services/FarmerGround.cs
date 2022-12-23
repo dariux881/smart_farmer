@@ -4,58 +4,51 @@ using System.Collections.Generic;
 using System.Linq;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
+using SmartFarmer.Plants;
 
 namespace SmartFarmer
 {
     public class FarmerGround : IFarmerGround
     {
-        private List<IFarmerRow> _rows;
+        private List<IFarmerPlantInstance> _plants;
 
         public FarmerGround()
         {
-            _rows = new List<IFarmerRow>();
+            _plants = new List<IFarmerPlantInstance>();
             Plans = new List<IFarmerPlan>();
-
-            MetersAmongRows = 1.0;
         }
 
-        public IReadOnlyList<IFarmerRow> Rows => _rows.AsReadOnly();
+        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
         public ICollection<IFarmerPlan> Plans { get; private set; }
         public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
 
-        public double MetersAmongRows { get; set; }
-        public double WidthInMeters => Rows.Count * MetersAmongRows;
+        public double WidthInMeters { get; set; }
 
-        public double LengthInMeters =>
-            Rows.Max(x => x.PlantsInRow.Select(y => y.Value).Max());
+        public double LengthInMeters { get; set; }
 
-        public void AddRows(IFarmerRow[] rows)
+        public void AddPlants(IFarmerPlantInstance[] plants)
         {
-            foreach (var row in rows)
+            foreach (var plant in plants)
             {
-                _rows.Add(row);
+                _plants.Add(plant);
             }
             BuildAutoGroundIrrigationPlan();
         }
 
-        public void AddRow(IFarmerRow row)
+        public void AddPlant(IFarmerPlantInstance plant)
         {
-            _rows.Add(row);
+            _plants.Add(plant);
             BuildAutoGroundIrrigationPlan();
         }
 
-        public void DeleteRow(IFarmerRow row)
+        public void RemovePlant(IFarmerPlantInstance plant)
         {
-            _rows.Remove(row);
+            _plants.Remove(plant);
             BuildAutoGroundIrrigationPlan();
         }
 
         private void BuildAutoGroundIrrigationPlan()
         {
-            var plantIrrigationInfo = 
-                _rows
-                    .SelectMany(x => x.PlantsInRow);
-
             //TODO build plan considering plant position
         }
     }

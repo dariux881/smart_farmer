@@ -9,9 +9,9 @@ namespace SmartFarmer.Plants
         public string Name { get; set; }
 
         public IFarmerIrrigationTaskInfo IrrigationInfo { get; set; }
-
+        public int PlantWidth { get; set; }
+        public int PlantDepth { get; set; }
         public int MonthToPlan { get; set; }
-
         public int NumberOfWeeksToHarvest { get; set; }
     }
 }

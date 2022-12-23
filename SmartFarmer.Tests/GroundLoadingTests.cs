@@ -17,17 +17,16 @@ namespace SmartFarmer.Tests
 
             var basePath = Path.Combine(".", "Configuration");
             var plants = InformationLoader.LoadPlantsFromCsvFile(Path.Combine(basePath, "Plants.csv"));
-            var plantsInstance = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"), plants);
-            var rows = InformationLoader.LoadFarmerRowsFromCsvFile(Path.Combine(basePath, "Ground.csv"), plantsInstance);
+            var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"), plants);
 
-            _ground.AddRows(rows.ToArray());
+            _ground.AddPlants(plantsInGround.ToArray());
         }
 
         [Test]
         public void GroundExists()
         {
             Assert.IsNotNull(_ground);
-            Assert.IsNotEmpty(_ground.Rows);
+            Assert.IsNotEmpty(_ground.Plants);
         }
     }
 }

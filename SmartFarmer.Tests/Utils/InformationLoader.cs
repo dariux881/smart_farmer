@@ -30,7 +30,9 @@ namespace SmartFarmer.Tests.Utils
                             TimesPerWeek = int.Parse(tokens[2], CultureInfo.InvariantCulture)
                         },
                         MonthToPlan = int.Parse(tokens[3], CultureInfo.InvariantCulture),
-                        NumberOfWeeksToHarvest = int.Parse(tokens[4], CultureInfo.InvariantCulture)
+                        NumberOfWeeksToHarvest = int.Parse(tokens[4], CultureInfo.InvariantCulture),
+                        PlantWidth = int.Parse(tokens[5], CultureInfo.InvariantCulture),
+                        PlantDepth = int.Parse(tokens[6], CultureInfo.InvariantCulture)
                     });
                 }
             }
@@ -67,44 +69,16 @@ namespace SmartFarmer.Tests.Utils
                     numberByPlant[plantKind.Name]++;
                 }
 
-                plantsInstance.Add(new FarmerPlantInstance()
+                plantsInstance.Add(new FarmerPlantInstance(plants.First(x => x.Name == tokens[1]))
                 {
                     PlantName = plantName,
-                    Plant = plants.FirstOrDefault(x => x.Name == tokens[1]),
-                    PlantedWhen = string.IsNullOrEmpty(tokens[2]) ? DateTime.UtcNow : Convert.ToDateTime(tokens[2])
+                    PlantedWhen = string.IsNullOrEmpty(tokens[2]) ? DateTime.UtcNow : Convert.ToDateTime(tokens[2]),
+                    PlantX = int.Parse(tokens[3], CultureInfo.InvariantCulture),
+                    PlantY = int.Parse(tokens[4], CultureInfo.InvariantCulture)
                 });
             }
 
             return plantsInstance;
-        }
-
-        public static IEnumerable<IFarmerRow> LoadFarmerRowsFromCsvFile(string filename, IEnumerable<IFarmerPlantInstance> plants)
-        {
-            List<IFarmerRow> plantsInRows = new List<IFarmerRow>();
-
-            using var reader = new StreamReader(filename);
-
-            var rows = new Dictionary<string, IFarmerRow>();
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine();
-                if (line == null) continue;
-
-                var tokens = line.Split(",");
-
-                if (!rows.ContainsKey(tokens[0]))
-                {
-                    rows.Add(tokens[0], new FarmerRow());
-                }
-
-                rows[tokens[0]].PlantsInRow.Add(
-                    plants.First(x => x.PlantName == tokens[1]), 
-                    double.Parse(tokens[2], CultureInfo.InvariantCulture));
-            }
-
-            plantsInRows = rows.Select(x => x.Value).ToList();
-
-            return plantsInRows;
         }
     }
 }
