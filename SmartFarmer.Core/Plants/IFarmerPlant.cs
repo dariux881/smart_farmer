@@ -9,7 +9,7 @@ namespace SmartFarmer.Plants
         string ID { get; }
         string Code { get; }
         string FriendlyName { get; }
-        IFarmerIrrigationTaskInfo IrrigationInfo { get; }
+        IFarmerIrrigationTaskInfo? IrrigationInfo { get; }
 
         /// <summary>
         /// values in cells, where cells size depend on ground

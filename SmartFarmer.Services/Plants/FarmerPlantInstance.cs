@@ -6,14 +6,21 @@ namespace SmartFarmer.Plants
 {
     public class FarmerPlantInstance : IFarmerPlantInstance
     {
-        public FarmerPlantInstance(IFarmerPlant plant)
+        public FarmerPlantInstance(string id, IFarmerPlant plant)
+            : this(id, plant, plant.FriendlyName)
+        {
+            this.PlantName = plant.FriendlyName;
+        }
+
+        public FarmerPlantInstance(string id, IFarmerPlant plant, string plantName)
         {
             if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-            IrrigationHistory = new List<DateTime>();
-
+            ID = id;
             this.Plant = plant;
-            this.PlantName = plant.FriendlyName;
+            this.PlantName = plantName;
+
+            IrrigationHistory = new List<DateTime>();
         }
 
         public IFarmerPlant Plant { get; }

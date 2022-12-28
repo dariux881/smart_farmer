@@ -35,16 +35,16 @@ namespace SmartFarmer.Tests.Utils
                     var width = tokens[6].Trim();
                     var depth = tokens[7].Trim();
 
-                    plants.Add(new FarmerPlant()
-                    {
-                        ID = id + "",
-                        Code = code,
-                        FriendlyName = name,
-                        IrrigationInfo = new FarmerIrrigationTaskInfo()
+                    plants.Add(new FarmerPlant(
+                        id + "", 
+                        code, 
+                        name,
+                        new FarmerIrrigationTaskInfo()
                         {
                             AmountOfWaterInLitersPerTime = double.Parse(waterAmount, CultureInfo.InvariantCulture),
                             TimesPerWeek = int.Parse(waterTimes, CultureInfo.InvariantCulture)
-                        },
+                        })
+                    {
                         MonthToPlan = int.Parse(month, CultureInfo.InvariantCulture),
                         NumberOfWeeksToHarvest = int.Parse(weeksToHarvest, CultureInfo.InvariantCulture),
                         PlantWidth = int.Parse(width, CultureInfo.InvariantCulture),
@@ -96,10 +96,8 @@ namespace SmartFarmer.Tests.Utils
                     numberByPlant[plantKind.ID]++;
                 }
 
-                plantsInstance.Add(new FarmerPlantInstance(plantKind)
+                plantsInstance.Add(new FarmerPlantInstance(id + "", plantKind, name)
                 {
-                    ID = id + "",
-                    PlantName = name,
                     PlantedWhen = string.IsNullOrEmpty(plantedWhen) ? DateTime.UtcNow : Convert.ToDateTime(plantedWhen),
                     PlantX = int.Parse(x, CultureInfo.InvariantCulture),
                     PlantY = int.Parse(y, CultureInfo.InvariantCulture)
