@@ -22,6 +22,9 @@ namespace SmartFarmer.Plants
         public string PlantName { get; set; }
         public int PlantX { get; set; }
         public int PlantY { get; set; }
+        public int PlantWidth => Plant.PlantWidth;
+        public int PlantDepth => Plant.PlantDepth;
+
         public DateTime PlantedWhen { get; set; }
 
         public DateTime? LastIrrigation => IrrigationHistory.LastOrDefault();
