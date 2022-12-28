@@ -11,6 +11,7 @@ namespace SmartFarmer.Tasks
     {
         protected FarmerPlan()
         {
+            Steps = new List<IFarmerPlanStep>();
         }
 
         public IList<IFarmerPlanStep> Steps { get; protected init; }
