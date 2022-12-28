@@ -8,13 +8,18 @@ namespace SmartFarmer.Tasks
 {
     public class FarmerPlanStep : IFarmerPlanStep
     {
-        public IFarmerTask Job { get; set; }
+        public FarmerPlanStep(IFarmerTask job)
+        {
+            Job = job;
+        }
+
+        public IFarmerTask Job { get; private set; }
 
         public TimeSpan Delay { get; set; }
         public bool IsInProgress { get; set; }
         public Exception? LastException { get; set; }
 
-        public async Task Execute(object[] parameters, CancellationToken token)
+        public async Task Execute(object[]? parameters, CancellationToken token)
         {
             if (Job == null) throw new ArgumentNullException(nameof(Job));
 
