@@ -19,7 +19,8 @@ namespace SmartFarmer.Utils
         /// Locates all the executors of a given task. Returns the first found implementor.
         /// </summary>
         /// <param name="taskType">The interface of the specific task.</param>
-        public static IFarmerTask GetTaskDelegateByType(Type taskType)
+        /// <param name="excludedNamespaces">Optional namespaces to be excluded.</param>
+        public static IFarmerTask GetTaskDelegateByType(Type taskType, string[]? excludedNamespaces = null)
         {
             if (_resolvedMappings.TryGetValue(taskType, out var resolved))
             {
@@ -38,6 +39,7 @@ namespace SmartFarmer.Utils
                 .Where(p =>
                     p.GetInterfaces().Contains(taskType) &&
                     taskType.IsAssignableFrom(p) && 
+                    (excludedNamespaces == null || !excludedNamespaces.Any(n => n == p.Namespace)) &&
                     p.IsClass && 
                     !p.IsAbstract)
                 .FirstOrDefault();

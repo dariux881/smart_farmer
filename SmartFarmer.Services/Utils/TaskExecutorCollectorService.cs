@@ -4,6 +4,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Utils
 {
+    [Obsolete]
     public class TaskExecutorCollectorService
     {
         public Dictionary<FarmerTool, IFarmerTask> TaskMapper;
