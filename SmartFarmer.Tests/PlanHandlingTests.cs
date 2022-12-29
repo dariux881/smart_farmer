@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using SmartFarmer.Misc;
 using SmartFarmer.MockedTasks;
@@ -29,7 +30,7 @@ namespace SmartFarmer.Tests
         }
 
         [Test]
-        public void CreatingExistingPlan_ExpectedFailure()
+        public void CreatingExistingPlan_MissingImplementors_ExpectedFailure()
         {
             IFarmerPlan plan;
 
@@ -40,7 +41,53 @@ namespace SmartFarmer.Tests
             catch(Exception ex)
             {
                 SmartFarmerLog.Exception(ex);
+                Assert.Pass();
             }
+
+            Assert.Fail();
         }
+
+        [Test]
+        public async Task RunningPlan_ExistingImplementors_ExpectedSuccess()
+        {
+            var plan = new BaseFarmerPlan("test");
+
+            var leafDet = new MockFarmerLeafDetector();
+            var leafCheck = new MockFarmerLeavesStatusChecker();
+            var stem = new MockFarmerStemDetector();
+
+            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+
+            Assert.IsNotNull(plan.Steps);
+            Assert.IsNotEmpty(plan.Steps);
+
+            await plan.Execute(System.Threading.CancellationToken.None);
+        }
+
+        [Test]
+        public async Task RunningPlan_ExistingImplementors_ExpectedFailure()
+        {
+            var plan = new BaseFarmerPlan("test");
+
+            var leafDet = new MockFarmerLeafDetector();
+            var leafCheck = new MockFarmerLeavesStatusChecker();
+            var stem = new MockFarmerStemDetector() {ExpectFail = true};
+
+            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+
+            Assert.IsNotNull(plan.Steps);
+            Assert.IsNotEmpty(plan.Steps);
+
+            try {
+                await plan.Execute(System.Threading.CancellationToken.None);
+            }
+            catch (Exception) {
+                Assert.Pass();
+            }
+        }    
     }
 }

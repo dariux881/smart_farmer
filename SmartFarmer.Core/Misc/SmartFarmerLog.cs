@@ -50,7 +50,13 @@ namespace SmartFarmer.Misc
 
         public static void Exception(Exception ex)
         {
-            Log.Error("[EXC] " + ex?.Message + "\n" + ex?.StackTrace);
+            var innerMessage = ex?.InnerException != null ? 
+                "\n" + ex?.InnerException.Message : 
+                string.Empty;
+
+            Log.Error("[EXC] " + ex?.Message + 
+                        innerMessage +
+                        "\n" + ex?.StackTrace);
         }
     }
 }

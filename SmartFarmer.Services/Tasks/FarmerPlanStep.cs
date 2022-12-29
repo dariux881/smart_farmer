@@ -43,7 +43,7 @@ namespace SmartFarmer.Tasks
                         Job.RequiredTool + " already mounted" :
                         "this task does not require any tool";
 
-                SmartFarmerLog.Debug("message");
+                SmartFarmerLog.Debug(message);
             }
 
             SmartFarmerLog.Information("executing task " + Job.GetType().FullName);

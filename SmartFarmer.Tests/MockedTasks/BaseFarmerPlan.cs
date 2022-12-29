@@ -1,4 +1,3 @@
-
 using SmartFarmer.Tasks;
 
 namespace SmartFarmer.MockedTasks

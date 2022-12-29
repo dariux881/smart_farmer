@@ -47,7 +47,7 @@ namespace SmartFarmer.Utils
             if (task == null)
             {
                 // not found task
-                throw new TaskNotFoundException();
+                throw new TaskNotFoundException(null, new Exception("implementation of " + taskType.FullName + " has not been found"));
             }
 
             var taskInstance = Activator.CreateInstance(task) as IFarmerTask;

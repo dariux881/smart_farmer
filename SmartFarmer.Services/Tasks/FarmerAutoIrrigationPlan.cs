@@ -1,9 +1,5 @@
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer.Tasks
