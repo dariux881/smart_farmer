@@ -26,12 +26,17 @@ namespace SmartFarmer.Utils
                 return resolved;
             }
 
+            // limiting to known task
+            if (!taskType.GetInterfaces().Contains(typeof(IFarmerTask)))
+            {
+                throw new InvalidTaskException();
+            }
+
             // getting classes that implement the given taskType (interface)
             var task = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p =>
                     p.GetInterfaces().Contains(taskType) &&
-                    p is IFarmerTask && // checks that the found class is actually a task
                     taskType.IsAssignableFrom(p) && 
                     p.IsClass && 
                     !p.IsAbstract)

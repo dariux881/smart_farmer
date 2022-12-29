@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace SmartFarmer.Tests
 {
+    [TestFixture]
     public class GroundLoadingTests
     {
         private IFarmerGround _ground;

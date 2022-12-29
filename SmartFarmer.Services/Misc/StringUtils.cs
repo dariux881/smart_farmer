@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SmartFarmer.Misc
 {
-    internal static class StringUtils
+    public static class StringUtils
     {
         private static Random random = new Random();
 
