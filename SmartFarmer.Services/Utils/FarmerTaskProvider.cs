@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Utils
@@ -18,6 +15,10 @@ namespace SmartFarmer.Utils
             _resolvedMappings = new ConcurrentDictionary<Type, IFarmerTask>();
         }
 
+        /// <summary>
+        /// Locates all the executors of a given task. Returns the first found implementor.
+        /// </summary>
+        /// <param name="taskType">The interface of the specific task.</param>
         public static IFarmerTask GetTaskDelegateByType(Type taskType)
         {
             if (_resolvedMappings.TryGetValue(taskType, out var resolved))
@@ -25,15 +26,34 @@ namespace SmartFarmer.Utils
                 return resolved;
             }
 
-            var types = AppDomain.CurrentDomain.GetAssemblies()
+            // getting classes that implement the given taskType (interface)
+            var task = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p =>
                     p.GetInterfaces().Contains(taskType) &&
+                    p is IFarmerTask && // checks that the found class is actually a task
                     taskType.IsAssignableFrom(p) && 
                     p.IsClass && 
-                    !p.IsAbstract);
+                    !p.IsAbstract)
+                .FirstOrDefault();
 
-            throw new NotImplementedException();
+            if (task == null)
+            {
+                // not found task
+                throw new TaskNotFoundException();
+            }
+
+            var taskInstance = Activator.CreateInstance(task) as IFarmerTask;
+
+            if (taskInstance == null)
+            {
+                // task initialization failure
+                throw new TaskInitializationException();
+            }
+
+            _resolvedMappings.TryAdd(taskType, taskInstance);
+
+            return taskInstance;
         }
     }
 }

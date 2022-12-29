@@ -26,6 +26,8 @@ namespace SmartFarmer.Utils
             //TODO refer to external tool replace executor
             _currentlyMountedTool = tool;
 
+            //TODO raise exception in case of mounting failure
+
             await Task.CompletedTask;
         }
     }
