@@ -10,11 +10,14 @@ namespace SmartFarmer.Tests
     {
         private IFarmerGround _ground;
 
+        public GroundLoadingTests() 
+        {
+            _ground = new FarmerGround();
+        }
+
         [SetUp]
         public void Setup()
         {
-            _ground = new FarmerGround();
-
             var basePath = Path.Combine(".", "Configuration");
             var plants = InformationLoader.LoadPlantsFromCsvFile(Path.Combine(basePath, "Plants.csv"));
             var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"), plants);

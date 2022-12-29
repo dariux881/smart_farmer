@@ -30,7 +30,7 @@ namespace SmartFarmer.Tasks
             }
             catch (TaskCanceledException taskCanceled)
             {
-
+                LastException = taskCanceled;
             }
             catch (Exception ex)
             {
