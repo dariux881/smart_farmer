@@ -8,21 +8,16 @@ using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer.Tasks
 {
-    public class FarmerAutoIrrigationPlan : IFarmerAutoIrrigationPlan
+    public class FarmerAutoIrrigationPlan : FarmerPlan, IFarmerAutoIrrigationPlan
     {
-        public bool CanAutoGroundIrrigationPlanStart => throw new NotImplementedException();
-
-        public DateTime PlannedAt => throw new NotImplementedException();
-
-        public IList<IFarmerPlanStep> Steps => throw new NotImplementedException();
-
-        public bool IsInProgress => throw new NotImplementedException();
-
-        public Exception? LastException => throw new NotImplementedException();
-
-        public Task Execute(CancellationToken token)
+        public FarmerAutoIrrigationPlan() 
+            : base("AutoIrrigationPlan")
         {
-            throw new NotImplementedException();
+
         }
+
+        public bool CanAutoGroundIrrigationPlanStart { get; set; }
+
+        public DateTime PlannedAt { get; set; }
     }
 }
