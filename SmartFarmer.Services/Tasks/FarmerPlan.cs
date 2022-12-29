@@ -25,7 +25,7 @@ namespace SmartFarmer.Tasks
         public string Name { get; private set; }
         public IList<IFarmerPlanStep> Steps { get; protected init; }
         public bool IsInProgress { get; private set; }
-        public Exception? LastException { get; private set; }
+        public Exception LastException { get; private set; }
 
         public async Task Execute(CancellationToken token)
         {

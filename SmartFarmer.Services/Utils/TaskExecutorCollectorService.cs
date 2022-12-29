@@ -20,7 +20,7 @@ namespace SmartFarmer.Utils
             TaskMapper = new Dictionary<FarmerTool, IFarmerTask>();
         }
 
-        public IFarmerTask? GetExecutorByTool(FarmerTool tool)
+        public IFarmerTask GetExecutorByTool(FarmerTool tool)
         {
             if (TaskMapper.TryGetValue(tool, out var task))
             {

@@ -20,9 +20,9 @@ namespace SmartFarmer.MockedTasks.GenericCollection
 
         public bool IsInProgress { get; set; }
 
-        public Exception? LastException { get; set; }
+        public Exception LastException { get; set; }
 
-        public async Task Execute(object[]? parameters, CancellationToken token)
+        public async Task Execute(object[] parameters, CancellationToken token)
         {
             IsInProgress = true;
             LastException = null;

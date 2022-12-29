@@ -10,7 +10,7 @@ namespace SmartFarmer
     {
         IReadOnlyList<IFarmerPlantInstance> Plants { get; }
         ICollection<IFarmerPlan> Plans { get; }
-        IFarmerAutoIrrigationPlan? GroundIrrigationPlan { get; }
+        IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; }
         double WidthInMeters { get; }
         double LengthInMeters { get; }
 

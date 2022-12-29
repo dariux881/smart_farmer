@@ -20,7 +20,7 @@ namespace SmartFarmer.Utils
         /// </summary>
         /// <param name="taskType">The interface of the specific task.</param>
         /// <param name="excludedNamespaces">Optional namespaces to be excluded.</param>
-        public static IFarmerTask GetTaskDelegateByType(Type taskType, string[]? excludedNamespaces = null)
+        public static IFarmerTask GetTaskDelegateByType(Type taskType, string[] excludedNamespaces = null)
         {
             if (_resolvedMappings.TryGetValue(taskType, out var resolved))
             {
