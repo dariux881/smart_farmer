@@ -20,7 +20,7 @@ namespace SmartFarmer
 
         public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
         public ICollection<IFarmerPlan> Plans { get; private set; }
-        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+        public IFarmerAutoIrrigationPlan? GroundIrrigationPlan { get; private set; }
 
         public double WidthInMeters { get; set; }
 
@@ -32,6 +32,7 @@ namespace SmartFarmer
             {
                 _plants.Add(plant);
             }
+
             BuildAutoGroundIrrigationPlan();
         }
 
