@@ -8,7 +8,8 @@ namespace SmartFarmer.Tasks.Generic
 
     public interface IFarmerPlan : IHasProgressCheckInfo
     {
-        IList<IFarmerPlanStep> Steps { get; }
+        string Name { get; }
+        IReadOnlyList<IFarmerPlanStep> Steps { get; }
         Task Execute(CancellationToken token);
     }
 }

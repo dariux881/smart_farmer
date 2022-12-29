@@ -23,7 +23,7 @@ namespace SmartFarmer.Plants
         public string Code { get; set; }
         public string FriendlyName { get; set; }
 
-        public IFarmerIrrigationTaskInfo? IrrigationInfo { get; set; }
+        public IFarmerIrrigationTaskInfo IrrigationInfo { get; set; }
         public int PlantWidth { get; set; }
         public int PlantDepth { get; set; }
         public int MonthToPlan { get; set; }

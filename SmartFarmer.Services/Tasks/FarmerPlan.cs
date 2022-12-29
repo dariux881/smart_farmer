@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Tasks
@@ -11,12 +12,22 @@ namespace SmartFarmer.Tasks
     {
         protected FarmerPlan()
         {
-            Steps = new List<IFarmerPlanStep>();
+            Name = StringUtils.RandomString(10);
+            EditableSteps = new List<IFarmerPlanStep>();
         }
 
-        public IList<IFarmerPlanStep> Steps { get; protected init; }
+        public FarmerPlan(string name) 
+            : this() 
+        {
+            Name = name;
+        }
+
+        public string Name { get; private set; }
+        public List<IFarmerPlanStep> EditableSteps { get; protected init; }
+        public IReadOnlyList<IFarmerPlanStep> Steps => EditableSteps.AsReadOnly();
+
         public bool IsInProgress { get; private set; }
-        public Exception? LastException { get; private set; }
+        public Exception LastException { get; private set; }
 
         public async Task Execute(CancellationToken token)
         {
@@ -25,6 +36,7 @@ namespace SmartFarmer.Tasks
             IsInProgress = true;
 
             // starting new plan execution
+            SmartFarmerLog.Information("starting plan " + Name);
             
             try
             {
@@ -36,14 +48,17 @@ namespace SmartFarmer.Tasks
             catch (TaskCanceledException taskCanceled)
             {
                 LastException = taskCanceled;
+                SmartFarmerLog.Exception(taskCanceled);
             }
             catch (Exception ex)
             {
                 LastException = ex;
+                SmartFarmerLog.Exception(ex);
             }
             finally
             {
                 IsInProgress = false;
+                SmartFarmerLog.Information("stopping plan " + Name);
             }
         }
     }

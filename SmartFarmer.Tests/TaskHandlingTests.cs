@@ -54,8 +54,8 @@ namespace SmartFarmer.Tests
         {
             var type = typeof(IFarmerLeavesStatusChecker);
 
-            IFarmerTask? task = null;
-            Exception? foundEx = null;
+            IFarmerTask task = null;
+            Exception foundEx = null;
 
             try {
                 task = FarmerTaskProvider.GetTaskDelegateByType(
