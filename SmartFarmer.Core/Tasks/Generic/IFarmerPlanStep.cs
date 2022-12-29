@@ -10,6 +10,6 @@ namespace SmartFarmer.Tasks.Generic
         IFarmerTask Job { get; }
         TimeSpan Delay { get; }
 
-        Task Execute(object[] parameters, CancellationToken token);
+        Task Execute(object[]? parameters, CancellationToken token);
     }
 }

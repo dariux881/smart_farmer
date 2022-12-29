@@ -30,6 +30,8 @@ namespace SmartFarmer.Tasks
 
             if (Job.RequiredTool != Utils.FarmerTool.None && Job.RequiredTool != currentlyMountedTool)
             {
+                // this task requires a tool that is not currently mounted. Mounting tool first. 
+                // Exceptions may arise. Exceptions will stop next executions
                 await toolManager.MountTool(Job.RequiredTool);
             }
 

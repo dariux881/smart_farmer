@@ -20,7 +20,12 @@ namespace SmartFarmer.Tasks
 
         public async Task Execute(CancellationToken token)
         {
+            // resetting last exception, related to previous executions
+            LastException = null;
             IsInProgress = true;
+
+            // starting new plan execution
+            
             try
             {
                 foreach (var step in Steps)
@@ -30,7 +35,7 @@ namespace SmartFarmer.Tasks
             }
             catch (TaskCanceledException taskCanceled)
             {
-
+                LastException = taskCanceled;
             }
             catch (Exception ex)
             {
