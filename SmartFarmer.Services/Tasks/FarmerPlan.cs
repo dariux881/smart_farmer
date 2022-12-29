@@ -13,7 +13,7 @@ namespace SmartFarmer.Tasks
         protected FarmerPlan()
         {
             Name = StringUtils.RandomString(10);
-            Steps = new List<IFarmerPlanStep>();
+            EditableSteps = new List<IFarmerPlanStep>();
         }
 
         public FarmerPlan(string name) 
@@ -23,7 +23,9 @@ namespace SmartFarmer.Tasks
         }
 
         public string Name { get; private set; }
-        public IList<IFarmerPlanStep> Steps { get; protected init; }
+        public List<IFarmerPlanStep> EditableSteps { get; protected init; }
+        public IReadOnlyList<IFarmerPlanStep> Steps => EditableSteps.AsReadOnly();
+
         public bool IsInProgress { get; private set; }
         public Exception LastException { get; private set; }
 

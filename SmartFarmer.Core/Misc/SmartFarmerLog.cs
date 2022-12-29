@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace SmartFarmer.Misc
@@ -7,10 +9,23 @@ namespace SmartFarmer.Misc
     {
         static SmartFarmerLog()
         {
+            // Log.Logger = new LoggerConfiguration()
+            //     .MinimumLevel.Debug()
+            //     //.WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day)
+            //     .WriteTo.Console()
+            //     .CreateLogger();
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+                .Build();
+
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                //.WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day)
+                .ReadFrom.Configuration(configuration)
                 .CreateLogger();
+
+            Log.Information("logger created");
         }
 
         public static void Information(string message)

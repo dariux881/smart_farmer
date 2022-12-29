@@ -11,8 +11,9 @@ namespace SmartFarmer.Tasks
         #region Constructors
 
         public FarmerPlantStatusCheckPlan()
+            : base("Plant Status Check")
         {
-            Steps = new List<IFarmerPlanStep>()
+            EditableSteps = new List<IFarmerPlanStep>()
             {
                 new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeafDetector))),
                 new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeavesStatusChecker))),
