@@ -5,6 +5,7 @@ using SmartFarmer.Misc;
 using SmartFarmer.MockedTasks;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Implementation;
 
 namespace SmartFarmer.Tests
 {

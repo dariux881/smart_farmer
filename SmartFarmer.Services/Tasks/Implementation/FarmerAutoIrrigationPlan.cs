@@ -2,7 +2,7 @@
 using System;
 using SmartFarmer.Tasks.Irrigation;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Implementation
 {
     public class FarmerAutoIrrigationPlan : FarmerPlan, IFarmerAutoIrrigationPlan
     {

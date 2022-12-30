@@ -4,7 +4,7 @@ using SmartFarmer.Tasks.Health;
 using SmartFarmer.Tasks.PlantUtils;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Implementation
 {
     public class FarmerPlantStatusCheckPlan : FarmerPlan
     {
