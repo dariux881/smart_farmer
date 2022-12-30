@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Core", "SmartFa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tests", "SmartFarmer.Tests\SmartFarmer.Tests.csproj", "{B153139E-460C-498C-B860-62BE428BF1DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tasks", "SmartFarmer.Tasks\SmartFarmer.Tasks.csproj", "{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tasks.Mock", "SmartFarmer.Tasks.Mock\SmartFarmer.Tasks.Mock.csproj", "{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
