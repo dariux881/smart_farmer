@@ -1,8 +1,8 @@
-﻿using SmartFarmer.Tasks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SmartFarmer.Alerts;
+using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
-using SmartFarmer.Plants;
 
 namespace SmartFarmer
 {
@@ -10,6 +10,7 @@ namespace SmartFarmer
     {
         IReadOnlyList<IFarmerPlantInstance> Plants { get; }
         ICollection<IFarmerPlan> Plans { get; }
+        ICollection<IFarmerAlert> Alerts { get; }
         IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; }
         double WidthInMeters { get; }
         double LengthInMeters { get; }

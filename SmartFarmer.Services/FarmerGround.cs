@@ -1,30 +1,42 @@
-﻿
-using SmartFarmer.Tasks;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SmartFarmer.Alerts;
+using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
-using SmartFarmer.Plants;
 
 namespace SmartFarmer
 {
-    public class FarmerGround : IFarmerGround
+    public class FarmerGround : IFarmerGround, IDisposable
     {
         private List<IFarmerPlantInstance> _plants;
+        private FarmerAlertHandler _alertHandler;
 
         public FarmerGround()
         {
             _plants = new List<IFarmerPlantInstance>();
             Plans = new List<IFarmerPlan>();
+            Alerts = new List<IFarmerAlert>();
+
+            _alertHandler = FarmerAlertHandler.Instance;
+            _alertHandler.NewAlertCreated += OnNewAlertReceived;
         }
 
-        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
-        public ICollection<IFarmerPlan> Plans { get; private set; }
-        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+#region Public Properties
 
-        public double WidthInMeters { get; set; }
+	        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
+	        public ICollection<IFarmerAlert> Alerts { get; private set; }
+	        public ICollection<IFarmerPlan> Plans { get; private set; }
+	        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+	
+	        public double WidthInMeters { get; set; }
+	
+	        public double LengthInMeters { get; set; }
 
-        public double LengthInMeters { get; set; }
+#endregion
+
+#region Public Methods
 
         public void AddPlants(IFarmerPlantInstance[] plants)
         {
@@ -42,15 +54,62 @@ namespace SmartFarmer
             BuildAutoGroundIrrigationPlan();
         }
 
+        
+        public void Dispose()
+        {
+            if (_alertHandler != null)
+            {
+                _alertHandler.NewAlertCreated -= OnNewAlertReceived;
+            }
+        }
+
         public void RemovePlant(IFarmerPlantInstance plant)
         {
             _plants.Remove(plant);
             BuildAutoGroundIrrigationPlan();
         }
+#endregion
+
+#region Private Methods
 
         private void BuildAutoGroundIrrigationPlan()
         {
             //TODO build plan considering plant position
         }
+
+        private IFarmerPlantInstance GetPlantInstanceById(string id)
+        {
+            return Plants.FirstOrDefault(x => x.ID == id);
+        }
+
+#region Alerts 
+
+        private void AddAlert(IFarmerAlert alert) 
+        {
+            Alerts.Add(alert);
+        }
+
+        private void RemoveAlert(IFarmerAlert alert) 
+        {
+            Alerts.Remove(alert);
+        }
+
+        private void MarkAlertAsRead(IFarmerAlert alert, bool read)
+        {
+            alert.MarkedAsRead = read;
+        }
+
+        private IFarmerAlert GetAlertById(string id)
+        {
+            return Alerts.FirstOrDefault(x => x.ID == id);
+        }
+
+        private void OnNewAlertReceived(object sender, FarmerAlertHandlerEventArgs e)
+        {
+            AddAlert(e.Alert);
+        }
+
+        #endregion
+        #endregion
     }
 }
