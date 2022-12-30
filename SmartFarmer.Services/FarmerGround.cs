@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Implementation;
 using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer
@@ -25,14 +27,14 @@ namespace SmartFarmer
 
 #region Public Properties
 
-	        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
-	        public ICollection<IFarmerAlert> Alerts { get; private set; }
-	        public ICollection<IFarmerPlan> Plans { get; private set; }
-	        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
-	
-	        public double WidthInMeters { get; set; }
-	
-	        public double LengthInMeters { get; set; }
+        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
+        public ICollection<IFarmerAlert> Alerts { get; private set; }
+        public ICollection<IFarmerPlan> Plans { get; private set; }
+        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+
+        public double WidthInMeters { get; set; }
+
+        public double LengthInMeters { get; set; }
 
 #endregion
 
@@ -74,7 +76,32 @@ namespace SmartFarmer
 
         private void BuildAutoGroundIrrigationPlan()
         {
-            //TODO build plan considering plant position
+            // Steps:
+            // - list all plants, minimizing movements
+            var orderedPlants = 
+                OrderPlantsToMinimizeMovements()
+                    .ToList();
+
+            GroundIrrigationPlan = 
+                new FarmerAutoIrrigationPlan()
+                {
+                    //TODO take this parameters from global user settings
+                    CanAutoGroundIrrigationPlanStart = true,
+                    PlannedAt = DateTime.UtcNow.AddHours(1)
+                };
+
+            // asking irrigation
+            orderedPlants.ForEach(plant => 
+                GroundIrrigationPlan.AddIrrigationStep(
+                    plant.PlantX, 
+                    plant.PlantY, 
+                    plant.Plant.IrrigationInfo));
+        }
+
+        private IReadOnlyCollection<IFarmerPlantInstance> OrderPlantsToMinimizeMovements()
+        {
+            //TODO implement sorting to minimize movementss
+            return Plants;
         }
 
         private IFarmerPlantInstance GetPlantInstanceById(string id)

@@ -26,29 +26,23 @@ namespace SmartFarmer.Tasks.Irrigation
 
         public async Task ProvideWater(double amountInLiters, CancellationToken token)
         {
-            IsInProgress = true;
+            PrepareTask();
 
             SmartFarmerLog.Debug($"providing {amountInLiters} liters of water");
-
             await Task.Delay(1000);
 
-            SmartFarmerLog.Debug($"- done");
-            IsInProgress = false;
-
+            EndTask();
             await Task.CompletedTask;
         }
 
         public async Task ProvideWater(TimeSpan span, CancellationToken token)
         {
-            IsInProgress = true;
+            PrepareTask();
 
             SmartFarmerLog.Debug($"providing water for {span.TotalSeconds} seconds");
-
             await Task.Delay(span);
 
-            SmartFarmerLog.Debug($"- done");
-            IsInProgress = false;
-
+            EndTask();
             await Task.CompletedTask;
         }
     }

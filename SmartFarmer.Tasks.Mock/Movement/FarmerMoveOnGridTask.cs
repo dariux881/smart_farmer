@@ -27,15 +27,13 @@ namespace SmartFarmer.Tasks.Movement
 
         public async Task MoveToPosition(int x, int y, CancellationToken token)
         {
-            IsInProgress = true;
+            PrepareTask();
 
             SmartFarmerLog.Debug($"moving to {x}, {y}");
-
-            //TODO implement moving
             await Task.Delay(1000);
-
             SmartFarmerLog.Debug($"now on {x}, {y}");
-            IsInProgress = false;
+
+            EndTask();
 
             await Task.CompletedTask;
         }
