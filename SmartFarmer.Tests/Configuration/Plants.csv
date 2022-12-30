@@ -1,0 +1,4 @@
+﻿#Code,Name,Water,IrrigationTimesPerWeek,MonthToPlant,WeeksToHarvest,Width,Depth
+0,Zucchine,40.0,5,4,30,4,4
+1,Patate,40.0,2,6,12,4,4
+2,Pomodori,40.0,5,7,8,4,4

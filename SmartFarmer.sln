@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer", "SmartFarmer\SmartFarmer.csproj", "{EF78DD7B-5298-4BFE-9B78-CADABDD9006A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Services", "SmartFarmer.Services\SmartFarmer.Services.csproj", "{6DED7B99-6AEA-4128-A241-75704E476E8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Core", "SmartFarmer.Core\SmartFarmer.Core.csproj", "{8FD22286-EA6C-4392-8FCA-65E04A4427C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tests", "SmartFarmer.Tests\SmartFarmer.Tests.csproj", "{B153139E-460C-498C-B860-62BE428BF1DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF78DD7B-5298-4BFE-9B78-CADABDD9006A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF78DD7B-5298-4BFE-9B78-CADABDD9006A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF78DD7B-5298-4BFE-9B78-CADABDD9006A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF78DD7B-5298-4BFE-9B78-CADABDD9006A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DED7B99-6AEA-4128-A241-75704E476E8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DED7B99-6AEA-4128-A241-75704E476E8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DED7B99-6AEA-4128-A241-75704E476E8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DED7B99-6AEA-4128-A241-75704E476E8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B153139E-460C-498C-B860-62BE428BF1DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B153139E-460C-498C-B860-62BE428BF1DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B153139E-460C-498C-B860-62BE428BF1DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B153139E-460C-498C-B860-62BE428BF1DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C2E7AD6D-538F-4DD0-9AC2-83B7F0A2638E}
+	EndGlobalSection
+EndGlobal
