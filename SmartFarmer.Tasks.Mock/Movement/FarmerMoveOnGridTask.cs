@@ -6,7 +6,7 @@ using SmartFarmer.Tasks.Base;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks
+namespace SmartFarmer.Tasks.Movement
 {
     public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask
     {
