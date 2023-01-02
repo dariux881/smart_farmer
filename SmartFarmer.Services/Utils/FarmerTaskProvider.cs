@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 using SmartFarmer.Exceptions;
 using SmartFarmer.Tasks.Generic;
 
@@ -20,7 +21,11 @@ namespace SmartFarmer.Utils
         /// </summary>
         /// <param name="taskType">The interface of the specific task.</param>
         /// <param name="excludedNamespaces">Optional namespaces to be excluded.</param>
-        public static IFarmerTask GetTaskDelegateByType(Type taskType, string[] excludedNamespaces = null)
+        /// <param name="assemblyNames">Optional assembly names.</param>
+        public static IFarmerTask GetTaskDelegateByType(
+            Type taskType, 
+            string[] excludedNamespaces = null,
+            string[] assemblyNames = null)
         {
             if (_resolvedMappings.TryGetValue(taskType, out var resolved))
             {
@@ -33,8 +38,30 @@ namespace SmartFarmer.Utils
                 throw new InvalidTaskException();
             }
 
-            // getting classes that implement the given taskType (interface)
-            var task = AppDomain.CurrentDomain.GetAssemblies()
+            var assemblies = 
+                AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(x => assemblyNames == null || assemblyNames.Contains(x.FullName))
+                    .ToArray();
+
+            var taskInstance = GetTaskDelegateByTypeCore(
+                assemblies, 
+                taskType, 
+                excludedNamespaces);
+
+            if (taskInstance != null)
+            {
+                _resolvedMappings.TryAdd(taskType, taskInstance);
+            }
+
+            return taskInstance;
+        }
+
+        private static IFarmerTask GetTaskDelegateByTypeCore(
+            Assembly[] assemblies, 
+            Type taskType, 
+            string[] excludedNamespaces = null)
+        {
+            var task = assemblies
                 .SelectMany(s => s.GetTypes())
                 .Where(p =>
                     p.GetInterfaces().Contains(taskType) &&
@@ -57,8 +84,6 @@ namespace SmartFarmer.Utils
                 // task initialization failure
                 throw new TaskInitializationException();
             }
-
-            _resolvedMappings.TryAdd(taskType, taskInstance);
 
             return taskInstance;
         }
