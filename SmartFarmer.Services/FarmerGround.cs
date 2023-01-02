@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
+using SmartFarmer.Settings;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Implementation;
 using SmartFarmer.Tasks.Irrigation;
@@ -15,6 +15,8 @@ namespace SmartFarmer
         private List<IFarmerPlantInstance> _plants;
         private FarmerAlertHandler _alertHandler;
 
+        private string _userId;
+
         public FarmerGround()
         {
             _plants = new List<IFarmerPlantInstance>();
@@ -23,6 +25,12 @@ namespace SmartFarmer
 
             _alertHandler = FarmerAlertHandler.Instance;
             _alertHandler.NewAlertCreated += OnNewAlertReceived;
+        }
+
+        public FarmerGround(string userId)
+            : this()
+        {
+            _userId = userId;
         }
 
 #region Public Properties
@@ -82,12 +90,17 @@ namespace SmartFarmer
                 OrderPlantsToMinimizeMovements()
                     .ToList();
 
+            var userSettings = 
+                UserDefinedSettingsProvider
+                    .GetUserDefinedSettings(_userId);
+
             GroundIrrigationPlan = 
                 new FarmerAutoIrrigationPlan()
                 {
-                    //TODO take this parameters from global user settings
-                    CanAutoGroundIrrigationPlanStart = true,
-                    PlannedAt = DateTime.UtcNow.AddHours(1)
+                    CanAutoGroundIrrigationPlanStart = 
+                        userSettings.AUTOIRRIGATION_AUTOSTART,
+                    PlannedAt = 
+                        userSettings.AUTOIRRIGATION_PLANNED_TIME
                 };
 
             // asking irrigation
