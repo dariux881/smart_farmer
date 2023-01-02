@@ -9,9 +9,21 @@ namespace SmartFarmer.Tasks.PlantUtils
 {
     public class FarmerFlowerDetector : FarmerBaseTask, IFarmerFlowerDetector
     {
-        public override Task Execute(object[] parameters, CancellationToken token)
+        public FarmerFlowerDetector()
         {
-            throw new NotImplementedException();
+            RequiredTool = Utils.FarmerTool.Camera;
+        }
+
+        public override async Task Execute(object[] parameters, CancellationToken token)
+        {
+            PrepareTask();
+
+            await Task.Delay(500);
+            SmartFarmerLog.Information("Task completed");
+
+            EndTask();
+
+            await Task.CompletedTask;
         }
     }
 }
