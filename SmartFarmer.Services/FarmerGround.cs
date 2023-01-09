@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
+using SmartFarmer.Settings;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Implementation;
 using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer
@@ -12,6 +14,8 @@ namespace SmartFarmer
     {
         private List<IFarmerPlantInstance> _plants;
         private FarmerAlertHandler _alertHandler;
+
+        private string _userId;
 
         public FarmerGround()
         {
@@ -23,16 +27,22 @@ namespace SmartFarmer
             _alertHandler.NewAlertCreated += OnNewAlertReceived;
         }
 
+        public FarmerGround(string userId)
+            : this()
+        {
+            _userId = userId;
+        }
+
 #region Public Properties
 
-	        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
-	        public ICollection<IFarmerAlert> Alerts { get; private set; }
-	        public ICollection<IFarmerPlan> Plans { get; private set; }
-	        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
-	
-	        public double WidthInMeters { get; set; }
-	
-	        public double LengthInMeters { get; set; }
+        public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
+        public ICollection<IFarmerAlert> Alerts { get; private set; }
+        public ICollection<IFarmerPlan> Plans { get; private set; }
+        public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+
+        public double WidthInMeters { get; set; }
+
+        public double LengthInMeters { get; set; }
 
 #endregion
 
@@ -74,7 +84,37 @@ namespace SmartFarmer
 
         private void BuildAutoGroundIrrigationPlan()
         {
-            //TODO build plan considering plant position
+            // Steps:
+            // - list all plants, minimizing movements
+            var orderedPlants = 
+                OrderPlantsToMinimizeMovements()
+                    .ToList();
+
+            var userSettings = 
+                UserDefinedSettingsProvider
+                    .GetUserDefinedSettings(_userId);
+
+            GroundIrrigationPlan = 
+                new FarmerAutoIrrigationPlan()
+                {
+                    CanAutoGroundIrrigationPlanStart = 
+                        userSettings.AUTOIRRIGATION_AUTOSTART,
+                    PlannedAt = 
+                        userSettings.AUTOIRRIGATION_PLANNED_TIME
+                };
+
+            // asking irrigation
+            orderedPlants.ForEach(plant => 
+                GroundIrrigationPlan.AddIrrigationStep(
+                    plant.PlantX, 
+                    plant.PlantY, 
+                    plant.Plant.IrrigationInfo));
+        }
+
+        private IReadOnlyCollection<IFarmerPlantInstance> OrderPlantsToMinimizeMovements()
+        {
+            //TODO implement sorting to minimize movements
+            return Plants;
         }
 
         private IFarmerPlantInstance GetPlantInstanceById(string id)

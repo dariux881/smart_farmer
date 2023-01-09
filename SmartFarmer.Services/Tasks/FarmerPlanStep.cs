@@ -9,10 +9,19 @@ namespace SmartFarmer.Tasks
 {
     public class FarmerPlanStep : IFarmerPlanStep
     {
+        private object[] _buildParameters;
+
         public FarmerPlanStep(IFarmerTask job)
         {
             Job = job;
         }
+
+        public FarmerPlanStep(IFarmerTask job, object[] parameters)
+            : this(job)
+        {
+            _buildParameters = parameters;
+        }
+
 
         public IFarmerTask Job { get; private set; }
 
@@ -28,6 +37,8 @@ namespace SmartFarmer.Tasks
 
             var toolManager = FarmerToolsManager.Instance;
             var currentlyMountedTool = toolManager.GetCurrentlyMountedTool();
+
+            SmartFarmerLog.Information("preparing task " + Job.GetType().FullName);
 
             if (Job.RequiredTool != Utils.FarmerTool.None && Job.RequiredTool != currentlyMountedTool)
             {
@@ -46,8 +57,7 @@ namespace SmartFarmer.Tasks
                 SmartFarmerLog.Debug(message);
             }
 
-            SmartFarmerLog.Information("executing task " + Job.GetType().FullName);
-            await Job.Execute(parameters, token);
+            await Job.Execute(parameters ?? _buildParameters, token);
         }
 
     }
