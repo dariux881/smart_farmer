@@ -34,6 +34,10 @@ namespace SmartFarmer
         }
 
 #region Public Properties
+        public string ID { get; }
+        public string GroundName { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
         public ICollection<IFarmerAlert> Alerts { get; private set; }

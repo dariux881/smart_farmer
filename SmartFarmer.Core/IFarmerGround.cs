@@ -8,6 +8,11 @@ namespace SmartFarmer
 {
     public interface IFarmerGround
     {
+        string ID { get; }
+        string GroundName { get; }
+        double Latitude { get; }
+        double Longitude { get; }
+
         IReadOnlyList<IFarmerPlantInstance> Plants { get; }
         ICollection<IFarmerPlan> Plans { get; }
         ICollection<IFarmerAlert> Alerts { get; }
