@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
-using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement
