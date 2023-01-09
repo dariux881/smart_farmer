@@ -36,7 +36,7 @@ namespace SmartFarmer.Tasks
             IsInProgress = true;
 
             // starting new plan execution
-            SmartFarmerLog.Information("starting plan " + Name);
+            SmartFarmerLog.Information("starting plan \"" + Name + "\"");
             
             try
             {
@@ -58,7 +58,7 @@ namespace SmartFarmer.Tasks
             finally
             {
                 IsInProgress = false;
-                SmartFarmerLog.Information("stopping plan " + Name);
+                SmartFarmerLog.Information("stopping plan \"" + Name + "\"");
             }
         }
     }

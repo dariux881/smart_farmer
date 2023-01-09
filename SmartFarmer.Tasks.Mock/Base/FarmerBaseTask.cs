@@ -19,12 +19,12 @@ namespace SmartFarmer.Tasks.Base
         protected void PrepareTask()
         {
             IsInProgress = true;
-            SmartFarmerLog.Debug("task starting");
+            SmartFarmerLog.Debug("starting task \"" + this.GetType().FullName + "\"");
         }
 
         protected void EndTask()
         {
-            SmartFarmerLog.Debug("-- done");
+            SmartFarmerLog.Debug(" task \"" + this.GetType().FullName + "\" completed");
             IsInProgress = false;
         }
 

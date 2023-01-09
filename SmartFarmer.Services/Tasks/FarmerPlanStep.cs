@@ -38,6 +38,8 @@ namespace SmartFarmer.Tasks
             var toolManager = FarmerToolsManager.Instance;
             var currentlyMountedTool = toolManager.GetCurrentlyMountedTool();
 
+            SmartFarmerLog.Information("preparing task " + Job.GetType().FullName);
+
             if (Job.RequiredTool != Utils.FarmerTool.None && Job.RequiredTool != currentlyMountedTool)
             {
                 // this task requires a tool that is not currently mounted. Mounting tool first. 
@@ -55,7 +57,6 @@ namespace SmartFarmer.Tasks
                 SmartFarmerLog.Debug(message);
             }
 
-            SmartFarmerLog.Information("executing task " + Job.GetType().FullName);
             await Job.Execute(parameters ?? _buildParameters, token);
         }
 

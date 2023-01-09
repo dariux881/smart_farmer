@@ -113,7 +113,7 @@ namespace SmartFarmer
 
         private IReadOnlyCollection<IFarmerPlantInstance> OrderPlantsToMinimizeMovements()
         {
-            //TODO implement sorting to minimize movementss
+            //TODO implement sorting to minimize movements
             return Plants;
         }
 
