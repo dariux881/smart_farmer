@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using SmartFarmer.Tests.Utils;
-using System.Collections.Generic;
+using SmartFarmer.Utils;
 using System.IO;
 using System.Linq;
 
@@ -13,7 +13,7 @@ namespace SmartFarmer.Tests
 
         public GroundLoadingTests() 
         {
-            _ground = new FarmerGround();
+            _ground = new FarmerGround(false);
         }
 
         [SetUp]
@@ -21,7 +21,13 @@ namespace SmartFarmer.Tests
         {
             var basePath = Path.Combine(".", "Configuration");
             var plants = InformationLoader.LoadPlantsFromCsvFile(Path.Combine(basePath, "Plants.csv"));
-            var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"), plants);
+
+            foreach (var plant in plants)
+            {
+                FarmerPlantProvider.Instance.AddFarmerPlant(plant);
+            }
+
+            var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
 
             _ground.AddPlants(plantsInGround.ToArray());
         }

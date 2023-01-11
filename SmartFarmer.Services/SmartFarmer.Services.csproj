@@ -9,4 +9,8 @@
     <ProjectReference Include="..\SmartFarmer.Core\SmartFarmer.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NewtonSoft.Json" Version="13.0.2" />
+  </ItemGroup>
+
 </Project>

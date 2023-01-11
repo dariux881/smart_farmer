@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tests.Utils
 {
@@ -58,9 +59,9 @@ namespace SmartFarmer.Tests.Utils
             return plants;
         }
 
-        public static IEnumerable<IFarmerPlantInstance> LoadPlantInstanceFromCsvFile(string filename, IEnumerable<IFarmerPlant> plants)
+        public static IEnumerable<IFarmerPlantInstance> LoadPlantInstanceFromCsvFile(
+            string filename)
         {
-            if (plants == null) throw new ArgumentNullException(nameof(plants));
             List<IFarmerPlantInstance> plantsInstance = new List<IFarmerPlantInstance>();
 
             using var reader = new StreamReader(filename);
@@ -83,7 +84,7 @@ namespace SmartFarmer.Tests.Utils
                 var x = tokens[3].Trim();
                 var y = tokens[4].Trim();
 
-                var plantKind = plants.First(x => x.ID == kind);
+                var plantKind = FarmerPlantProvider.Instance.GetFarmerPlant(kind);
 
                 if (!numberByPlant.ContainsKey(plantKind.ID))
                 {
@@ -92,11 +93,11 @@ namespace SmartFarmer.Tests.Utils
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    name = plantKind.FriendlyName + numberByPlant[plantKind.ID];
-                    numberByPlant[plantKind.ID]++;
+                    name = plantKind.FriendlyName + numberByPlant[kind];
+                    numberByPlant[kind]++;
                 }
 
-                plantsInstance.Add(new FarmerPlantInstance(id + "", plantKind, name)
+                plantsInstance.Add(new FarmerPlantInstance(id + "", kind, name)
                 {
                     PlantedWhen = string.IsNullOrEmpty(plantedWhen) ? DateTime.UtcNow : Convert.ToDateTime(plantedWhen),
                     PlantX = int.Parse(x, CultureInfo.InvariantCulture),

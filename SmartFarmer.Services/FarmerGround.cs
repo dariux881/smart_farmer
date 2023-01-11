@@ -14,22 +14,37 @@ namespace SmartFarmer
     {
         private List<IFarmerPlantInstance> _plants;
         private FarmerAlertHandler _alertHandler;
+        private bool _buildAutoIrrigationPlan;
 
         private string _userId;
 
-        public FarmerGround()
+        public FarmerGround(bool buildAutoIrrigationPlan = true)
         {
             _plants = new List<IFarmerPlantInstance>();
             Plans = new List<IFarmerPlan>();
             Alerts = new List<IFarmerAlert>();
+            _buildAutoIrrigationPlan = buildAutoIrrigationPlan;
 
             _alertHandler = FarmerAlertHandler.Instance;
             _alertHandler.NewAlertCreated += OnNewAlertReceived;
         }
 
-        public FarmerGround(string userId)
-            : this()
+        public FarmerGround(
+            string groundName, 
+            double latitude, 
+            double longitude, 
+            double width,
+            double length, 
+            string userId, 
+            bool buildAutoIrrigationPlan = true)
+            : this(buildAutoIrrigationPlan)
         {
+            GroundName = groundName;
+            Latitude = latitude;
+            Longitude = longitude;
+            WidthInMeters = width;
+            LengthInMeters = length;
+
             _userId = userId;
         }
 
@@ -88,6 +103,11 @@ namespace SmartFarmer
 
         private void BuildAutoGroundIrrigationPlan()
         {
+            if (!_buildAutoIrrigationPlan)
+            {
+                return;
+            }
+
             // Steps:
             // - list all plants, minimizing movements
             var orderedPlants = 
