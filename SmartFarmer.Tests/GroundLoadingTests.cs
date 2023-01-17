@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using SmartFarmer.Alerts;
 using SmartFarmer.Tests.Utils;
 using SmartFarmer.Utils;
 using System.IO;
@@ -13,7 +14,10 @@ namespace SmartFarmer.Tests
 
         public GroundLoadingTests() 
         {
-            _ground = new FarmerGround(false);
+            _ground = new FarmerGround(
+                FarmerPlantInstanceProvider.Instance, 
+                FarmerAlertHandler.Instance,
+                false);
         }
 
         [SetUp]
@@ -29,14 +33,14 @@ namespace SmartFarmer.Tests
 
             var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
 
-            _ground.AddPlants(plantsInGround.ToArray());
+            _ground.AddPlants(plantsInGround.Select(x => x.ID).ToArray());
         }
 
         [Test]
         public void GroundExists()
         {
             Assert.IsNotNull(_ground);
-            Assert.IsNotEmpty(_ground.Plants);
+            Assert.IsNotEmpty(_ground.PlantIds);
         }
     }
 }

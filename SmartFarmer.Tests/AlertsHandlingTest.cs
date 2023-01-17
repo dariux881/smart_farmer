@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SmartFarmer.Alerts;
+using SmartFarmer.Utils;
 using System.Linq;
 
 namespace SmartFarmer.Tests
@@ -11,7 +12,9 @@ namespace SmartFarmer.Tests
 
         public AlertHandlingTests() 
         {
-            _ground = new FarmerGround();
+            _ground = new FarmerGround(
+                FarmerPlantInstanceProvider.Instance, 
+                FarmerAlertHandler.Instance);
         }
 
         [Test]

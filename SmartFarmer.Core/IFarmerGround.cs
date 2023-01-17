@@ -12,16 +12,17 @@ namespace SmartFarmer
         string GroundName { get; }
         double Latitude { get; }
         double Longitude { get; }
+        string UserID { get; }
 
-        IReadOnlyList<IFarmerPlantInstance> Plants { get; }
+        IReadOnlyList<string> PlantIds { get; }
         ICollection<IFarmerPlan> Plans { get; }
         ICollection<IFarmerAlert> Alerts { get; }
         IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; }
         double WidthInMeters { get; }
         double LengthInMeters { get; }
 
-        void AddPlants(IFarmerPlantInstance[] plants);
-        void AddPlant(IFarmerPlantInstance plant);
-        void RemovePlant(IFarmerPlantInstance plant);
+        void AddPlants(string[] plantIds);
+        void AddPlant(string plantId);
+        void RemovePlant(string plantId);
     }
 }
