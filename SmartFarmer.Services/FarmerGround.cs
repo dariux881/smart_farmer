@@ -15,8 +15,10 @@ namespace SmartFarmer
     public class FarmerGround : IFarmerGround, IDisposable
     {
         private List<IFarmerPlantInstance> _plants;
+        private List<IFarmerPlan> _plans;
         private FarmerAlertHandler _alertHandler;
         private FarmerPlantInstanceProvider _plantsProvider;
+        private FarmerPlanProvider _planProvider;
         private bool _buildAutoIrrigationPlan;
 
         [JsonConstructor]
@@ -27,8 +29,10 @@ namespace SmartFarmer
             double longitude, 
             double widthInMeters,
             double lengthInMeters, 
+            string groundIrrigationPlanId, 
             string userId, 
             string[] plantIds,
+            string[] planIds,
             bool buildAutoIrrigationPlan = true)
             : this(
                 id,
@@ -37,9 +41,12 @@ namespace SmartFarmer
                 longitude, 
                 widthInMeters,
                 lengthInMeters, 
+                groundIrrigationPlanId,
                 userId, 
                 plantIds, 
+                planIds, 
                 FarmerPlantInstanceProvider.Instance, 
+                FarmerPlanProvider.Instance, 
                 FarmerAlertHandler.Instance,
                 buildAutoIrrigationPlan)
         {
@@ -53,12 +60,15 @@ namespace SmartFarmer
             double longitude, 
             double widthInMeters,
             double lengthInMeters, 
+            string groundIrrigationPlanId, 
             string userId, 
             string[] plantIds,
+            string[] planIds,
             FarmerPlantInstanceProvider plantProvider,
+            FarmerPlanProvider planProvider, 
             FarmerAlertHandler alertHandler,
             bool buildAutoIrrigationPlan = true)
-            : this(plantProvider, alertHandler, buildAutoIrrigationPlan)
+            : this(plantProvider, planProvider, alertHandler, buildAutoIrrigationPlan)
         {
             ID = id;
             GroundName = groundName;
@@ -66,8 +76,14 @@ namespace SmartFarmer
             Longitude = longitude;
             WidthInMeters = widthInMeters;
             LengthInMeters = lengthInMeters;
+
+            if (!string.IsNullOrEmpty(groundIrrigationPlanId))
+            {
+                GroundIrrigationPlan = planProvider.GetFarmerService(groundIrrigationPlanId) as IFarmerAutoIrrigationPlan;
+            }
+
             _plants = plantIds?
-                        .Select(x => plantProvider?.GetFarmerPlantInstance(x))
+                        .Select(x => plantProvider?.GetFarmerService(x))
                         .ToList()
                         ?? new List<IFarmerPlantInstance>();
 
@@ -76,15 +92,17 @@ namespace SmartFarmer
 
         public FarmerGround(
             FarmerPlantInstanceProvider plantProvider,
+            FarmerPlanProvider planProvider,
             FarmerAlertHandler alertHandler,
             bool buildAutoIrrigationPlan = true)
         {
             _plants = new List<IFarmerPlantInstance>();
-            Plans = new List<IFarmerPlan>();
+            _plans = new List<IFarmerPlan>();
             Alerts = new List<IFarmerAlert>();
 
             _buildAutoIrrigationPlan = buildAutoIrrigationPlan;
             _plantsProvider = plantProvider;
+            _planProvider = planProvider;
             _alertHandler = alertHandler;
 
             if (_alertHandler != null)
@@ -101,13 +119,30 @@ namespace SmartFarmer
         public double Longitude { get; set; }
         public string UserID { get; private set; }
 
+#region Plants
+        
         public IReadOnlyList<string> PlantIds => _plants?.Select(x => x.ID).ToList().AsReadOnly();
-
+        
         [JsonIgnore]
         public IReadOnlyList<IFarmerPlantInstance> Plants => _plants.AsReadOnly();
+
+#endregion
+
         public ICollection<IFarmerAlert> Alerts { get; private set; }
-        public ICollection<IFarmerPlan> Plans { get; private set; }
+
+#region Plans
+        
+        public IReadOnlyList<string> PlanIds => Plans?.Select(x => x.ID).ToList().AsReadOnly();
+        
+        [JsonIgnore]
+        public IReadOnlyList<IFarmerPlan> Plans => _plans?.AsReadOnly();
+        
+        public string GroundIrrigationPlanId => GroundIrrigationPlan?.ID;
+        
+        [JsonIgnore]
         public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+
+#endregion
 
         public double WidthInMeters { get; set; }
 
@@ -121,49 +156,35 @@ namespace SmartFarmer
         {
             if (plantIds == null) throw new ArgumentNullException(nameof(plantIds));
 
-            this.AddPlants(plantIds.Select(x => _plantsProvider.GetFarmerPlantInstance(x)).ToArray());
-        }
-
-        public void AddPlants(IFarmerPlantInstance[] plants)
-        {
-            if (plants == null) throw new ArgumentNullException(nameof(plants));
-
-            foreach (var plant in plants)
-            {
-                _plants.Add(plant);
-            }
-
-            BuildAutoGroundIrrigationPlan();
+            this.AddPlants(plantIds.Select(x => _plantsProvider.GetFarmerService(x)).ToArray());
         }
 
         public void AddPlant(string plant)
         {
             if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-            this.AddPlant(_plantsProvider.GetFarmerPlantInstance(plant));
-        }
-
-        public void AddPlant(IFarmerPlantInstance plant)
-        {
-            if (plant == null) throw new ArgumentNullException(nameof(plant));
-
-            _plants.Add(plant);
-            BuildAutoGroundIrrigationPlan();
+            this.AddPlant(_plantsProvider.GetFarmerService(plant));
         }
 
         public void RemovePlant(string plant)
         {
             if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-            this.RemovePlant(_plantsProvider.GetFarmerPlantInstance(plant));
+            this.RemovePlant(_plantsProvider.GetFarmerService(plant));
         }
 
-        public void RemovePlant(IFarmerPlantInstance plant)
+        public void AddPlan(string planId)
         {
-            if (plant == null) throw new ArgumentNullException(nameof(plant));
+            if (planId == null) throw new ArgumentNullException(nameof(planId));
 
-            _plants.Remove(plant);
-            BuildAutoGroundIrrigationPlan();
+            this.AddPlan(_planProvider.GetFarmerService(planId));
+        }
+
+        public void RemovePlan(string planId)
+        {
+            if (planId == null) throw new ArgumentNullException(nameof(planId));
+
+            this.RemovePlan(_planProvider.GetFarmerService(planId));
         }
 
         public void Dispose()
@@ -196,13 +217,15 @@ namespace SmartFarmer
                     .GetUserDefinedSettings(UserID);
 
             GroundIrrigationPlan = 
-                new FarmerAutoIrrigationPlan()
+                new FarmerAutoIrrigationPlan(FarmerPlanProvider.Instance.GenerateServiceId())
                 {
                     CanAutoGroundIrrigationPlanStart = 
                         userSettings.AUTOIRRIGATION_AUTOSTART,
                     PlannedAt = 
                         userSettings.AUTOIRRIGATION_PLANNED_TIME
                 };
+
+            FarmerPlanProvider.Instance.AddFarmerService(GroundIrrigationPlan);
 
             // asking irrigation
             orderedPlants.ForEach(plant => 
@@ -222,6 +245,49 @@ namespace SmartFarmer
         {
             return Plants.FirstOrDefault(x => x.ID == id);
         }
+
+        private void AddPlants(IFarmerPlantInstance[] plants)
+        {
+            if (plants == null) throw new ArgumentNullException(nameof(plants));
+
+            foreach (var plant in plants)
+            {
+                _plants.Add(plant);
+            }
+
+            BuildAutoGroundIrrigationPlan();
+        }
+
+        private void AddPlant(IFarmerPlantInstance plant)
+        {
+            if (plant == null) throw new ArgumentNullException(nameof(plant));
+
+            _plants.Add(plant);
+            BuildAutoGroundIrrigationPlan();
+        }
+
+        private void RemovePlant(IFarmerPlantInstance plant)
+        {
+            if (plant == null) throw new ArgumentNullException(nameof(plant));
+
+            _plants.Remove(plant);
+            BuildAutoGroundIrrigationPlan();
+        }
+
+        public void AddPlan(IFarmerPlan plan)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+
+            _plans.Add(plan);
+        }
+
+        public void RemovePlan(IFarmerPlan plan)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+
+            _plans.Remove(plan);
+        }
+
 
 #region Alerts 
 
@@ -250,7 +316,7 @@ namespace SmartFarmer
             AddAlert(e.Alert);
         }
 
-        #endregion
-        #endregion
+#endregion
+#endregion
     }
 }

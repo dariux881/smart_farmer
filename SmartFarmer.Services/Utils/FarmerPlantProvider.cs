@@ -1,11 +1,12 @@
 
 using System;
 using System.Collections.Concurrent;
+using SmartFarmer.Misc;
 using SmartFarmer.Plants;
 
 namespace SmartFarmer.Utils;
 
-public class FarmerPlantProvider
+public class FarmerPlantProvider : IFarmerServiceProvider<IFarmerPlant>
 {
     private static readonly Lazy<FarmerPlantProvider> _instance = new(() => new FarmerPlantProvider());
     private ConcurrentDictionary<string, IFarmerPlant> _plants;
@@ -17,12 +18,24 @@ public class FarmerPlantProvider
         _plants = new ConcurrentDictionary<string, IFarmerPlant>();
     }
 
-    public void AddFarmerPlant(IFarmerPlant plant)
+    public string GenerateServiceId()
+    {
+        string id;
+
+        do
+        {
+            id = "Plant_" + StringUtils.RandomString(10);
+        } while (_plants.ContainsKey(id));
+
+        return id;
+    }
+
+    public void AddFarmerService(IFarmerPlant plant)
     {
         _plants.TryAdd(plant.ID, plant);
     }
 
-    public IFarmerPlant GetFarmerPlant(string plantId)
+    public IFarmerPlant GetFarmerService(string plantId)
     {
         if (_plants.TryGetValue(plantId, out var plant))
         {

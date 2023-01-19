@@ -1,12 +1,12 @@
 ﻿
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Irrigation;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer.Plants
 {
-    public interface IFarmerPlant
+    public interface IFarmerPlant : IFarmerService
     {
-        string ID { get; }
         string Code { get; }
         string FriendlyName { get; }
         IFarmerIrrigationTaskInfo IrrigationInfo { get; }

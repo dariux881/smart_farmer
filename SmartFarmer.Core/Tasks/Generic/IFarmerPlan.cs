@@ -6,7 +6,7 @@ using SmartFarmer.Utils;
 namespace SmartFarmer.Tasks.Generic
 {
 
-    public interface IFarmerPlan : IHasProgressCheckInfo
+    public interface IFarmerPlan : IHasProgressCheckInfo, IFarmerService
     {
         string Name { get; }
         IReadOnlyList<IFarmerPlanStep> Steps { get; }

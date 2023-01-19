@@ -10,8 +10,8 @@ namespace SmartFarmer.Tasks.Implementation
     {
         #region Constructors
 
-        public FarmerPlantStatusCheckPlan()
-            : base("Plant Status Check")
+        public FarmerPlantStatusCheckPlan(string id)
+            : base(id, "Plant Status Check")
         {
             EditableSteps = new List<IFarmerPlanStep>()
             {

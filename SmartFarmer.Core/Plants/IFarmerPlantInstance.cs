@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer.Plants
 {
-    public interface IFarmerPlantInstance
+    public interface IFarmerPlantInstance : IFarmerService
     {
-        string ID { get; }
         string PlantName { get; }
         IFarmerPlant Plant { get; }
         int PlantX { get; }

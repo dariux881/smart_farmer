@@ -8,8 +8,8 @@ namespace SmartFarmer.Tasks.Implementation
 {
     public class FarmerAutoIrrigationPlan : FarmerPlan, IFarmerAutoIrrigationPlan
     {
-        public FarmerAutoIrrigationPlan() 
-            : base("AutoIrrigationPlan")
+        public FarmerAutoIrrigationPlan(string id) 
+            : base(id, "AutoIrrigationPlan")
         {
 
         }

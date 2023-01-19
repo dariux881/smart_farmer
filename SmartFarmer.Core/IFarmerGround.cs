@@ -15,14 +15,17 @@ namespace SmartFarmer
         string UserID { get; }
 
         IReadOnlyList<string> PlantIds { get; }
-        ICollection<IFarmerPlan> Plans { get; }
+        IReadOnlyList<string> PlanIds { get; }
         ICollection<IFarmerAlert> Alerts { get; }
-        IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; }
+        string GroundIrrigationPlanId { get; }
         double WidthInMeters { get; }
         double LengthInMeters { get; }
 
         void AddPlants(string[] plantIds);
         void AddPlant(string plantId);
         void RemovePlant(string plantId);
+
+        void AddPlan(string planId);
+        void RemovePlan(string planId);
     }
 }

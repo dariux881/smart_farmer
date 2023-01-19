@@ -84,7 +84,7 @@ namespace SmartFarmer.Tests.Utils
                 var x = tokens[3].Trim();
                 var y = tokens[4].Trim();
 
-                var plantKind = FarmerPlantProvider.Instance.GetFarmerPlant(kind);
+                var plantKind = FarmerPlantProvider.Instance.GetFarmerService(kind);
 
                 if (!numberByPlant.ContainsKey(plantKind.ID))
                 {

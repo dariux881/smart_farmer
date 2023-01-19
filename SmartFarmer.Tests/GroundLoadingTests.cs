@@ -16,6 +16,7 @@ namespace SmartFarmer.Tests
         {
             _ground = new FarmerGround(
                 FarmerPlantInstanceProvider.Instance, 
+                FarmerPlanProvider.Instance, 
                 FarmerAlertHandler.Instance,
                 false);
         }
@@ -28,7 +29,7 @@ namespace SmartFarmer.Tests
 
             foreach (var plant in plants)
             {
-                FarmerPlantProvider.Instance.AddFarmerPlant(plant);
+                FarmerPlantProvider.Instance.AddFarmerService(plant);
             }
 
             var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));

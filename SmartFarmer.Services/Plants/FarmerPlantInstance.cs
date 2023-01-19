@@ -30,11 +30,11 @@ namespace SmartFarmer.Plants
 
                 if (this.Plant == null)
                 {
-                    this.Plant = FarmerPlantProvider.Instance.GetFarmerPlant(_plantKindId);
+                    this.Plant = FarmerPlantProvider.Instance.GetFarmerService(_plantKindId);
                     return;
                 }
 
-                var calculatedKind = FarmerPlantProvider.Instance.GetFarmerPlant(this.Plant.ID);
+                var calculatedKind = FarmerPlantProvider.Instance.GetFarmerService(this.Plant.ID);
                 if (_plantKindId != calculatedKind?.ID)
                 {
                     Plant = calculatedKind;

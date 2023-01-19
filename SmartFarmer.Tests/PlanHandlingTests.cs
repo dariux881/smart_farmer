@@ -15,7 +15,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void CreatingPlan_ExpectedSuccess()
         {
-            var farmerPlan = new BaseFarmerPlan("test");
+            var farmerPlan = new BaseFarmerPlan("id", "test");
 
             Assert.AreEqual("test", farmerPlan.Name);
         }
@@ -23,7 +23,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void CreatingPlan_AddingTasks_ExpectedSuccess()
         {
-            var farmerPlan = new BaseFarmerPlan("test");
+            var farmerPlan = new BaseFarmerPlan("id", "test");
 
             Assert.AreEqual("test", farmerPlan.Name);
 
@@ -37,7 +37,7 @@ namespace SmartFarmer.Tests
 
             try
             {
-                plan = new FarmerPlantStatusCheckPlan();
+                plan = new FarmerPlantStatusCheckPlan("id");
             }
             catch(Exception ex)
             {
@@ -51,7 +51,7 @@ namespace SmartFarmer.Tests
         [Test]
         public async Task RunningPlan_ExistingImplementors_ExpectedSuccess()
         {
-            var plan = new BaseFarmerPlan("test");
+            var plan = new BaseFarmerPlan("id", "test");
 
             var leafDet = new MockFarmerLeafDetector();
             var leafCheck = new MockFarmerLeavesStatusChecker();
@@ -70,7 +70,7 @@ namespace SmartFarmer.Tests
         [Test]
         public async Task RunningPlan_ExistingImplementors_ExpectedFailure()
         {
-            var plan = new BaseFarmerPlan("test");
+            var plan = new BaseFarmerPlan("id", "test");
 
             var leafDet = new MockFarmerLeafDetector();
             var leafCheck = new MockFarmerLeavesStatusChecker();

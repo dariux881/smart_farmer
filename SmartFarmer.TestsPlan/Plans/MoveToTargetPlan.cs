@@ -9,7 +9,7 @@ namespace SmartFarmer.Tests;
 public class MoveToTargetPlan : BasePlan
 {
     public MoveToTargetPlan()
-        : base("move to target")
+        : base("id", "move to target")
     {
         EditableSteps = new List<IFarmerPlanStep>()
             {
