@@ -21,12 +21,14 @@ namespace SmartFarmer.Tasks.Implementation
 
             this.EditableSteps.Add(
                 new FarmerPlanStep(
-                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveOnGridTask)),
+                    ID + "_1",
+                    FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveOnGridTask)),
                     new object[] {x, y}));
 
             this.EditableSteps.Add(
                 new FarmerPlanStep(
-                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerProvideWaterTask)),
+                    ID + "_2",
+                    FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerProvideWaterTask)),
                     new object[] {irrigationInfo.AmountOfWaterInLitersPerTime}));
         }
 

@@ -57,9 +57,9 @@ namespace SmartFarmer.Tests
             var leafCheck = new MockFarmerLeavesStatusChecker();
             var stem = new MockFarmerStemDetector();
 
-            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
-            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
-            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_1", leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_2", leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_3", stem));
 
             Assert.IsNotNull(plan.Steps);
             Assert.IsNotEmpty(plan.Steps);
@@ -76,9 +76,9 @@ namespace SmartFarmer.Tests
             var leafCheck = new MockFarmerLeavesStatusChecker();
             var stem = new MockFarmerStemDetector() {ExpectFail = true};
 
-            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
-            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
-            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_1", leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_2", leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_3", stem));
 
             Assert.IsNotNull(plan.Steps);
             Assert.IsNotEmpty(plan.Steps);

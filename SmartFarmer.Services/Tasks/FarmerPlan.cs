@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -29,6 +30,8 @@ namespace SmartFarmer.Tasks
         public string Name { get; private set; }
         [JsonIgnore]
         public List<IFarmerPlanStep> EditableSteps { get; protected init; }
+        public IReadOnlyList<string> StepIds => EditableSteps.Select(x => x.ID).ToList().AsReadOnly();
+        [JsonIgnore]
         public IReadOnlyList<IFarmerPlanStep> Steps => EditableSteps.AsReadOnly();
 
         public bool IsInProgress { get; private set; }

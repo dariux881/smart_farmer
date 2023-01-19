@@ -6,7 +6,7 @@ using SmartFarmer.Plants;
 
 namespace SmartFarmer.Utils;
 
-public class FarmerPlantInstanceProvider : IFarmerServiceProvider<IFarmerPlantInstance>
+public class FarmerPlantInstanceProvider : IFarmerPlantInstanceProvider
 {
     private static readonly Lazy<FarmerPlantInstanceProvider> _instance = new(() => new FarmerPlantInstanceProvider());
     private ConcurrentDictionary<string, IFarmerPlantInstance> _plants;

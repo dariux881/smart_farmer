@@ -5,10 +5,11 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Generic
 {
-    public interface IFarmerPlanStep : IHasProgressCheckInfo
+    public interface IFarmerPlanStep : IHasProgressCheckInfo, IFarmerService 
     {
-        IFarmerTask Job { get; }
+        string TaskClassFullName { get; }
         TimeSpan Delay { get; }
+        object[] BuildParameters { get; }
 
         Task Execute(object[] parameters, CancellationToken token);
     }

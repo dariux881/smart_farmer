@@ -5,10 +5,15 @@ using SmartFarmer.MockedTasks;
 using SmartFarmer.MockedTasks.GenericCollection;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tests.Utils;
 using SmartFarmer.Utils;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SmartFarmer.Tests
 {
@@ -16,6 +21,62 @@ namespace SmartFarmer.Tests
     public class SerializationTest
     {
         private IFarmerGround _ground;
+
+        private class TestableFarmerTask : IFarmerTask
+        {
+            public FarmerTool RequiredTool { get; set; }
+
+            public bool IsInProgress { get; set; }
+
+            public Exception LastException { get; set; }
+
+            public string ID { get; set; }
+
+            public async Task Execute(object[] parameters, CancellationToken token)
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        private class TestableFarmerPlan : IFarmerPlan
+        {
+            private List<IFarmerPlanStep> _steps;
+
+            [JsonConstructor]
+            public TestableFarmerPlan(string id, string name, string[] stepIds)
+            {
+                ID = id;
+                Name = name;
+                _steps = new List<IFarmerPlanStep>();
+
+                if (stepIds != null)
+                {
+                    foreach (var stepId in stepIds)
+                    {
+                        var step = FarmerPlanStepProvider.Instance.GetFarmerService(stepId);
+                        if (step == null) throw new InvalidDataException(stepId + " is not a valid step id");
+
+                        _steps.Add(step);
+                    }
+                }
+            }
+
+            public string Name { get; set; }
+
+            public IReadOnlyList<string> StepIds => _steps.Select(x => x.ID).ToList().AsReadOnly();
+            public IReadOnlyList<IFarmerPlanStep> Steps => _steps.AsReadOnly();
+
+            public bool IsInProgress  { get; set; }
+
+            public Exception LastException  { get; set; }
+
+            public string ID  { get; set; }
+
+            public Task Execute(CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public SerializationTest() 
         {
@@ -62,7 +123,7 @@ namespace SmartFarmer.Tests
         {
             var plant = FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds.First());
 
-            var jsonPlant = JsonConvert.SerializeObject(plant, Formatting.Indented);
+            var jsonPlant = JsonConvert.SerializeObject(plant);
             Assert.IsNotNull(jsonPlant);
         }
 
@@ -71,7 +132,7 @@ namespace SmartFarmer.Tests
         {
             var plant = FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds.Last());
 
-            var jsonPlant = JsonConvert.SerializeObject(plant, Formatting.Indented);
+            var jsonPlant = JsonConvert.SerializeObject(plant);
             Assert.IsNotNull(jsonPlant);
 
             var deserializedPlant = JsonConvert.DeserializeObject<FarmerPlantInstance>(jsonPlant);
@@ -83,35 +144,88 @@ namespace SmartFarmer.Tests
         }
 
         [Test]
+        public void TaskSerialization_ExpectedFilled()
+        {
+            var obj = new TestableFarmerTask()
+            {
+                ID = "abc",
+                RequiredTool = FarmerTool.Water,
+                IsInProgress = true,
+                LastException = new ArgumentException()
+            };
+
+            var jsonObj = JsonConvert.SerializeObject(obj);
+            Assert.IsNotNull(jsonObj);
+
+            var deserializedObj = JsonConvert.DeserializeObject<TestableFarmerTask>(jsonObj);
+            Assert.IsNotNull(deserializedObj);
+            Assert.AreEqual(obj.ID, deserializedObj.ID);
+            Assert.AreEqual(obj.RequiredTool, deserializedObj.RequiredTool);
+            Assert.IsFalse(deserializedObj.IsInProgress);
+            Assert.IsNull(deserializedObj.LastException);
+        }
+
+        [Test]
+        public void PlanStepSerialization_ExpectedStepFilled()
+        {
+            var obj = new FarmerPlanStep("id", new MockedCumulativeTask(), new object[] {1, 2, 3, "test param"})
+            {
+                Delay = new System.TimeSpan(0, 0, 5),
+            };
+
+            var jsonObj = JsonConvert.SerializeObject(obj);
+            Assert.IsNotNull(jsonObj);
+
+            var deserializedObj = JsonConvert.DeserializeObject<FarmerPlanStep>(jsonObj);
+            Assert.IsNotNull(deserializedObj);
+            Assert.AreEqual(obj.ID, deserializedObj.ID);
+            Assert.AreEqual(obj.Delay, deserializedObj.Delay);
+            Assert.AreEqual(obj.BuildParameters, deserializedObj.BuildParameters);
+            Assert.AreEqual(obj.TaskClassFullName, deserializedObj.TaskClassFullName);
+            Assert.IsNull(deserializedObj.LastException);
+            Assert.IsFalse(deserializedObj.IsInProgress);
+        }
+
+        [Test]
         public void PlanSerialization_ExpectedNotNull()
         {
-            var plan = new BaseFarmerPlan("id", "name");
+            var obj = new BaseFarmerPlan("id", "name");
 
-            var jsonPlan = JsonConvert.SerializeObject(plan, Formatting.Indented);
-            Assert.IsNotNull(jsonPlan);
+            var jsonObj = JsonConvert.SerializeObject(obj);
+            Assert.IsNotNull(jsonObj);
         }
 
         [Test]
         public void PlanSerialization_ExpectedStepFilled()
         {
-            var plan = new BaseFarmerPlan("id", "name");
-            plan.EditableSteps.Add(new FarmerPlanStep(new MockedCumulativeTask()));
+            var obj = new BaseFarmerPlan("id", "name");
 
-            var jsonPlan = JsonConvert.SerializeObject(plan, Formatting.Indented);
-            Assert.IsNotNull(jsonPlan);
+            FarmerPlanStepProvider.Instance.AddFarmerService(new FarmerPlanStep(obj.ID + "_1", new MockedCumulativeTask()));
+            obj.EditableSteps.Add(FarmerPlanStepProvider.Instance.GetFarmerService(obj.ID + "_1"));
+
+            var jsonObj = JsonConvert.SerializeObject(obj);
+            Assert.IsNotNull(jsonObj);
+
+            var deserializedObj = JsonConvert.DeserializeObject<TestableFarmerPlan>(jsonObj);
+            Assert.IsNotNull(deserializedObj);
+            Assert.AreEqual(obj.ID, deserializedObj.ID);
+            Assert.AreEqual(obj.Name, deserializedObj.Name);
+            Assert.AreEqual(obj.Steps, deserializedObj.Steps);
+            Assert.IsNull(deserializedObj.LastException);
+            Assert.IsFalse(deserializedObj.IsInProgress);
         }
 
         [Test]
         public void GroundSerialization_ExpectedNotNull()
         {
-            var jsonGround = JsonConvert.SerializeObject(_ground, Formatting.Indented);
+            var jsonGround = JsonConvert.SerializeObject(_ground);
             Assert.IsNotNull(jsonGround);
         }
 
         [Test]
         public void GroundDeserialization_ExpectedSame()
         {
-            var jsonGround = JsonConvert.SerializeObject(_ground, Formatting.Indented);
+            var jsonGround = JsonConvert.SerializeObject(_ground);
             Assert.IsNotNull(jsonGround);
 
             var deserializedGround = JsonConvert.DeserializeObject<FarmerGround>(jsonGround);
