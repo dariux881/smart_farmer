@@ -24,7 +24,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
     {
         var alert = new FarmerAlert
             {
-                ID = FarmerAlertProvider.Instance.GenerateServiceId(),
+                ID = _alertProvider.GenerateServiceId(),
                 Message = message,
                 Code = code,
                 Level = level,
