@@ -10,6 +10,7 @@ namespace SmartFarmer.MockedTasks
 {
     public abstract class MockTaskBase : IFarmerTask
     {
+        public string ID { get; set; }
         public bool ExpectFail { get; set; } 
 
         public FarmerTool RequiredTool => FarmerTool.None;

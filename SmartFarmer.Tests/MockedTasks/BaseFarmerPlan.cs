@@ -4,8 +4,8 @@ namespace SmartFarmer.MockedTasks
 {
     public class BaseFarmerPlan : FarmerPlan
     {
-        public BaseFarmerPlan(string name)
-            : base(name)
+        public BaseFarmerPlan(string id, string name)
+            : base(id, name)
         {
             
         }

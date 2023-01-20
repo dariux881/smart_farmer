@@ -9,6 +9,7 @@ namespace SmartFarmer.Tasks.Base
 {
     public abstract class FarmerBaseTask : IFarmerTask
     {
+        public string ID { get; set; }
         public FarmerTool RequiredTool { get; protected set; }
         public bool IsInProgress { get; protected set; }
 

@@ -16,7 +16,7 @@ namespace SmartFarmer.Tests
         {
             var type = typeof(IFarmerLeavesStatusChecker);
 
-            var task = FarmerTaskProvider.GetTaskDelegateByType(type);
+            var task = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
 
             Assert.IsNotNull(task);
             Assert.IsTrue(task is MockedCumulativeTask);
@@ -27,8 +27,8 @@ namespace SmartFarmer.Tests
         {
             var type = typeof(IFarmerLeavesStatusChecker);
 
-            var task1 = FarmerTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
-            var task2 = FarmerTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
+            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
+            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -41,8 +41,8 @@ namespace SmartFarmer.Tests
             var type1 = typeof(IFarmerLeavesStatusChecker);
             var type2 = typeof(IFarmerParasiteChecker);
 
-            var task1 = FarmerTaskProvider.GetTaskDelegateByType(type1) as MockedCumulativeTask;
-            var task2 = FarmerTaskProvider.GetTaskDelegateByType(type2) as MockedCumulativeTask;
+            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type1) as MockedCumulativeTask;
+            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type2) as MockedCumulativeTask;
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -58,7 +58,7 @@ namespace SmartFarmer.Tests
             Exception foundEx = null;
 
             try {
-                task = FarmerTaskProvider.GetTaskDelegateByType(
+                task = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(
                     type, 
                     new [] {"SmartFarmer.MockedTasks.GenericCollection"});
             }

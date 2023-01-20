@@ -10,16 +10,16 @@ namespace SmartFarmer.Tasks.Implementation
     {
         #region Constructors
 
-        public FarmerPlantStatusCheckPlan()
-            : base("Plant Status Check")
+        public FarmerPlantStatusCheckPlan(string id)
+            : base(id, "Plant Status Check")
         {
             EditableSteps = new List<IFarmerPlanStep>()
             {
-                new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeafDetector))),
-                new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeavesStatusChecker))),
-                new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerStemDetector))),
-                new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerParasiteChecker))),
-                new FarmerPlanStep(FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerHydrationLevelChecker)))
+                new FarmerPlanStep(ID + "_1", FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeafDetector))),
+                new FarmerPlanStep(ID + "_2", FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeavesStatusChecker))),
+                new FarmerPlanStep(ID + "_3", FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerStemDetector))),
+                new FarmerPlanStep(ID + "_4", FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerParasiteChecker))),
+                new FarmerPlanStep(ID + "_5", FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerHydrationLevelChecker)))
             };
         }
 
