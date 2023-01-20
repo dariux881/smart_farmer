@@ -5,6 +5,7 @@ using SmartFarmer.Misc;
 using SmartFarmer.MockedTasks;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Implementation;
 
 namespace SmartFarmer.Tests
 {
@@ -14,7 +15,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void CreatingPlan_ExpectedSuccess()
         {
-            var farmerPlan = new BaseFarmerPlan("test");
+            var farmerPlan = new BaseFarmerPlan("id", "test");
 
             Assert.AreEqual("test", farmerPlan.Name);
         }
@@ -22,7 +23,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void CreatingPlan_AddingTasks_ExpectedSuccess()
         {
-            var farmerPlan = new BaseFarmerPlan("test");
+            var farmerPlan = new BaseFarmerPlan("id", "test");
 
             Assert.AreEqual("test", farmerPlan.Name);
 
@@ -36,7 +37,7 @@ namespace SmartFarmer.Tests
 
             try
             {
-                plan = new FarmerPlantStatusCheckPlan();
+                plan = new FarmerPlantStatusCheckPlan("id");
             }
             catch(Exception ex)
             {
@@ -50,15 +51,15 @@ namespace SmartFarmer.Tests
         [Test]
         public async Task RunningPlan_ExistingImplementors_ExpectedSuccess()
         {
-            var plan = new BaseFarmerPlan("test");
+            var plan = new BaseFarmerPlan("id", "test");
 
             var leafDet = new MockFarmerLeafDetector();
             var leafCheck = new MockFarmerLeavesStatusChecker();
             var stem = new MockFarmerStemDetector();
 
-            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
-            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
-            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_1", leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_2", leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_3", stem));
 
             Assert.IsNotNull(plan.Steps);
             Assert.IsNotEmpty(plan.Steps);
@@ -69,15 +70,15 @@ namespace SmartFarmer.Tests
         [Test]
         public async Task RunningPlan_ExistingImplementors_ExpectedFailure()
         {
-            var plan = new BaseFarmerPlan("test");
+            var plan = new BaseFarmerPlan("id", "test");
 
             var leafDet = new MockFarmerLeafDetector();
             var leafCheck = new MockFarmerLeavesStatusChecker();
             var stem = new MockFarmerStemDetector() {ExpectFail = true};
 
-            plan.EditableSteps.Add(new FarmerPlanStep(leafDet));
-            plan.EditableSteps.Add(new FarmerPlanStep(leafCheck));
-            plan.EditableSteps.Add(new FarmerPlanStep(stem));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_1", leafDet));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_2", leafCheck));
+            plan.EditableSteps.Add(new FarmerPlanStep(plan.ID + "_3", stem));
 
             Assert.IsNotNull(plan.Steps);
             Assert.IsNotEmpty(plan.Steps);

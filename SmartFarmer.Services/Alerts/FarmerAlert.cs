@@ -8,8 +8,8 @@ namespace SmartFarmer.Alerts
     {
         public string ID { get; set; }
         public DateTime When { get; set; }
-        public IFarmerTask RaisedBy { get; set; }
-        public IFarmerPlantInstance Plant { get; set; }
+        public string RaisedByTaskId { get; set; }
+        public string PlantInstanceId { get; set; }
         public string Code { get; set; }
         public string Message { get; set; }
         public AlertLevel Level { get; set; }

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SmartFarmer.Alerts;
+using SmartFarmer.Utils;
 using System.Linq;
 
 namespace SmartFarmer.Tests
@@ -11,7 +12,11 @@ namespace SmartFarmer.Tests
 
         public AlertHandlingTests() 
         {
-            _ground = new FarmerGround();
+            _ground = new FarmerGround(
+                FarmerPlantInstanceProvider.Instance, 
+                FarmerPlanProvider.Instance,
+                FarmerAlertProvider.Instance, 
+                FarmerAlertHandler.Instance);
         }
 
         [Test]
@@ -21,17 +26,18 @@ namespace SmartFarmer.Tests
 
             Assert.IsNotNull(_ground);
             Assert.IsNotNull(alertHandler);
-            Assert.IsEmpty(_ground.Alerts);
+            Assert.IsEmpty(_ground.AlertIds);
 
             var message = "test";
 
-            alertHandler.RaiseAlert(new FarmerAlert()
-            {
-                Message = message
-            });
+            alertHandler.RaiseAlert(message, null, null, null, AlertLevel.Error, AlertSeverity.Low);
 
-            Assert.IsNotEmpty(_ground.Alerts);
-            var alert = _ground.Alerts.FirstOrDefault(x => x.Message == message);
+            Assert.IsNotEmpty(_ground.AlertIds);
+            var alert = 
+                _ground
+                    .AlertIds
+                        .Select(x => FarmerAlertProvider.Instance.GetFarmerService(x))
+                        .FirstOrDefault(x => x.Message == message);
 
             Assert.IsNotNull(alert);
         }

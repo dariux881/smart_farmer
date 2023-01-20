@@ -2,56 +2,69 @@
 using System;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Utils;
 
-namespace SmartFarmer.Alerts
+namespace SmartFarmer.Alerts;
+
+public class FarmerAlertHandler : IFarmerAlertHandler
 {
-    public class FarmerAlertHandler
+    private static readonly Lazy<FarmerAlertHandler> _instance = new(() => new FarmerAlertHandler(FarmerAlertProvider.Instance));
+    private IFarmerAlertProvider _alertProvider;
+
+    public static FarmerAlertHandler Instance => _instance.Value;
+
+    private FarmerAlertHandler(IFarmerAlertProvider alertProvider)
     {
-        private static readonly Lazy<FarmerAlertHandler> _instance = new(() => new FarmerAlertHandler());
+        _alertProvider = alertProvider;
+    }
 
-        public static FarmerAlertHandler Instance => _instance.Value;
+    public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-        private FarmerAlertHandler()
-        {
-            
-        }
+    public void RaiseAlert(string message, string code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
+    {
+        var alert = new FarmerAlert
+            {
+                ID = _alertProvider.GenerateServiceId(),
+                Message = message,
+                Code = code,
+                Level = level,
+                Severity = severity
+            };
 
-        public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
+        _alertProvider.AddFarmerService(alert);
 
-        public void RaiseAlert(IFarmerAlert alert)
-        {
-            NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(alert));
-        }
-        
-        public void RaiseAlert(
-                IFarmerTask task,
-                IFarmerPlantInstance plant,
-                string code,
-                string message,
-                AlertLevel level,
-                AlertSeverity severity
-            )
-        {
-            var now = DateTime.UtcNow;
+        NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(alert.ID));
+    }
+    
+    public void RaiseAlert(
+            IFarmerTask task,
+            IFarmerPlantInstance plant,
+            string code,
+            string message,
+            AlertLevel level,
+            AlertSeverity severity
+        )
+    {
+        var now = DateTime.UtcNow;
 
-            NewAlertCreated?.Invoke(
-                this, 
-                new FarmerAlertHandlerEventArgs(
-                    new FarmerAlert()
-                    {
-                        ID = 
-                            "Alert_" + 
-                            now.ToString("yyyyMMddHHmmss"),
-                        RaisedBy = task,
-                        When = now,
-                        Plant = plant,
-                        Code = code,
-                        Message = message,
-                        Level = level,
-                        Severity = severity,
-                        MarkedAsRead = false
-                    }
-                ));
-        }
+        var alert =  
+            new FarmerAlert()
+                {
+                    ID = _alertProvider.GenerateServiceId(),
+                    RaisedByTaskId = task?.ID,
+                    When = now,
+                    PlantInstanceId = plant?.ID,
+                    Code = code,
+                    Message = message,
+                    Level = level,
+                    Severity = severity,
+                    MarkedAsRead = false
+                };
+
+        NewAlertCreated?.Invoke(
+            this, 
+            new FarmerAlertHandlerEventArgs(
+                alert.ID
+            ));
     }
 }
