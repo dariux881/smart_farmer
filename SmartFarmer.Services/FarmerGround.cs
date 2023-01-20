@@ -87,6 +87,11 @@ namespace SmartFarmer
                         .ToList()
                         ?? new List<IFarmerPlantInstance>();
 
+            _plans = planIds?
+                        .Select(x => planProvider?.GetFarmerService(x))
+                        .ToList()
+                        ?? new List<IFarmerPlan>();
+
             UserID = userId;
         }
 
