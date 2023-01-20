@@ -1,15 +1,15 @@
 using System;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Plants;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer.Alerts
 {
-    public interface IFarmerAlert
+    public interface IFarmerAlert : IFarmerService
     {
-        string ID { get; }
         DateTime When { get; }
-        IFarmerTask RaisedBy { get; }
-        IFarmerPlantInstance Plant { get; }
+        string RaisedByTaskId { get; }
+        string PlantInstanceId { get; }
         string Code { get; }
         string Message { get; }
         AlertLevel Level { get; }

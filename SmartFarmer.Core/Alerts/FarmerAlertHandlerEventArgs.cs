@@ -5,11 +5,11 @@ namespace SmartFarmer.Alerts
 {
     public class FarmerAlertHandlerEventArgs : EventArgs
     {
-        public IFarmerAlert Alert { get; }
+        public string AlertId { get; }
 
-        public FarmerAlertHandlerEventArgs(IFarmerAlert alert)
+        public FarmerAlertHandlerEventArgs(string alertId)
         {
-            Alert = alert;
+            AlertId = alertId;
         }
     }
 }

@@ -6,8 +6,6 @@ using SmartFarmer.MockedTasks.GenericCollection;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
-using SmartFarmer.Tasks.Movement;
-using SmartFarmer.Tasks.PlantUtils;
 using SmartFarmer.Tests.Utils;
 using SmartFarmer.Utils;
 using System;
@@ -93,8 +91,10 @@ namespace SmartFarmer.Tests
                 "user1",
                 null,
                 null,
+                null,
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance, 
+                FarmerAlertProvider.Instance, 
                 FarmerAlertHandler.Instance,
                 false);
         }
@@ -316,5 +316,50 @@ namespace SmartFarmer.Tests
 
             Assert.AreEqual(_ground.PlanIds.Count, deserializedGround.PlanIds.Count);
         }
+
+        [Test]
+        public void GroundDeserializationWithAlerts_ExpectedSame()
+        {
+            var receivedAlerts = new List<IFarmerAlert>();
+            var alertCount = 4;
+            var alertIds = new List<string>();
+            var alertHandler = FarmerAlertHandler.Instance;
+
+            alertHandler.NewAlertCreated += (s,e) =>
+                {
+                    receivedAlerts.Add(FarmerAlertProvider.Instance.GetFarmerService(e.AlertId));
+                };
+
+            for (int i=0; i<alertCount; i++)
+            {
+                alertHandler.RaiseAlert("message " + i, null, null, null, AlertLevel.Warning, AlertSeverity.Low);
+            }
+
+            Assert.AreEqual(receivedAlerts.Count, _ground.AlertIds.Count);
+
+            var jsonGround = JsonConvert.SerializeObject(_ground);
+            Assert.IsNotNull(jsonGround);
+
+            var deserializedGround = JsonConvert.DeserializeObject<FarmerGround>(jsonGround);
+
+            Assert.IsNotNull(deserializedGround);
+            Assert.AreEqual(_ground.ID, deserializedGround.ID);
+            Assert.AreEqual(_ground.GroundName, deserializedGround.GroundName);
+
+            for (int i = 0; i < _ground.AlertIds.Count; i++)
+            {
+                var alert = receivedAlerts.FirstOrDefault(x => x.ID == _ground.AlertIds[i]);
+
+                Assert.IsNotNull(alert);
+ 
+                var storedAlert = FarmerAlertProvider.Instance.GetFarmerService(alert.ID);
+
+                Assert.AreEqual(alert.ID, storedAlert.ID);
+                Assert.AreEqual(alert.Code, storedAlert.Code);
+                Assert.AreEqual(alert.Level, storedAlert.Level);
+                Assert.AreEqual(alert.Severity, storedAlert.Severity);
+                Assert.AreEqual(alert.MarkedAsRead, storedAlert.MarkedAsRead);
+            }
+        }    
     }
 }
