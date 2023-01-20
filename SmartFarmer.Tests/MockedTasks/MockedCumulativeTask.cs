@@ -5,31 +5,30 @@ using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Health;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.MockedTasks.GenericCollection
+namespace SmartFarmer.MockedTasks.GenericCollection;
+
+public class MockedCumulativeTask : IFarmerLeavesStatusChecker, IFarmerParasiteChecker
 {
-    public class MockedCumulativeTask : IFarmerLeavesStatusChecker, IFarmerParasiteChecker
+    public MockedCumulativeTask() 
     {
-        public MockedCumulativeTask() 
-        {
-            ID = StringUtils.RandomString(15);
-        }
+        ID = StringUtils.RandomString(15);
+    }
 
-        public FarmerTool RequiredTool => FarmerTool.None;
+    public FarmerTool RequiredTool => FarmerTool.None;
 
-        public string ID { get; private set; }
+    public string ID { get; private set; }
 
-        public bool IsInProgress { get; set; }
+    public bool IsInProgress { get; set; }
 
-        public Exception LastException { get; set; }
+    public Exception LastException { get; set; }
 
-        public async Task Execute(object[] parameters, CancellationToken token)
-        {
-            IsInProgress = true;
-            LastException = null;
+    public async Task Execute(object[] parameters, CancellationToken token)
+    {
+        IsInProgress = true;
+        LastException = null;
 
-            IsInProgress = false;
+        IsInProgress = false;
 
-            await Task.CompletedTask;
-        }
+        await Task.CompletedTask;
     }
 }

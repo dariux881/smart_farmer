@@ -34,7 +34,12 @@ namespace SmartFarmer.Tests
             }
 
             var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
-
+            
+            foreach (var plant in plantsInGround)
+            {
+                FarmerPlantInstanceProvider.Instance.AddFarmerService(plant);
+            }
+            
             _ground.AddPlants(plantsInGround.Select(x => x.ID).ToArray());
         }
 

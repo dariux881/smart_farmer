@@ -108,11 +108,19 @@ public static class FarmerDiscoveredTaskProvider
         var task = assemblies
             .SelectMany(s => s.GetTypes())
             .Where(p =>
-                (!isInterface || p.GetInterfaces().Contains(taskType)) &&
-                taskType.IsAssignableFrom(p) && 
-                (excludedNamespaces == null || !excludedNamespaces.Any(n => n == p.Namespace)) &&
                 p.IsClass && 
-                !p.IsAbstract)
+                !p.IsAbstract &&
+                (
+                    !isInterface || 
+                    (
+                        p.GetInterfaces().Any(x => x.GUID == taskType.GUID)// &&
+                        //taskType.IsAssignableFrom(p)
+                    )
+                ) && 
+                (
+                    excludedNamespaces == null || 
+                    !excludedNamespaces.Any(n => n == p.Namespace)
+                ))
             .FirstOrDefault();
 
         if (task == null)

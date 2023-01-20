@@ -1,7 +1,6 @@
 using System;
 using NUnit.Framework;
 using SmartFarmer.Exceptions;
-using SmartFarmer.MockedTasks.GenericCollection;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Health;
 using SmartFarmer.Utils;
@@ -19,16 +18,16 @@ namespace SmartFarmer.Tests
             var task = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
 
             Assert.IsNotNull(task);
-            Assert.IsTrue(task is MockedCumulativeTask);
+            Assert.IsTrue(task is IFarmerLeavesStatusChecker);
         }
 
         [Test]
         public void ReloadingSameTask_ExpectedSameID()
         {
-            var type = typeof(IFarmerLeavesStatusChecker);
+            var type = typeof(IFarmerParasiteChecker);
 
-            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
-            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type) as MockedCumulativeTask;
+            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
+            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -41,8 +40,8 @@ namespace SmartFarmer.Tests
             var type1 = typeof(IFarmerLeavesStatusChecker);
             var type2 = typeof(IFarmerParasiteChecker);
 
-            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type1) as MockedCumulativeTask;
-            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type2) as MockedCumulativeTask;
+            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type1);
+            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type2);
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -52,7 +51,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void LookingForTaskByTypeInExcludedNamespace_ExpectedNull()
         {
-            var type = typeof(IFarmerLeavesStatusChecker);
+            var type = typeof(IFarmerParasiteChecker);
 
             IFarmerTask task = null;
             Exception foundEx = null;
