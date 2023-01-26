@@ -13,6 +13,7 @@ namespace SmartFarmer.Tests
         public AlertHandlingTests() 
         {
             _ground = new FarmerGround(
+                FarmerPlantProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance,
                 FarmerAlertProvider.Instance, 
