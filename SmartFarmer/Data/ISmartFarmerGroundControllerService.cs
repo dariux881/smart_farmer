@@ -6,5 +6,5 @@ namespace SmartFarmer.Data;
 public interface ISmartFarmerGroundControllerService
 {
     Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
-    Task<IFarmerGround> GetFarmerGroundByIdAsync(string groundId);
+    Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
 }

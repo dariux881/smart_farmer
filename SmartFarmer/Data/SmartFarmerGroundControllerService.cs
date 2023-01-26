@@ -19,8 +19,8 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _db.Grounds.Where(x => x.UserID == userId).ToListAsync();
     }
     
-    public async Task<IFarmerGround> GetFarmerGroundByIdAsync(string groundId)
+    public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
     {
-        return await _db.Grounds.FirstOrDefaultAsync(x => x.ID == groundId);
+        return await _db.Grounds.FirstOrDefaultAsync(x => x.ID == groundId && x.UserID == userId);
     }
 }
