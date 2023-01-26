@@ -15,6 +15,7 @@ namespace SmartFarmer.Tests
         public GroundLoadingTests() 
         {
             _ground = new FarmerGround(
+                FarmerPlantProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance, 
                 FarmerAlertProvider.Instance, 
