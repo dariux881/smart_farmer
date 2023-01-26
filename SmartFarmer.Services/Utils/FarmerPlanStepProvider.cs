@@ -30,9 +30,9 @@ public class FarmerPlanStepProvider : IFarmerPlanStepProvider
         return id;
     }
 
-    public void AddFarmerService(IFarmerPlanStep plan)
+    public bool AddFarmerService(IFarmerPlanStep plan)
     {
-        _planSteps.TryAdd(plan.ID, plan);
+        return _planSteps.TryAdd(plan.ID, plan);
     }
 
     public IFarmerPlanStep GetFarmerService(string planStepId)

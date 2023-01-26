@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using SmartFarmer.Alerts;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer;
 
-public interface IFarmerGround
+public interface IFarmerGround : IFarmerService
 {
-    string ID { get; }
     string GroundName { get; }
     double Latitude { get; }
     double Longitude { get; }

@@ -30,9 +30,9 @@ public class FarmerAlertProvider : IFarmerAlertProvider
         return id;
     }
 
-    public void AddFarmerService(IFarmerAlert alert)
+    public bool AddFarmerService(IFarmerAlert alert)
     {
-        _alerts.TryAdd(alert.ID, alert);
+        return _alerts.TryAdd(alert.ID, alert);
     }
 
     public IFarmerAlert GetFarmerService(string alertId)
