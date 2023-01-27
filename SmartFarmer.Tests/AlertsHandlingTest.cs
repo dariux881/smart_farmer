@@ -14,6 +14,7 @@ namespace SmartFarmer.Tests
         {
             _ground = new FarmerGround(
                 FarmerPlantProvider.Instance, 
+                FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance,
                 FarmerAlertProvider.Instance, 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
@@ -18,16 +19,13 @@ public class SmartFarmerDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<FarmerPlant>()
-            .Property(f => f.IrrigationInfo).
-            .HasColumnType<FarmerIrrigationTaskInfo>(new PropertyBuilder());
-
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }
     public DbSet<FarmerPlant> Plants { get; set; }
     public DbSet<FarmerPlantInstance> PlantsInstance { get; set; }
     public DbSet<FarmerAlert> Alerts { get; set; }
+    public DbSet<FarmerIrrigationTaskInfo> IrrigationInfo { get; set; }
     // public DbSet<FarmerPlan> PlantsInstance { get; set; }
 
     public DbSet<User> Users { get; set; }

@@ -22,7 +22,7 @@ public class FarmerPlantInstance : IFarmerPlantInstance
 
     public DateTime? LastIrrigation { get; set; }
 
-    public IList<DateTime> IrrigationHistory { get; set; }
+    // public List<DateTime> IrrigationHistory { get; set; }
 
     public string ID { get; set; }
 }

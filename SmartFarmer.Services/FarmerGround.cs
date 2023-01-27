@@ -19,6 +19,7 @@ public class FarmerGround : IFarmerGround, IDisposable
     private List<IFarmerAlert> _alerts;
     private FarmerAlertHandler _alertHandler;
     private IFarmerPlantProvider _plantsProvider;
+    private IFarmerIrrigationInfoProvider _irrigationInfoProvider;
     private IFarmerPlantInstanceProvider _plantsInstanceProvider;
     private IFarmerPlanProvider _planProvider;
     private IFarmerAlertProvider _alertProvider;
@@ -51,6 +52,7 @@ public class FarmerGround : IFarmerGround, IDisposable
             planIds, 
             alertIds,
             FarmerPlantProvider.Instance,
+            FarmerIrrigationInfoProvider.Instance,
             FarmerPlantInstanceProvider.Instance, 
             FarmerPlanProvider.Instance, 
             FarmerAlertProvider.Instance, 
@@ -73,12 +75,13 @@ public class FarmerGround : IFarmerGround, IDisposable
         string[] planIds,
         string[] alertIds,
         IFarmerPlantProvider plantProvider,
+        IFarmerIrrigationInfoProvider irrigationInfoProvider,
         IFarmerPlantInstanceProvider plantInstanceProvider,
         IFarmerPlanProvider planProvider, 
         IFarmerAlertProvider alertProvider, 
         FarmerAlertHandler alertHandler,
         bool buildAutoIrrigationPlan = true)
-        : this(plantProvider, plantInstanceProvider, planProvider, alertProvider, alertHandler, buildAutoIrrigationPlan)
+        : this(plantProvider, irrigationInfoProvider, plantInstanceProvider, planProvider, alertProvider, alertHandler, buildAutoIrrigationPlan)
     {
         ID = id;
         GroundName = groundName;
@@ -112,6 +115,7 @@ public class FarmerGround : IFarmerGround, IDisposable
 
     public FarmerGround(
         IFarmerPlantProvider plantProvider,
+        IFarmerIrrigationInfoProvider irrigationInfoProvider,
         IFarmerPlantInstanceProvider plantInstanceProvider,
         IFarmerPlanProvider planProvider,
         IFarmerAlertProvider alertProvider, 
@@ -125,6 +129,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         _buildAutoIrrigationPlan = buildAutoIrrigationPlan;
 
         _plantsProvider = plantProvider;
+        _irrigationInfoProvider = irrigationInfoProvider;
         _plantsInstanceProvider = plantInstanceProvider;
         _planProvider = planProvider;
         _alertProvider = alertProvider;
@@ -302,7 +307,7 @@ public class FarmerGround : IFarmerGround, IDisposable
                 GroundIrrigationPlan.AddIrrigationStep(
                     plant.PlantX, 
                     plant.PlantY, 
-                    plantKind.IrrigationInfo);
+                    _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
             });
     }
 

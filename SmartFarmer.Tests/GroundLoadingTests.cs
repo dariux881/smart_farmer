@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SmartFarmer.Alerts;
+using SmartFarmer.Tasks;
 using SmartFarmer.Tests.Utils;
 using SmartFarmer.Utils;
 using System.IO;
@@ -16,6 +17,7 @@ namespace SmartFarmer.Tests
         {
             _ground = new FarmerGround(
                 FarmerPlantProvider.Instance, 
+                FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance, 
                 FarmerAlertProvider.Instance, 

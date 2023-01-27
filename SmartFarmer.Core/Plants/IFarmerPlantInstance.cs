@@ -14,6 +14,6 @@ namespace SmartFarmer.Plants
         int PlantDepth { get; }
         DateTime PlantedWhen { get; }
         DateTime? LastIrrigation { get; }
-        IList<DateTime> IrrigationHistory { get; }
+        //TODO List<DateTime> IrrigationHistory { get; }
     }
 }

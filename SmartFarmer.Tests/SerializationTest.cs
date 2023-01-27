@@ -93,6 +93,7 @@ namespace SmartFarmer.Tests
                 null,
                 null,
                 FarmerPlantProvider.Instance, 
+                FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance, 
                 FarmerAlertProvider.Instance, 

@@ -9,7 +9,7 @@ public class FarmerPlant : IFarmerPlant
 
     public string FriendlyName { get; set; }
 
-    public IFarmerIrrigationTaskInfo IrrigationInfo { get; set; }
+    public string IrrigationInfoId { get; set; }
 
     public int PlantWidth { get; set; }
 
