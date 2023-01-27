@@ -2,25 +2,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SmartFarmer.Data;
 
-namespace SmartFarmer.Data;
+namespace SmartFarmer.Services;
 
 public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerService 
 {
-    private readonly SmartFarmerDbContext _db;
+    private readonly ISmartFarmerRepository _repository;
 
-    public SmartFarmerGroundControllerService(SmartFarmerDbContext db)
+    public SmartFarmerGroundControllerService(ISmartFarmerRepository repository)
     {
-        _db = db;
+        _repository = repository;
     }
 
     public async Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId)
     {
-        return await _db.Grounds.Where(x => x.UserID == userId).ToListAsync();
+        return await _repository.GetFarmerGroundByUserIdAsync(userId);
     }
     
     public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
     {
-        return await _db.Grounds.FirstOrDefaultAsync(x => x.ID == groundId && x.UserID == userId);
+        return await _repository.GetFarmerGroundByIdForUserAsync(userId, groundId);
     }
 }

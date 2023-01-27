@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SmartFarmer.Authentication;
-using SmartFarmer.Data;
-using SmartFarmer.DTOs;
-using SmartFarmer.Utils;
+using SmartFarmer.DTOs.Security;
+using SmartFarmer.Helpers;
+using SmartFarmer.Services;
 
 namespace SmartFarmer.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class FarmerGroundController : ControllerBase
     {
         private readonly ILogger<FarmerGroundController> _logger;
         private readonly ISmartFarmerGroundControllerService _groundProvider;
-        private readonly ISmartFarmerUserManager _userManager;
+        private readonly ISmartFarmerUserAuthenticationService _userManager;
 
         public FarmerGroundController(
             ILogger<FarmerGroundController> logger,
             ISmartFarmerGroundControllerService groundProvider,
-            ISmartFarmerUserManager userManager)
+            ISmartFarmerUserAuthenticationService userManager)
         {
             _logger = logger;
             _groundProvider = groundProvider;
@@ -30,20 +28,31 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IFarmerGround>>> Get(string token)
+        public async Task<ActionResult<IEnumerable<IFarmerGround>>> GetAllGrounds()
         {
-            var grounds = await _groundProvider.GetFarmerGroundByUserIdAsync(_userManager.GetUserIdByToken(token));
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var grounds = await _groundProvider.GetFarmerGroundByUserIdAsync(userId);
 
             return Ok(grounds);
         }
         
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<IFarmerGround>>> Get(string token, string groundId)
+        [HttpGet("id")]
+        public async Task<ActionResult<IEnumerable<IFarmerGround>>> Get(string groundId)
         {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
             var grounds = 
                 await _groundProvider
                     .GetFarmerGroundByIdForUserAsync(
-                        _userManager.GetUserIdByToken(token),
+                        await _userManager.GetLoggedUserIdByToken(token),
                         groundId);
 
             return Ok(grounds);
