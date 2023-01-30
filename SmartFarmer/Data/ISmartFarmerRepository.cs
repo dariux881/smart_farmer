@@ -1,5 +1,9 @@
+using SmartFarmer.Plants;
+
 namespace SmartFarmer.Data;
 
-public interface ISmartFarmerRepository : ISmartFarmerGroundManagementRepository, ISmartFarmerSecurityRepository
+public interface ISmartFarmerRepository : 
+    ISmartFarmerGroundManagementRepository, 
+    ISmartFarmerSecurityRepository
 {
 }

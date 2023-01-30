@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.DTOs.Security;
+using SmartFarmer.Plants;
 
 namespace SmartFarmer.Data;
 
@@ -71,4 +72,8 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
 #endregion
 
+    public async Task<IFarmerPlantInstance> GetPlantById(string id)
+    {
+        return await _dbContext.PlantsInstance.FirstOrDefaultAsync(x => x.ID == id);
+    }
 }

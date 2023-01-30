@@ -19,6 +19,9 @@ public class SmartFarmerDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<FarmerGround>()
+            .HasMany(g => g.Plants)
+            .WithOne();
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }

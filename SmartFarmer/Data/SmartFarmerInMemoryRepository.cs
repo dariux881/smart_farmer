@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
@@ -10,10 +11,10 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
     public SmartFarmerInMemoryRepository(SmartFarmerDbContext dbContext)
         : base(dbContext)
     {
-        PopulateDB();
+        Task.Run(async () => await PopulateDB());
     }
 
-    private void PopulateDB()
+    private async Task PopulateDB()
     {
         if (populated) return;
         populated = true;
@@ -41,19 +42,19 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.Plants.AddRange(new [] {plant1, plant2});
         _dbContext.PlantsInstance.Add(plantInstance1);
 
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
-        var ground1 = new DTOs.FarmerGround 
+        var ground1 = new DTOs.FarmerGround(this)
             { 
                 ID = "gID", 
                 UserID="user0", 
                 GroundName="Ground Name",                
             };
 
-        ground1.AddPlant(plantInstance1.ID);
+        await ground1.AddPlantAsync(plantInstance1.ID);
 
         _dbContext.Grounds.Add( ground1);
 
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 }
