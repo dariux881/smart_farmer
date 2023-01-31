@@ -3,10 +3,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.DTOs.Security;
 using SmartFarmer.Plants;
 
 namespace SmartFarmer.DTOs;
@@ -15,14 +17,17 @@ public class FarmerGround : IFarmerGround
 {
     private ConcurrentBag<string> _alerts;
     private ConcurrentBag<string> _plans;
-    private ConcurrentBag<FarmerPlantInstance> _plants;
+
+    private SemaphoreSlim _plantsSem;
     private ISmartFarmerRepository _repository;
 
     public FarmerGround()
     {
         _alerts = new ConcurrentBag<string>();
         _plans = new ConcurrentBag<string>();
-        _plants = new ConcurrentBag<FarmerPlantInstance>();
+
+        _plantsSem = new SemaphoreSlim(5);
+        Plants = new List<FarmerPlantInstance>();
     }
 
     public FarmerGround(ISmartFarmerRepository repository)
@@ -35,11 +40,15 @@ public class FarmerGround : IFarmerGround
     public string GroundName { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+
+    [JsonIgnore]
+    public User User { get; set; }
     public string UserID { get; set; }
 
     [JsonIgnore]
-    public List<FarmerPlantInstance> Plants => _plants.ToList();
-    public IReadOnlyList<string> PlantIds => _plants.Select(x => x.ID).ToList().AsReadOnly();
+    public List<FarmerPlantInstance> Plants { get; set; }
+    public IReadOnlyList<string> PlantIds => Plants.Select(x => x.ID).ToList().AsReadOnly();
+    
     public IReadOnlyList<string> PlanIds => _alerts.ToList().AsReadOnly();
     public IReadOnlyList<string> AlertIds => _plans.ToList().AsReadOnly();
     public string GroundIrrigationPlanId { get; set; }
@@ -92,7 +101,18 @@ public class FarmerGround : IFarmerGround
             throw new InvalidCastException("plant is not a proper FarmerPlantInstance");
         }
 
-        _plants?.Add(plant);
+        Plants?.Add(plant);
+    }
+
+    public void AddPlant(FarmerPlantInstance plant)
+    {
+        if (plant == null) throw new ArgumentNullException(nameof(plant));
+
+        _plantsSem.Wait();
+
+        Plants?.Add(plant);
+
+        _plantsSem.Release();
     }
 
     public void AddPlants(string[] plantIds)
@@ -105,15 +125,34 @@ public class FarmerGround : IFarmerGround
         }
     }
 
+    public void AddPlants(FarmerPlantInstance[] plants)
+    {
+        if (plants == null) throw new ArgumentNullException(nameof(plants));
+
+        foreach(var plant in plants)
+        {
+            AddPlant(plant);
+        }
+    }
+
     public void RemovePlant(string plantId)
     {
         if (string.IsNullOrEmpty(plantId)) throw new ArgumentNullException(nameof(plantId));
-        if (_plants == null) return;
-        
-        var plant = _plants.FirstOrDefault(x => x.ID == plantId);
-        if (plant == null) return;
 
-        _plants = new ConcurrentBag<FarmerPlantInstance>(_plants.Except(new[] { plant }));
+        _plantsSem.Wait();
+        if (Plants == null) {
+            _plantsSem.Release();
+            return;
+        }
+        
+        var plant = Plants.FirstOrDefault(x => x.ID == plantId);
+        if (plant == null) {
+            _plantsSem.Release();
+            return;
+        }
+
+        Plants.Remove(plant);
+        _plantsSem.Release();
     }
 
     public void MarkAlertAsRead(string alertId, bool read)

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SmartFarmer.Data.Configuration;
 using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
@@ -19,9 +19,9 @@ public class SmartFarmerDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<FarmerGround>()
-            .HasMany(g => g.Plants)
-            .WithOne();
+        // Configurations
+        new FarmerGroundTypeConfiguration().Configure(modelBuilder.Entity<FarmerGround>());
+        new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }

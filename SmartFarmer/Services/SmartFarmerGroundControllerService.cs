@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Data;
+using SmartFarmer.Plants;
 
 namespace SmartFarmer.Services;
 
@@ -23,5 +24,10 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
     {
         return await _repository.GetFarmerGroundByIdForUserAsync(userId, groundId);
+    }
+
+    public async Task<IFarmerPlantInstance> GetFarmerPlantInstanceByIdForUserAsync(string userId, string plantId)
+    {
+        return await _repository.GetPlantById(plantId, userId);
     }
 }

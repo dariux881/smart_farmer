@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SmartFarmer.DTOs.Security;
 using SmartFarmer.Helpers;
+using SmartFarmer.Plants;
 using SmartFarmer.Services;
 
 namespace SmartFarmer.Controllers
@@ -36,26 +36,57 @@ namespace SmartFarmer.Controllers
                 return Unauthorized();
 
             var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var grounds = await _groundProvider.GetFarmerGroundByUserIdAsync(userId);
 
             return Ok(grounds);
         }
         
-        [HttpGet("id")]
-        public async Task<ActionResult<IEnumerable<IFarmerGround>>> Get(string groundId)
+        [HttpGet("ground")]
+        public async Task<ActionResult<IFarmerGround>> GetGround(string id)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
 
             if (string.IsNullOrEmpty(token))
                 return Unauthorized();
 
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var grounds = 
                 await _groundProvider
                     .GetFarmerGroundByIdForUserAsync(
-                        await _userManager.GetLoggedUserIdByToken(token),
-                        groundId);
+                        userId,
+                        id);
 
             return Ok(grounds);
+        }
+        
+        [HttpGet("plantInGround")]
+        public async Task<ActionResult<IFarmerPlantInstance>> GetPlantInstance(string id)
+        {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var plant = 
+                await _groundProvider
+                    .GetFarmerPlantInstanceByIdForUserAsync(
+                        userId,
+                        id);
+
+            return Ok(plant);
         }
     }
 }

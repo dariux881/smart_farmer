@@ -67,13 +67,37 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
     {
-        return await _dbContext.Grounds.FirstOrDefaultAsync(x => x.ID == groundId && x.UserID == userId);
+        return await _dbContext
+            .Grounds
+                .Include(g => g.Plants)
+                .FirstOrDefaultAsync(
+                    x => x.ID == groundId && x.UserID == userId);
     }
 
 #endregion
 
-    public async Task<IFarmerPlantInstance> GetPlantById(string id)
+    public async Task<IFarmerPlantInstance> GetPlantById(string id, string userId = null)
     {
-        return await _dbContext.PlantsInstance.FirstOrDefaultAsync(x => x.ID == id);
+        var grounds = new List<string>();
+        if (string.IsNullOrEmpty(userId))
+        {
+            grounds = await _dbContext
+                .Grounds
+                    .Where(x => x.UserID == userId)
+                    .Select(g => g.ID)
+                    .ToListAsync();
+
+            if (!grounds.Any())
+            {
+                throw new InvalidOperationException("no grounds found for user "+ userId);
+            }
+        }
+
+        return await _dbContext
+            .PlantsInstance
+                .Where(p => p.ID == id)
+                .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
+                .Include(p => p.Plant)
+                .SingleAsync();
     }
 }

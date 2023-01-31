@@ -16,6 +16,12 @@ public class FarmerPlanStep : IFarmerPlanStep
     public object[] BuildParameters { get; set; }
 
     [JsonIgnore]
+    public FarmerPlan Plan { get; set;}
+
+    [JsonIgnore]
+    public string PlanId { get; set; }
+
+    [JsonIgnore]
     public bool IsInProgress { get; set; }
 
     [JsonIgnore]
