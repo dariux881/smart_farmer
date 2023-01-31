@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 

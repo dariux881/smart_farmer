@@ -44,7 +44,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             };
 
         var plantInstance1 = new FarmerPlantInstance { 
-            ID = "plant1", 
+            ID = "P1", 
             PlantKindID=plant1.ID, 
             PlantName=plant1.FriendlyName, 
             PlantX=1, 

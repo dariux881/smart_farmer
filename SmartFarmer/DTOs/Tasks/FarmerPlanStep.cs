@@ -2,7 +2,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.DTOs.Tasks;

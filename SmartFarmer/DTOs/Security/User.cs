@@ -1,5 +1,6 @@
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.DTOs.Security;
