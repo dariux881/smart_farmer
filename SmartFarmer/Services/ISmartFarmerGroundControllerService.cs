@@ -10,4 +10,5 @@ public interface ISmartFarmerGroundControllerService
     Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
 
     Task<IFarmerPlantInstance> GetFarmerPlantInstanceByIdForUserAsync(string userId, string plantId);
+    Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantInstanceByIdsForUserAsync(string userId, string[] plantIds);
 }

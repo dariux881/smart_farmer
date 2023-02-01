@@ -30,4 +30,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         return await _repository.GetPlantById(plantId, userId);
     }
+    
+    public async Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantInstanceByIdsForUserAsync(string userId, string[] plantIds)
+    {
+        return await _repository.GetPlantsById(plantIds, userId);
+    }
 }

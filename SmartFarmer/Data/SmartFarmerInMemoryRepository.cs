@@ -33,15 +33,23 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             TimesPerWeek = 1
         };
 
-        var plant1 = new FarmerPlant { ID = "plant1", FriendlyName="plant 1", IrrigationInfoId = irrInfo1.ID };
-        var plant2 = new FarmerPlant { ID = "plant2", FriendlyName="plant 2", IrrigationInfoId = irrInfo2.ID };
+        var plant1 = new FarmerPlant { 
+            ID = "plant1", 
+            Code = "123",
+            FriendlyName="plant 1", 
+            IrrigationInfoId = irrInfo1.ID };
+        var plant2 = new FarmerPlant { 
+            ID = "plant2", 
+            Code = "124",
+            FriendlyName="plant 2", 
+            IrrigationInfoId = irrInfo2.ID };
 
         var ground1 = new DTOs.FarmerGround(this)
-            { 
-                ID = "gID", 
-                UserID="user0", 
-                GroundName="Ground Name",
-            };
+        { 
+            ID = "gID", 
+            UserID="user0", 
+            GroundName="Ground Name",
+        };
 
         var plantInstance1 = new FarmerPlantInstance { 
             ID = "P1", 
@@ -52,16 +60,26 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             FarmerGroundId = ground1.ID 
         };
 
+        var plantInstance2 = new FarmerPlantInstance { 
+            ID = "P2", 
+            PlantKindID=plant2.ID, 
+            PlantName="pianta", 
+            PlantX=10, 
+            PlantY=22,
+            FarmerGroundId = ground1.ID 
+        };
+
         _dbContext.Users.Add(user);
         _dbContext.IrrigationInfo.AddRange(new [] {irrInfo1, irrInfo2 });
         _dbContext.Plants.AddRange(new [] {plant1, plant2});
-        _dbContext.PlantsInstance.Add(plantInstance1);
+        _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
 
         _dbContext.SaveChanges();
 
         ground1.AddPlant(plantInstance1);
+        ground1.AddPlant(plantInstance2);
 
-        _dbContext.Grounds.Add( ground1);
+        _dbContext.Grounds.Add(ground1);
 
         _dbContext.SaveChanges();
     }

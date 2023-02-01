@@ -11,14 +11,10 @@ public class FarmerPlantInstance : IFarmerPlantInstance
     
     [JsonIgnore]
     public FarmerPlant Plant { get; set; }
-    public string PlantKindID 
-    { 
-        get => PlantID; 
-        set { PlantID = value; }
-    }
+    public string PlantKindID  { get; set; }
 
     [JsonIgnore]
-    public string PlantID { get; set; }
+    public FarmerGround Ground { get; set; }
     [JsonIgnore]
     public string FarmerGroundId { get; set; }
     public int PlantX { get; set; }

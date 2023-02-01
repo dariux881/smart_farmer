@@ -78,7 +78,13 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IFarmerPlantInstance> GetPlantById(string id, string userId = null)
     {
+        return (await GetPlantsById(new [] {id}, userId))?.FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<IFarmerPlantInstance>> GetPlantsById(string[] ids, string userId = null)
+    {
         var grounds = new List<string>();
+
         if (string.IsNullOrEmpty(userId))
         {
             grounds = await _dbContext
@@ -95,9 +101,9 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
         return await _dbContext
             .PlantsInstance
-                .Where(p => p.ID == id)
+                .Where(p => ids.Contains(p.ID))
                 .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
                 .Include(p => p.Plant)
-                .SingleAsync();
+                .ToArrayAsync();
     }
 }

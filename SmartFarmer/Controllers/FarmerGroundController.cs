@@ -88,5 +88,27 @@ namespace SmartFarmer.Controllers
 
             return Ok(plant);
         }
+        
+        [HttpGet("plantInGround")]
+        public async Task<ActionResult<IEnumerable<IFarmerPlantInstance>>> GetPlantsInstance(string idsSplit)
+        {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var plant = 
+                await _groundProvider
+                    .GetFarmerPlantInstanceByIdsForUserAsync(
+                        userId,
+                        idsSplit.Split('#'));
+
+            return Ok(plant);
+        }
     }
 }

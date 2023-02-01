@@ -29,6 +29,13 @@ public class FarmerPlantInstanceTypeConfiguration : IEntityTypeConfiguration<Far
             .IsRequired();
             
         builder
-            .HasOne(p => p.Plant);
+            .HasOne(p => p.Plant)
+            .WithMany()
+            .HasForeignKey("PlantKindID");
+            
+        builder
+            .HasOne(p => p.Ground)
+            .WithMany(g => g.Plants)
+            .HasForeignKey(p => p.FarmerGroundId);
     }
 }
