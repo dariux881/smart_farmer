@@ -89,7 +89,7 @@ namespace SmartFarmer.Controllers
             return Ok(plant);
         }
         
-        [HttpGet("plantInGround")]
+        [HttpGet("plantsInGround")]
         public async Task<ActionResult<IEnumerable<IFarmerPlantInstance>>> GetPlantsInstance(string idsSplit)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
