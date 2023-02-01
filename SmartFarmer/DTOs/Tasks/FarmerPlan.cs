@@ -14,14 +14,19 @@ public class FarmerPlan : IFarmerPlan
 {
     public FarmerPlan()
     {
-        Steps = new List<IFarmerPlanStep>();
+        Steps = new List<FarmerPlanStep>();
     }
 
     public string Name { get; set; }
 
     [JsonIgnore]
-    public List<IFarmerPlanStep> Steps { get; set; }
+    public List<FarmerPlanStep> Steps { get; set; }
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
+
+    [JsonIgnore]
+    public FarmerGround Ground { get; set; }
+    [JsonIgnore]
+    public string GroundId { get; set; }
 
     [JsonIgnore]
     public bool IsInProgress { get; private set; }

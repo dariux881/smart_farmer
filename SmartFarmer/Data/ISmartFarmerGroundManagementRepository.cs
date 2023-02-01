@@ -9,7 +9,9 @@ public interface ISmartFarmerGroundManagementRepository
     Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
     Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
 
-    Task<IFarmerPlantInstance> GetPlantById(string id, string userId = null);
-    Task<IEnumerable<IFarmerPlantInstance>> GetPlantsById(string[] ids, string userId = null);
+    Task<IFarmerPlantInstance> GetFarmerPlantInstanceById(string id, string userId = null);
+    Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantsInstanceById(string[] ids, string userId = null);
 
+    Task<IFarmerPlant> GetFarmerPlantById(string id);
+    Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids);
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Data;
 
@@ -76,12 +77,12 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
 #endregion
 
-    public async Task<IFarmerPlantInstance> GetPlantById(string id, string userId = null)
+    public async Task<IFarmerPlantInstance> GetFarmerPlantInstanceById(string id, string userId = null)
     {
-        return (await GetPlantsById(new [] {id}, userId))?.FirstOrDefault();
+        return (await GetFarmerPlantsInstanceById(new [] {id}, userId))?.FirstOrDefault();
     }
 
-    public async Task<IEnumerable<IFarmerPlantInstance>> GetPlantsById(string[] ids, string userId = null)
+    public async Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantsInstanceById(string[] ids, string userId = null)
     {
         var grounds = new List<string>();
 
@@ -104,6 +105,51 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .Where(p => ids.Contains(p.ID))
                 .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
                 .Include(p => p.Plant)
+                .ToArrayAsync();
+    }
+
+    
+    public async Task<IFarmerPlant> GetFarmerPlantById(string id)
+    {
+        return (await GetFarmerPlantsById(new [] {id}))?.FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids)
+    {
+        return await _dbContext
+            .Plants
+                .Where(p => ids.Contains(p.ID))
+                .ToArrayAsync();
+    }
+
+    public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
+    {
+        return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsAsync(string[] ids, string userId)
+    {
+        var grounds = new List<string>();
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            grounds = await _dbContext
+                .Grounds
+                    .Where(x => x.UserID == userId)
+                    .Select(g => g.ID)
+                    .ToListAsync();
+
+            if (!grounds.Any())
+            {
+                throw new InvalidOperationException("no grounds found for user "+ userId);
+            }
+        }
+
+        return await _dbContext
+            .Plans
+                .Where(p => ids.Contains(p.ID))
+                .Where(p => !grounds.Any() || grounds.Contains(p.GroundId))
+                .Include(p => p.Steps)
                 .ToArrayAsync();
     }
 }

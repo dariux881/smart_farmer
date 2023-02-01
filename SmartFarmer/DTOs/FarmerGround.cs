@@ -10,25 +10,28 @@ using System.Text.Json.Serialization;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
-using SmartFarmer.Plants;
+using SmartFarmer.DTOs.Tasks;
 
 namespace SmartFarmer.DTOs;
 
 public class FarmerGround : IFarmerGround
 {
     private ConcurrentBag<string> _alerts;
-    private ConcurrentBag<string> _plans;
+    //private ConcurrentBag<string> _plans;
 
     private SemaphoreSlim _plantsSem;
+    private SemaphoreSlim _plansSem;
     private ISmartFarmerRepository _repository;
 
     public FarmerGround()
     {
         _alerts = new ConcurrentBag<string>();
-        _plans = new ConcurrentBag<string>();
 
         _plantsSem = new SemaphoreSlim(5);
+        _plansSem = new SemaphoreSlim(5);
+
         Plants = new List<FarmerPlantInstance>();
+        Plans = new List<FarmerPlan>();
     }
 
     public FarmerGround(ISmartFarmerRepository repository)
@@ -50,8 +53,11 @@ public class FarmerGround : IFarmerGround
     public List<FarmerPlantInstance> Plants { get; set; }
     public IReadOnlyList<string> PlantIds => Plants.Select(x => x.ID).ToList().AsReadOnly();
 
-    public IReadOnlyList<string> PlanIds => _alerts.ToList().AsReadOnly();
-    public IReadOnlyList<string> AlertIds => _plans.ToList().AsReadOnly();
+    [JsonIgnore]
+    public List<FarmerPlan> Plans { get; set; }
+    public IReadOnlyList<string> PlanIds => Plans.Select(x => x.ID).ToList().AsReadOnly();
+
+    public IReadOnlyList<string> AlertIds => _alerts.ToList().AsReadOnly();
     public string GroundIrrigationPlanId { get; set; }
     public double WidthInMeters { get; set; }
     public double LengthInMeters { get; set; }
@@ -74,35 +80,43 @@ public class FarmerGround : IFarmerGround
 
     public void AddPlan(string planId)
     {
-        if (string.IsNullOrEmpty(planId)) throw new ArgumentNullException(nameof(planId));
-
-        _plans?.Add(planId);
+        throw new InvalidOperationException();
     }
 
     public void RemovePlan(string planId)
     {
         if (string.IsNullOrEmpty(planId)) throw new ArgumentNullException(nameof(planId));
-        if (_plans == null) return;
+
+        _plansSem.Wait();
+        if (Plans == null) {
+            _plansSem.Release();
+            return;
+        }
         
-        _plans = new ConcurrentBag<string>(_plans.Except(new[] { planId }));
+        var plan = Plans.FirstOrDefault(x => x.ID == planId);
+        if (plan == null) {
+            _plansSem.Release();
+            return;
+        }
+
+        Plans.Remove(plan);
+        _plansSem.Release();
+    }
+
+    public void AddPlan(FarmerPlan plan)
+    {
+        if (plan == null) throw new ArgumentNullException(nameof(plan));
+
+        _plansSem.Wait();
+
+        Plans?.Add(plan);
+
+        _plansSem.Release();
     }
 
     public void AddPlant(string plantId)
     {
         throw new InvalidOperationException();
-    }
-
-    public async Task AddPlantAsync(string plantId)
-    {
-        if (_repository == null) throw new InvalidOperationException("no repository provided");
-
-        var plant = await _repository.GetPlantById(plantId) as FarmerPlantInstance;
-        if (plant == null)
-        {
-            throw new InvalidCastException("plant is not a proper FarmerPlantInstance");
-        }
-
-        Plants?.Add(plant);
     }
 
     public void AddPlant(FarmerPlantInstance plant)

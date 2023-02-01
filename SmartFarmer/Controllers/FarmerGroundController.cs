@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SmartFarmer.Helpers;
 using SmartFarmer.Plants;
 using SmartFarmer.Services;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Controllers
 {
@@ -109,6 +110,67 @@ namespace SmartFarmer.Controllers
                         idsSplit.Split('#'));
 
             return Ok(plant);
+        }
+        
+        [HttpGet("plant")]
+        public async Task<ActionResult<IFarmerPlant>> GetPlant(string id)
+        {
+            var plant = 
+                await _groundProvider
+                    .GetFarmerPlantByIdAsync(id);
+
+            return Ok(plant);
+        }
+
+        [HttpGet("plants")]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlants(string idsSplit)
+        {
+            var plant = 
+                await _groundProvider
+                    .GetFarmerPlantByIdsAsync(idsSplit.Split('#'));
+
+            return Ok(plant);
+        }
+
+        
+        [HttpGet("plan")]
+        public async Task<ActionResult<IFarmerPlan>> GetPlan(string id)
+        {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var plan = 
+                await _groundProvider
+                    .GetFarmerPlanByIdForUserAsync(userId, id);
+
+            return Ok(plan);
+        }
+
+        [HttpGet("plans")]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlans(string idsSplit)
+        {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+
+            var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var plans = 
+                await _groundProvider
+                    .GetFarmerPlanByIdsForUserAsync(userId, idsSplit.Split('#'));
+
+            return Ok(plans);
         }
     }
 }

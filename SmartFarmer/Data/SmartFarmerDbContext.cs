@@ -22,14 +22,17 @@ public class SmartFarmerDbContext : DbContext
         // Configurations
         new FarmerGroundTypeConfiguration().Configure(modelBuilder.Entity<FarmerGround>());
         new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
+        new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
+        new FarmerPlanStepTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlanStep>());
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }
     public DbSet<FarmerPlant> Plants { get; set; }
+    public DbSet<FarmerPlan> Plans { get; set; }
+    public DbSet<FarmerPlanStep> PlanSteps { get; set; }
     public DbSet<FarmerPlantInstance> PlantsInstance { get; set; }
     public DbSet<FarmerAlert> Alerts { get; set; }
     public DbSet<FarmerIrrigationTaskInfo> IrrigationInfo { get; set; }
-    // public DbSet<FarmerPlan> PlantsInstance { get; set; }
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserLogin> Logins { get; set; }

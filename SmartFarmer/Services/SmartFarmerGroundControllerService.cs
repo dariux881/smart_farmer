@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Data;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Services;
 
@@ -28,11 +29,33 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
 
     public async Task<IFarmerPlantInstance> GetFarmerPlantInstanceByIdForUserAsync(string userId, string plantId)
     {
-        return await _repository.GetPlantById(plantId, userId);
+        return await _repository.GetFarmerPlantInstanceById(plantId, userId);
     }
     
     public async Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantInstanceByIdsForUserAsync(string userId, string[] plantIds)
     {
-        return await _repository.GetPlantsById(plantIds, userId);
+        return await _repository.GetFarmerPlantsInstanceById(plantIds, userId);
+    }
+
+    
+    public async Task<IFarmerPlant> GetFarmerPlantByIdAsync(string plantId)
+    {
+        return await _repository.GetFarmerPlantById(plantId);
+    }
+    
+    public async Task<IEnumerable<IFarmerPlant>> GetFarmerPlantByIdsAsync(string[] plantIds)
+    {
+        return await _repository.GetFarmerPlantsById(plantIds);
+    }
+
+    
+    public async Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId)
+    {
+        return await _repository.GetFarmerPlanByIdAsync(planId, userId);
+    }
+    
+    public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds)
+    {
+        return await _repository.GetFarmerPlanByIdsAsync(planIds, userId);
     }
 }
