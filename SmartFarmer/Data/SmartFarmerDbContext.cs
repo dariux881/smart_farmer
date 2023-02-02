@@ -24,6 +24,7 @@ public class SmartFarmerDbContext : DbContext
         new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
         new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
         new FarmerPlanStepTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlanStep>());
+        new FarmerUserTypeConfiguration().Configure(modelBuilder.Entity<User>());
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }
@@ -36,5 +37,6 @@ public class SmartFarmerDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserLogin> Logins { get; set; }
+    public DbSet<Authorization> Authorizations { get; set; }
 
 }

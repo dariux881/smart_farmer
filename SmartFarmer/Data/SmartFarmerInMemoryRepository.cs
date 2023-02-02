@@ -22,6 +22,14 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var user = new User { ID = "user0", UserName="test", Password="test", Email="prova@test.it"};
 
+        var readGroundAuth = new Authorization { ID = "readGround", Name="Read Ground" };
+        var editGroundAuth = new Authorization { ID = "editGround", Name="Change Ground adding plans and plants" };
+        var readUsersAuth = new Authorization { ID = "readUsers", Name="See current users" };
+        var editUsersAuth = new Authorization { ID = "editUsers", Name="Edit users, creating or deleting them, changing their permissions" };
+
+        user.Authorizations.Add(readGroundAuth);
+
+
         var irrInfo1 = new FarmerIrrigationTaskInfo {
             ID = "ii0",
             AmountOfWaterInLitersPerTime = 1,
@@ -69,15 +77,28 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             FarmerGroundId = ground1.ID 
         };
 
+        var plan1 = new FarmerPlan
+        {
+            GroundId = ground1.ID,
+            ID = "plan1",
+            Name = "example plan"
+        };
+
         _dbContext.Users.Add(user);
+        _dbContext.Authorizations.Add(readGroundAuth);
+        _dbContext.Authorizations.Add(editGroundAuth);
+        _dbContext.Authorizations.Add(readUsersAuth);
+        _dbContext.Authorizations.Add(editUsersAuth);
+
         _dbContext.IrrigationInfo.AddRange(new [] {irrInfo1, irrInfo2 });
         _dbContext.Plants.AddRange(new [] {plant1, plant2});
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
+        _dbContext.Plans.Add(plan1);
 
         _dbContext.SaveChanges();
 
-        ground1.AddPlant(plantInstance1);
-        ground1.AddPlant(plantInstance2);
+        ground1.AddPlants( new [] { plantInstance1, plantInstance2 } );
+        ground1.AddPlan(plan1);
 
         _dbContext.Grounds.Add(ground1);
 

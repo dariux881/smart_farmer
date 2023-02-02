@@ -24,6 +24,16 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
         return await _repository.GetLoggedUserById(userId);
     }
 
+    public async Task<bool> IsUserAuthorizedTo(string userId, string authorizationId)
+    {
+        return await _repository.IsUserAuthorizedTo(userId, authorizationId);
+    }
+
+    public async Task<bool> IsUserAuthorizedToAnyOf(string userId, string[] authorizationIds)
+    {
+        return await _repository.IsUserAuthorizedToAnyOf(userId, authorizationIds);
+    }
+
     public async Task<string> LogInUser(string userName, string password, object[] parameters)
     {
         // check if user exists

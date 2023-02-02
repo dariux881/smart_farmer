@@ -42,6 +42,28 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                     .SingleAsync(x => x.UserName == userName && x.Password == password);
     }
 
+    public async Task<bool> IsUserAuthorizedTo(string userId, string authorizationId)
+    {
+        return await IsUserAuthorizedToAnyOf(userId, new [] { authorizationId });
+    }
+
+    public async Task<bool> IsUserAuthorizedToAnyOf(string userId, string[] authorizationIds)
+    {
+        var now = DateTime.UtcNow;
+
+        return await 
+            _dbContext
+                .Users
+                    .Where(x => x.ID == userId) // filter by userId
+                    .Include(x => x.Authorizations)
+                    .SelectMany(x => x.Authorizations)
+                    .AnyAsync(auth => 
+                        authorizationIds.Contains(auth.ID) &&
+                        (auth.StartAuthorizationDt == null || auth.StartAuthorizationDt >= now) && 
+                        (auth.EndAuthorizationDt == null || auth.EndAuthorizationDt <= now)
+                    );
+    }
+
     public async Task LogInUser(UserLogin userLogin)
     {
         _dbContext.Logins.Add(userLogin);
