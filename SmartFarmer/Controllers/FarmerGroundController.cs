@@ -29,6 +29,7 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IEnumerable<IFarmerGround>>> GetAllGrounds()
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
@@ -47,6 +48,7 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("ground")]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IFarmerGround>> GetGround(string id)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
@@ -69,6 +71,7 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("plantInGround")]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IFarmerPlantInstance>> GetPlantInstance(string id)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
@@ -91,6 +94,7 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("plantsInGround")]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IEnumerable<IFarmerPlantInstance>>> GetPlantsInstance(string idsSplit)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
@@ -132,8 +136,8 @@ namespace SmartFarmer.Controllers
             return Ok(plant);
         }
 
-        
         [HttpGet("plan")]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IFarmerPlan>> GetPlan(string id)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
@@ -154,6 +158,7 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet("plans")]
+        [IsUserAuthorizedTo("readGround")]
         public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlans(string idsSplit)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
