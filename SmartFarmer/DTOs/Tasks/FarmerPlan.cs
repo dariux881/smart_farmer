@@ -19,7 +19,6 @@ public class FarmerPlan : IFarmerPlan
 
     public string Name { get; set; }
 
-    [JsonIgnore]
     public List<FarmerPlanStep> Steps { get; set; }
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 

@@ -84,6 +84,23 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             Name = "example plan"
         };
 
+        var p1Step1 = new FarmerPlanStep
+        {
+            ID = "p1s1",
+            PlanId = plan1.ID,
+            BuildParameters = new object[] { 5.0, "abc"},
+            TaskClassFullName = "taskClassFullName1"
+        };
+        var p1Step2 = new FarmerPlanStep
+        {
+            ID = "p1s2",
+            PlanId = plan1.ID,
+            TaskClassFullName = "taskClassFullName2",
+            Delay = new System.TimeSpan(0, 0, 5)
+        };
+
+        plan1.Steps.AddRange( new [] { p1Step1, p1Step2 });
+
         _dbContext.Users.Add(user);
         _dbContext.Authorizations.Add(readGroundAuth);
         _dbContext.Authorizations.Add(editGroundAuth);
@@ -94,6 +111,8 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.Plants.AddRange(new [] {plant1, plant2});
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
         _dbContext.Plans.Add(plan1);
+        _dbContext.PlanSteps.Add(p1Step1);
+        _dbContext.PlanSteps.Add(p1Step2);
 
         _dbContext.SaveChanges();
 

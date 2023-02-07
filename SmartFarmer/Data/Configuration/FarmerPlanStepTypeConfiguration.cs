@@ -17,6 +17,9 @@ public class FarmerPlanStepTypeConfiguration : IEntityTypeConfiguration<FarmerPl
             .Ignore(s => s.BuildParameters);
         
         builder
+            .Ignore(s => s.BuildParametersString);
+            
+        builder
             .Ignore(s => s.IsInProgress);
         
         builder

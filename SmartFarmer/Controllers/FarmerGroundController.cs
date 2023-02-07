@@ -159,7 +159,7 @@ namespace SmartFarmer.Controllers
 
         [HttpGet("plans")]
         [IsUserAuthorizedTo("readGround")]
-        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlans(string idsSplit)
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlans(string ids)
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
 
@@ -173,9 +173,31 @@ namespace SmartFarmer.Controllers
 
             var plans = 
                 await _groundProvider
-                    .GetFarmerPlanByIdsForUserAsync(userId, idsSplit.Split('#'));
+                    .GetFarmerPlanByIdsForUserAsync(userId, ids.Split('#'));
 
             return Ok(plans);
+        }
+
+        
+        [HttpGet("steps")]
+        [IsUserAuthorizedTo("readGround")]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetSteps(string ids)
+        {
+            // var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            // if (string.IsNullOrEmpty(token))
+            //     return Unauthorized();
+
+            // var userId = await _userManager.GetLoggedUserIdByToken(token);
+
+            // if (string.IsNullOrEmpty(userId))
+            //     return Unauthorized();
+
+            var steps = 
+                await _groundProvider
+                    .GetFarmerPlanStepByIdsAsync(ids.Split('#'));
+
+            return Ok(steps);
         }
     }
 }
