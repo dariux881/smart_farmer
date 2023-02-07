@@ -170,7 +170,6 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
         return await _dbContext
             .Plans
-                .Include(x => x.Steps)
                 .Where(p => ids.Contains(p.ID))
                 .Where(p => !grounds.Any() || grounds.Contains(p.GroundId))
                 .Include(p => p.Steps)
@@ -179,7 +178,6 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids)
     {
-        
         return await _dbContext
             .PlanSteps
                 .Where(p => ids.Contains(p.ID))

@@ -13,7 +13,6 @@ namespace SmartFarmer.DTOs.Tasks;
 public class FarmerPlanStep : IFarmerPlanStep
 {
     private object[] _buildParameters;
-    private string _buildParametersSerialized;
 
     public string TaskClassFullName { get; set; }
 
@@ -30,16 +29,19 @@ public class FarmerPlanStep : IFarmerPlanStep
     }
 
     [JsonIgnore]
-    public string BuildParametersSerialized {
-        get => _buildParametersSerialized;
+    public string BuildParametersSerialized { get; set; }
 
-        set {
-            _buildParametersSerialized = value;
-            DeserializeParameters();
+    public string[] BuildParametersString 
+    { 
+        get {
+            if (string.IsNullOrEmpty(BuildParametersSerialized))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<string[]>(BuildParametersSerialized);
         }
     }
-
-    public string[] BuildParametersString { get; private set; }
 
     [JsonIgnore]
     public FarmerPlan Plan { get; set;}
@@ -74,16 +76,5 @@ public class FarmerPlanStep : IFarmerPlanStep
                     BuildParameters
                         .Select(x => x.ToString())
                         .ToArray());
-    }
-
-    private void DeserializeParameters()
-    {
-        if (string.IsNullOrEmpty(BuildParametersSerialized))
-        {
-            BuildParametersString = null;
-            return;
-        }
-
-        BuildParametersString = JsonSerializer.Deserialize<string[]>(BuildParametersSerialized);
     }
 }
