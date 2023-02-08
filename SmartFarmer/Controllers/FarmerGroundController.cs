@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,15 +30,10 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IEnumerable<IFarmerGround>>> GetAllGrounds()
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -48,15 +44,10 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("ground")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IFarmerGround>> GetGround(string id)
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -71,15 +62,10 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("plantInGround")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IFarmerPlantInstance>> GetPlantInstance(string id)
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -94,15 +80,10 @@ namespace SmartFarmer.Controllers
         }
         
         [HttpGet("plantsInGround")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IEnumerable<IFarmerPlantInstance>>> GetPlantsInstance(string idsSplit)
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -137,15 +118,10 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet("plan")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IFarmerPlan>> GetPlan(string id)
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -158,15 +134,10 @@ namespace SmartFarmer.Controllers
         }
 
         [HttpGet("plans")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlans(string ids)
         {
-            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-
-            var userId = await _userManager.GetLoggedUserIdByToken(token);
+            var userId = await GetUserIdByContext();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -177,27 +148,73 @@ namespace SmartFarmer.Controllers
 
             return Ok(plans);
         }
-
         
         [HttpGet("steps")]
-        [IsUserAuthorizedTo("readGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetSteps(string ids)
         {
-            // var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
-
-            // if (string.IsNullOrEmpty(token))
-            //     return Unauthorized();
-
-            // var userId = await _userManager.GetLoggedUserIdByToken(token);
-
-            // if (string.IsNullOrEmpty(userId))
-            //     return Unauthorized();
-
             var steps = 
                 await _groundProvider
                     .GetFarmerPlanStepByIdsAsync(ids.Split('#'));
 
             return Ok(steps);
+        }
+
+        [HttpGet("alertsInGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> getAlertsByGround(string id)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var alerts = 
+                await _groundProvider
+                    .GetFarmerAlertsByGroundIdAsync(userId, id);
+
+            return Ok(alerts);
+        }
+        
+        [HttpGet("alertsCountInGround")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> getAlertsCountByGround(string id)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var alerts = 
+                (await _groundProvider
+                    .GetFarmerAlertsByGroundIdAsync(userId, id))?.ToList();
+
+            return Ok(alerts?.Count);
+        }
+
+        [HttpGet("alerts")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+        public async Task<ActionResult<IEnumerable<IFarmerPlant>>> getAlertsByIds(string ids)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var alerts = 
+                await _groundProvider
+                    .GetFarmerAlertsByIdAsync(userId, ids.Split("#"));
+
+            return Ok(alerts);
+        }
+        private async Task<string> GetUserIdByContext()
+        {
+            var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];
+
+            if (string.IsNullOrEmpty(token))
+                return null;
+
+            return await _userManager.GetLoggedUserIdByToken(token);
         }
     }
 }

@@ -24,6 +24,8 @@ public class SmartFarmerDbContext : DbContext
         new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
         new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
         new FarmerPlanStepTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlanStep>());
+        new FarmerAlertTypeConfiguration().Configure(modelBuilder.Entity<FarmerAlert>());
+
         new FarmerUserTypeConfiguration().Configure(modelBuilder.Entity<User>());
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SmartFarmer.Alerts;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
@@ -94,6 +95,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             .Grounds
                 .Include(g => g.Plants)
                 .Include(g => g.Plans)
+                .Include(g => g.Alerts)
                 .FirstOrDefaultAsync(
                     x => x.ID == groundId && x.UserID == userId);
     }
@@ -109,13 +111,9 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
     {
         var grounds = new List<string>();
 
-        if (string.IsNullOrEmpty(userId))
+        if (!string.IsNullOrEmpty(userId))
         {
-            grounds = await _dbContext
-                .Grounds
-                    .Where(x => x.UserID == userId)
-                    .Select(g => g.ID)
-                    .ToListAsync();
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
 
             if (!grounds.Any())
             {
@@ -154,13 +152,9 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
     {
         var grounds = new List<string>();
 
-        if (string.IsNullOrEmpty(userId))
+        if (!string.IsNullOrEmpty(userId))
         {
-            grounds = await _dbContext
-                .Grounds
-                    .Where(x => x.UserID == userId)
-                    .Select(g => g.ID)
-                    .ToListAsync();
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
 
             if (!grounds.Any())
             {
@@ -182,5 +176,86 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             .PlanSteps
                 .Where(p => ids.Contains(p.ID))
                 .ToArrayAsync();
+    }
+
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdsAsync(string userId, string[] ids = null)
+    {
+        var grounds = new List<string>();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+
+            if (!grounds.Any())
+            {
+                throw new InvalidOperationException("no grounds found for user "+ userId);
+            }
+        }
+
+        return await _dbContext
+            .Alerts
+                .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
+                .Where(p => ids == null || ids.Contains(p.ID))
+                .Include(t => t.PlantInstance)
+                .Include(t => t.RaisedByTask)
+                .ToArrayAsync();
+    }
+
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId)
+    {
+        var grounds = new List<string>();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+        }
+
+        if (!grounds.Any())
+        {
+            return new IFarmerAlert[] {};
+        }
+
+        if (!grounds.Contains(groundId))
+        {
+            throw new InvalidOperationException("Ground " + groundId + " is not held by user " + userId);
+        }
+
+        return await _dbContext
+            .Alerts
+                .Where(p => p.FarmerGroundId == groundId)
+                //TODO evaluate include
+                .ToArrayAsync();
+    }
+    
+    public async Task MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
+    {
+        var grounds = new List<string>();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+        }
+        
+        var alert = await _dbContext
+            .Alerts
+                .Where(p => 
+                    (grounds.Any() || grounds.Contains(p.FarmerGroundId)) &&
+                    p.ID == alertId)
+                .SingleAsync();
+
+        alert.MarkedAsRead = read;
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task<IEnumerable<string>> GetGroundIdsForUser(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+
+        return await _dbContext
+            .Grounds
+                .Where(x => x.UserID == userId)
+                .Select(g => g.ID)
+                .ToListAsync();
     }
 }

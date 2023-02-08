@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
@@ -19,4 +20,7 @@ public interface ISmartFarmerGroundControllerService
     Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId);
     Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds);
     Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids);
+
+    Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId);
+    Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids);
 }

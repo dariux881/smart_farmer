@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SmartFarmer.Alerts;
 using SmartFarmer.Data;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
@@ -62,5 +63,15 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public async Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids)
     {
         return await _repository.GetFarmerPlanStepByIdsAsync(ids);
+    }
+
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId)
+    {
+        return await _repository.GetFarmerAlertsByGroundIdAsync(userId, groundId);
+    }
+
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids)
+    {
+        return await _repository.GetFarmerAlertsByIdsAsync(userId, ids);
     }
 }

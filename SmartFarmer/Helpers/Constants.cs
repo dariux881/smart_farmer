@@ -1,6 +1,9 @@
 namespace SmartFarmer.Helpers;
 
-public class Constants
+public static class Constants
 {
-    public static readonly string HEADER_AUTHENTICATION_TOKEN = "Token";
+    public const string HEADER_AUTHENTICATION_TOKEN = "Token";
+
+    /*** AUTHORIZATIONS ***/
+    public const string AUTH_READ_GROUND = "readGround";
 }

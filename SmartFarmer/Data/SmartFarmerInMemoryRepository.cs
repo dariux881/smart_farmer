@@ -1,7 +1,9 @@
 using System.Threading.Tasks;
+using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
+using SmartFarmer.Helpers;
 
 namespace SmartFarmer.Data;
 
@@ -22,7 +24,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var user = new User { ID = "user0", UserName="test", Password="test", Email="prova@test.it"};
 
-        var readGroundAuth = new Authorization { ID = "readGround", Name="Read Ground" };
+        var readGroundAuth = new Authorization { ID = Constants.AUTH_READ_GROUND, Name="Read Ground" };
         var editGroundAuth = new Authorization { ID = "editGround", Name="Change Ground adding plans and plants" };
         var readUsersAuth = new Authorization { ID = "readUsers", Name="See current users" };
         var editUsersAuth = new Authorization { ID = "editUsers", Name="Edit users, creating or deleting them, changing their permissions" };
@@ -99,7 +101,13 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             Delay = new System.TimeSpan(0, 0, 5)
         };
 
-        plan1.Steps.AddRange( new [] { p1Step1, p1Step2 });
+        var alert = new FarmerAlert
+        {
+            ID = "alertId",
+            FarmerGroundId = ground1.ID,
+            Level = Alerts.AlertLevel.Warning,
+            Severity = Alerts.AlertSeverity.Low
+        };
 
         _dbContext.Users.Add(user);
         _dbContext.Authorizations.Add(readGroundAuth);
@@ -114,10 +122,9 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.PlanSteps.Add(p1Step1);
         _dbContext.PlanSteps.Add(p1Step2);
 
-        _dbContext.SaveChanges();
+        _dbContext.Alerts.Add(alert);
 
-        ground1.AddPlants( new [] { plantInstance1, plantInstance2 } );
-        ground1.AddPlan(plan1);
+        _dbContext.SaveChanges();
 
         _dbContext.Grounds.Add(ground1);
 
