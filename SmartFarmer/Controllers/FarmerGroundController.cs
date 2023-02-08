@@ -207,6 +207,23 @@ namespace SmartFarmer.Controllers
 
             return Ok(alerts);
         }
+        
+        [HttpGet("markAlert")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+        public async Task<ActionResult> markAlertAsRead(string alertId, bool read)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = 
+                await _groundProvider
+                    .MarkFarmerAlertAsRead(userId, alertId, read);
+
+            return Ok(result);
+        }
+        
         private async Task<string> GetUserIdByContext()
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
 using SmartFarmer.DTOs.Security;
+using SmartFarmer.Misc;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
@@ -227,7 +228,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
     
-    public async Task MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
+    public async Task<bool> MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
     {
         var grounds = new List<string>();
 
@@ -236,16 +237,26 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             grounds = (await GetGroundIdsForUser(userId))?.ToList();
         }
         
-        var alert = await _dbContext
-            .Alerts
-                .Where(p => 
-                    (grounds.Any() || grounds.Contains(p.FarmerGroundId)) &&
-                    p.ID == alertId)
-                .SingleAsync();
+        try
+        {
+            var alert = await _dbContext
+                .Alerts
+                    .Where(p => 
+                        (grounds.Any() || grounds.Contains(p.FarmerGroundId)) &&
+                        p.ID == alertId)
+                    .SingleAsync();
 
-        alert.MarkedAsRead = read;
+            alert.MarkedAsRead = read;
 
-        await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task<IEnumerable<string>> GetGroundIdsForUser(string userId)

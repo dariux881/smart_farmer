@@ -8,5 +8,5 @@ public interface ISmartFarmerAlertManagementRepository
 {
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdsAsync(string userId, string[] ids);
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId);
-    Task MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read);
+    Task<bool> MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read);
 }

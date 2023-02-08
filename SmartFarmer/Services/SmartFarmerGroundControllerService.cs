@@ -74,4 +74,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         return await _repository.GetFarmerAlertsByIdsAsync(userId, ids);
     }
+
+    public async Task<bool> MarkFarmerAlertAsRead(string userId, string id, bool read)
+    {
+        return await _repository.MarkFarmerAlertAsReadAsync(userId, id, read);
+    }
 }
