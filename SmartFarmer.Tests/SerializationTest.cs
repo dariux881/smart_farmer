@@ -92,6 +92,8 @@ namespace SmartFarmer.Tests
                 null,
                 null,
                 null,
+                FarmerPlantProvider.Instance, 
+                FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
                 FarmerPlanProvider.Instance, 
                 FarmerAlertProvider.Instance, 
@@ -142,7 +144,12 @@ namespace SmartFarmer.Tests
             Assert.IsNotNull(deserializedPlant);
             Assert.AreEqual(plant.ID, deserializedPlant.ID);
             Assert.AreEqual(plant.PlantName, deserializedPlant.PlantName);
-            Assert.AreEqual(plant.Plant.ID, deserializedPlant.PlantKindID);
+
+            Assert.AreEqual(plant.PlantKindID, deserializedPlant.PlantKindID);
+            
+            var gatheredPlant = FarmerPlantProvider.Instance.GetFarmerService(plant.PlantKindID);
+            Assert.IsNotNull(gatheredPlant);
+            Assert.AreEqual(gatheredPlant.ID, deserializedPlant.PlantKindID);
         }
 
         [Test]

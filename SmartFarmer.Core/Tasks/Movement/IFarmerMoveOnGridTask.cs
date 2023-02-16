@@ -2,10 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks.Movement
+namespace SmartFarmer.Tasks.Movement;
+
+public interface IFarmerMoveOnGridTask : IFarmerTask
 {
-    public interface IFarmerMoveOnGridTask : IFarmerTask
-    {
-        Task MoveToPosition(int x, int y, CancellationToken token);
-    }
+    Task MoveToPosition(int x, int y, CancellationToken token);
 }

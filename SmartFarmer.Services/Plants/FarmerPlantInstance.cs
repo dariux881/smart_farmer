@@ -64,7 +64,7 @@ namespace SmartFarmer.Plants
 
         public DateTime? LastIrrigation => IrrigationHistory.LastOrDefault();
 
-        public IList<DateTime> IrrigationHistory { get; private set; }
+        public List<DateTime> IrrigationHistory { get; private set; }
 
     }
 }

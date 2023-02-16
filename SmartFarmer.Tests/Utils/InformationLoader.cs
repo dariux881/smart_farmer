@@ -36,15 +36,19 @@ namespace SmartFarmer.Tests.Utils
                     var width = tokens[6].Trim();
                     var depth = tokens[7].Trim();
 
+                    var irrigationInfo = new FarmerIrrigationTaskInfo()
+                        {
+                            AmountOfWaterInLitersPerTime = double.Parse(waterAmount, CultureInfo.InvariantCulture),
+                            TimesPerWeek = int.Parse(waterTimes, CultureInfo.InvariantCulture)
+                        };
+
+                    FarmerIrrigationInfoProvider.Instance.AddFarmerService(irrigationInfo);
+
                     plants.Add(new FarmerPlant(
                         id + "", 
                         code, 
                         name,
-                        new FarmerIrrigationTaskInfo()
-                        {
-                            AmountOfWaterInLitersPerTime = double.Parse(waterAmount, CultureInfo.InvariantCulture),
-                            TimesPerWeek = int.Parse(waterTimes, CultureInfo.InvariantCulture)
-                        })
+                        irrigationInfo)
                     {
                         MonthToPlan = int.Parse(month, CultureInfo.InvariantCulture),
                         NumberOfWeeksToHarvest = int.Parse(weeksToHarvest, CultureInfo.InvariantCulture),

@@ -30,9 +30,9 @@ public class FarmerPlantInstanceProvider : IFarmerPlantInstanceProvider
         return id;
     }
 
-    public void AddFarmerService(IFarmerPlantInstance plant)
+    public bool AddFarmerService(IFarmerPlantInstance plant)
     {
-        _plants.TryAdd(plant.ID, plant);
+        return _plants.TryAdd(plant.ID, plant);
     }
 
     public IFarmerPlantInstance GetFarmerService(string plantId)

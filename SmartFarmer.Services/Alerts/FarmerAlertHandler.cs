@@ -1,7 +1,4 @@
-
 using System;
-using SmartFarmer.Plants;
-using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Alerts;
@@ -26,45 +23,19 @@ public class FarmerAlertHandler : IFarmerAlertHandler
             {
                 ID = _alertProvider.GenerateServiceId(),
                 Message = message,
+                When = DateTime.UtcNow,
                 Code = code,
+                RaisedByTaskId = taskId,
+                PlantInstanceId = plantInstanceId,
                 Level = level,
                 Severity = severity
             };
 
-        _alertProvider.AddFarmerService(alert);
+        var result = _alertProvider.AddFarmerService(alert);
 
-        NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(alert.ID));
-    }
-    
-    public void RaiseAlert(
-            IFarmerTask task,
-            IFarmerPlantInstance plant,
-            string code,
-            string message,
-            AlertLevel level,
-            AlertSeverity severity
-        )
-    {
-        var now = DateTime.UtcNow;
-
-        var alert =  
-            new FarmerAlert()
-                {
-                    ID = _alertProvider.GenerateServiceId(),
-                    RaisedByTaskId = task?.ID,
-                    When = now,
-                    PlantInstanceId = plant?.ID,
-                    Code = code,
-                    Message = message,
-                    Level = level,
-                    Severity = severity,
-                    MarkedAsRead = false
-                };
-
-        NewAlertCreated?.Invoke(
-            this, 
-            new FarmerAlertHandlerEventArgs(
-                alert.ID
-            ));
+        if (result)
+        {
+            NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(alert.ID));
+        }
     }
 }

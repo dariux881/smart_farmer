@@ -18,7 +18,9 @@ public class FarmerGround : IFarmerGround, IDisposable
     private List<IFarmerPlan> _plans;
     private List<IFarmerAlert> _alerts;
     private FarmerAlertHandler _alertHandler;
-    private IFarmerPlantInstanceProvider _plantsProvider;
+    private IFarmerPlantProvider _plantsProvider;
+    private IFarmerIrrigationInfoProvider _irrigationInfoProvider;
+    private IFarmerPlantInstanceProvider _plantsInstanceProvider;
     private IFarmerPlanProvider _planProvider;
     private IFarmerAlertProvider _alertProvider;
     private bool _buildAutoIrrigationPlan;
@@ -49,6 +51,8 @@ public class FarmerGround : IFarmerGround, IDisposable
             plantIds, 
             planIds, 
             alertIds,
+            FarmerPlantProvider.Instance,
+            FarmerIrrigationInfoProvider.Instance,
             FarmerPlantInstanceProvider.Instance, 
             FarmerPlanProvider.Instance, 
             FarmerAlertProvider.Instance, 
@@ -70,12 +74,14 @@ public class FarmerGround : IFarmerGround, IDisposable
         string[] plantIds,
         string[] planIds,
         string[] alertIds,
-        IFarmerPlantInstanceProvider plantProvider,
+        IFarmerPlantProvider plantProvider,
+        IFarmerIrrigationInfoProvider irrigationInfoProvider,
+        IFarmerPlantInstanceProvider plantInstanceProvider,
         IFarmerPlanProvider planProvider, 
         IFarmerAlertProvider alertProvider, 
         FarmerAlertHandler alertHandler,
         bool buildAutoIrrigationPlan = true)
-        : this(plantProvider, planProvider, alertProvider, alertHandler, buildAutoIrrigationPlan)
+        : this(plantProvider, irrigationInfoProvider, plantInstanceProvider, planProvider, alertProvider, alertHandler, buildAutoIrrigationPlan)
     {
         ID = id;
         GroundName = groundName;
@@ -90,7 +96,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         }
 
         _plants = plantIds?
-                    .Select(x => plantProvider?.GetFarmerService(x))
+                    .Select(x => plantInstanceProvider?.GetFarmerService(x))
                     .ToList()
                     ?? new List<IFarmerPlantInstance>();
 
@@ -108,7 +114,9 @@ public class FarmerGround : IFarmerGround, IDisposable
     }
 
     public FarmerGround(
-        IFarmerPlantInstanceProvider plantProvider,
+        IFarmerPlantProvider plantProvider,
+        IFarmerIrrigationInfoProvider irrigationInfoProvider,
+        IFarmerPlantInstanceProvider plantInstanceProvider,
         IFarmerPlanProvider planProvider,
         IFarmerAlertProvider alertProvider, 
         FarmerAlertHandler alertHandler,
@@ -119,7 +127,10 @@ public class FarmerGround : IFarmerGround, IDisposable
         _alerts = new List<IFarmerAlert>();
 
         _buildAutoIrrigationPlan = buildAutoIrrigationPlan;
+
         _plantsProvider = plantProvider;
+        _irrigationInfoProvider = irrigationInfoProvider;
+        _plantsInstanceProvider = plantInstanceProvider;
         _planProvider = planProvider;
         _alertProvider = alertProvider;
         _alertHandler = alertHandler;
@@ -188,21 +199,21 @@ public class FarmerGround : IFarmerGround, IDisposable
     {
         if (plantIds == null) throw new ArgumentNullException(nameof(plantIds));
 
-        this.AddPlants(plantIds.Select(x => _plantsProvider.GetFarmerService(x)).ToArray());
+        this.AddPlants(plantIds.Select(x => _plantsInstanceProvider.GetFarmerService(x)).ToArray());
     }
 
     public void AddPlant(string plant)
     {
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-        this.AddPlant(_plantsProvider.GetFarmerService(plant));
+        this.AddPlant(_plantsInstanceProvider.GetFarmerService(plant));
     }
 
     public void RemovePlant(string plant)
     {
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-        this.RemovePlant(_plantsProvider.GetFarmerService(plant));
+        this.RemovePlant(_plantsInstanceProvider.GetFarmerService(plant));
     }
 
     public void AddPlan(string planId)
@@ -290,10 +301,13 @@ public class FarmerGround : IFarmerGround, IDisposable
 
         // asking irrigation
         orderedPlants.ForEach(plant => 
-            GroundIrrigationPlan.AddIrrigationStep(
-                plant.PlantX, 
-                plant.PlantY, 
-                plant.Plant.IrrigationInfo));
+            {
+                var plantKind = _plantsProvider.GetFarmerService(plant.PlantKindID);
+
+                GroundIrrigationPlan.AddIrrigationStep(
+                    plant, 
+                    _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
+            });
     }
 
     private IReadOnlyCollection<IFarmerPlantInstance> OrderPlantsToMinimizeMovements()
