@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data;
+using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
@@ -78,5 +79,10 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public async Task<bool> MarkFarmerAlertAsRead(string userId, string id, bool read)
     {
         return await _repository.MarkFarmerAlertAsReadAsync(userId, id, read);
+    }
+
+    public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
+    {
+        return await _repository.AddFarmerPlantInstance(userId, data);
     }
 }

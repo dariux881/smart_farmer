@@ -10,6 +10,10 @@ public class FarmerUserTypeConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
+            
+        builder
             .HasMany(p => p.Authorizations)
             .WithMany();
     }

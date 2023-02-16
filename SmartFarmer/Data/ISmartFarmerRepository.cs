@@ -1,4 +1,3 @@
-using SmartFarmer.Plants;
 
 namespace SmartFarmer.Data;
 

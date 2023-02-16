@@ -9,6 +9,10 @@ public class FarmerAlertTypeConfiguration : IEntityTypeConfiguration<FarmerAlert
     public void Configure(EntityTypeBuilder<FarmerAlert> builder)
     {
         builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
+            
+        builder
             .HasOne(s => s.FarmerGround)
             .WithMany(p => p.Alerts)
             .HasForeignKey("FarmerGroundId");

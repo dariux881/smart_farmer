@@ -9,6 +9,10 @@ public class FarmerGroundTypeConfiguration : IEntityTypeConfiguration<FarmerGrou
     public void Configure(EntityTypeBuilder<FarmerGround> builder)
     {
         builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
+            
+        builder
             .Property(p => p.LengthInMeters)
             .IsRequired();
 

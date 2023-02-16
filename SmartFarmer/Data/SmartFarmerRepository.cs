@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
+using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Misc;
 using SmartFarmer.Plants;
@@ -255,6 +256,55 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             SmartFarmerLog.Exception(ex);
             return false;
         }
+
+        return true;
+    }
+
+    public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        var ground = await _dbContext
+            .Grounds
+                .SingleAsync(x => x.UserID == userId && x.ID == data.FarmerGroundId);
+
+        var plantKind = await _dbContext.Plants.FirstOrDefaultAsync(x => x.ID == data.PlantKindID);
+        if (plantKind == null)
+        {
+            throw new InvalidOperationException("invalid plant kind");
+        }
+
+        if (data.PlantX < 0 || data.PlantX >= Helpers.Utils.GetCellsFromMeters(ground.WidthInMeters) ||
+            data.PlantY < 0 || data.PlantY >= Helpers.Utils.GetCellsFromMeters(ground.LengthInMeters))
+        {
+            throw new InvalidOperationException("invalid position");
+        }
+
+        var existingPlantYn = 
+            await 
+                _dbContext
+                    .PlantsInstance
+                    .AnyAsync(x => x.PlantX == data.PlantX && x.PlantY == data.PlantY);
+
+        if (existingPlantYn)
+        {
+            throw new InvalidOperationException("place already occupied");
+        }
+
+        var plant = new FarmerPlantInstance
+        {
+            FarmerGroundId = data.FarmerGroundId,
+            PlantKindID = data.PlantKindID,
+            PlantDepth = data.PlantDepth ?? plantKind.PlantDepth,
+            PlantWidth = data.PlantWidth ?? plantKind.PlantWidth,
+            PlantX = data.PlantX,
+            PlantY = data.PlantY,
+            PlantedWhen = data.PlantedWhen ?? DateTime.UtcNow
+        };
+
+        await _dbContext.PlantsInstance.AddAsync(plant);
+        await _dbContext.SaveChangesAsync();
 
         return true;
     }

@@ -9,6 +9,10 @@ public class FarmerPlanStepTypeConfiguration : IEntityTypeConfiguration<FarmerPl
     public void Configure(EntityTypeBuilder<FarmerPlanStep> builder)
     {
         builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
+            
+        builder
             .HasOne(s => s.Plan)
             .WithMany(p => p.Steps)
             .HasForeignKey("PlanId");

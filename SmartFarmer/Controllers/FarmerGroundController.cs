@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Helpers;
 using SmartFarmer.Plants;
 using SmartFarmer.Services;
@@ -210,7 +211,7 @@ namespace SmartFarmer.Controllers
         
         [HttpGet("markAlert")]
         [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-        public async Task<ActionResult> markAlertAsRead(string alertId, bool read)
+        public async Task<ActionResult<bool>> markAlertAsRead(string alertId, bool read)
         {
             var userId = await GetUserIdByContext();
 
@@ -224,6 +225,23 @@ namespace SmartFarmer.Controllers
             return Ok(result);
         }
         
+        [HttpPost]
+        public async Task<ActionResult<bool>> AddPlant([FromBody] FarmerPlantRequestData data)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _groundProvider
+                .AddFarmerPlantInstance(userId, data);
+
+            if (result)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
         private async Task<string> GetUserIdByContext()
         {
             var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];

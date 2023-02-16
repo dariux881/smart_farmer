@@ -9,6 +9,10 @@ public class FarmerPlantInstanceTypeConfiguration : IEntityTypeConfiguration<Far
     public void Configure(EntityTypeBuilder<FarmerPlantInstance> builder)
     {
         builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
+            
+        builder
             .Property(p => p.PlantKindID)
             .IsRequired();
 

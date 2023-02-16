@@ -25,44 +25,43 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         var user = new User { ID = "user0", UserName="test", Password="test", Email="prova@test.it"};
 
         var readGroundAuth = new Authorization { ID = Constants.AUTH_READ_GROUND, Name="Read Ground" };
-        var editGroundAuth = new Authorization { ID = "editGround", Name="Change Ground adding plans and plants" };
-        var readUsersAuth = new Authorization { ID = "readUsers", Name="See current users" };
-        var editUsersAuth = new Authorization { ID = "editUsers", Name="Edit users, creating or deleting them, changing their permissions" };
+        var editGroundAuth = new Authorization { ID = Constants.AUTH_EDIT_GROUND, Name="Change Ground adding plans and plants" };
+        var readUsersAuth = new Authorization { ID = Constants.AUTH_READ_USERS, Name="See current users" };
+        var editUsersAuth = new Authorization { ID = Constants.AUTH_EDIT_USERS, Name="Edit users, creating or deleting them, changing their permissions" };
 
         user.Authorizations.Add(readGroundAuth);
 
-
         var irrInfo1 = new FarmerIrrigationTaskInfo {
-            ID = "ii0",
+            //ID = "ii0",
             AmountOfWaterInLitersPerTime = 1,
             TimesPerWeek = 1
         };
         var irrInfo2 = new FarmerIrrigationTaskInfo {
-            ID = "ii1",
+            //ID = "ii1",
             AmountOfWaterInLitersPerTime = 5,
             TimesPerWeek = 1
         };
 
         var plant1 = new FarmerPlant { 
-            ID = "plant1", 
+            //ID = "plant1", 
             Code = "123",
             FriendlyName="plant 1", 
             IrrigationInfoId = irrInfo1.ID };
         var plant2 = new FarmerPlant { 
-            ID = "plant2", 
+            //ID = "plant2", 
             Code = "124",
             FriendlyName="plant 2", 
             IrrigationInfoId = irrInfo2.ID };
 
         var ground1 = new DTOs.FarmerGround(this)
         { 
-            ID = "gID", 
+            //ID = "gID", 
             UserID="user0", 
             GroundName="Ground Name",
         };
 
         var plantInstance1 = new FarmerPlantInstance { 
-            ID = "P1", 
+            //ID = "P1", 
             PlantKindID=plant1.ID, 
             PlantName=plant1.FriendlyName, 
             PlantX=1, 
@@ -71,7 +70,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         };
 
         var plantInstance2 = new FarmerPlantInstance { 
-            ID = "P2", 
+            //ID = "P2", 
             PlantKindID=plant2.ID, 
             PlantName="pianta", 
             PlantX=10, 
@@ -82,20 +81,20 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         var plan1 = new FarmerPlan
         {
             GroundId = ground1.ID,
-            ID = "plan1",
+            //ID = "plan1",
             Name = "example plan"
         };
 
         var p1Step1 = new FarmerPlanStep
         {
-            ID = "p1s1",
+            //ID = "p1s1",
             PlanId = plan1.ID,
             BuildParameters = new object[] { 5.0, "abc"},
             TaskClassFullName = "taskClassFullName1"
         };
         var p1Step2 = new FarmerPlanStep
         {
-            ID = "p1s2",
+            //ID = "p1s2",
             PlanId = plan1.ID,
             TaskClassFullName = "taskClassFullName2",
             Delay = new System.TimeSpan(0, 0, 5)
@@ -103,7 +102,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var alert = new FarmerAlert
         {
-            ID = "alertId",
+            //ID = "alertId",
             FarmerGroundId = ground1.ID,
             Level = Alerts.AlertLevel.Warning,
             Severity = Alerts.AlertSeverity.Low
