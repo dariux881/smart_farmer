@@ -305,8 +305,7 @@ public class FarmerGround : IFarmerGround, IDisposable
                 var plantKind = _plantsProvider.GetFarmerService(plant.PlantKindID);
 
                 GroundIrrigationPlan.AddIrrigationStep(
-                    plant.PlantX, 
-                    plant.PlantY, 
+                    plant, 
                     _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
             });
     }

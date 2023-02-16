@@ -25,6 +25,7 @@ public class SmartFarmerDbContext : DbContext
         new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
         new FarmerPlanStepTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlanStep>());
         new FarmerAlertTypeConfiguration().Configure(modelBuilder.Entity<FarmerAlert>());
+        new FarmerIrrigationHistoryStepConfiguration().Configure(modelBuilder.Entity<IrrigationHistoryStep>());
 
         new FarmerUserTypeConfiguration().Configure(modelBuilder.Entity<User>());
     }
@@ -36,6 +37,7 @@ public class SmartFarmerDbContext : DbContext
     public DbSet<FarmerPlantInstance> PlantsInstance { get; set; }
     public DbSet<FarmerAlert> Alerts { get; set; }
     public DbSet<FarmerIrrigationTaskInfo> IrrigationInfo { get; set; }
+    public DbSet<IrrigationHistoryStep> IrrigationHistory { get; set; }
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserLogin> Logins { get; set; }

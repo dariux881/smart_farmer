@@ -1,7 +1,8 @@
 namespace SmartFarmer.Services;
 
-public interface ISmartFarmerGroundControllerService
-    : ISmartFarmerReadGroundControllerService, ISmartFarmerEditGroundControllerService
+public interface ISmartFarmerGroundControllerService : 
+    ISmartFarmerReadGroundControllerService, 
+    ISmartFarmerEditGroundControllerService
 {
 
 }

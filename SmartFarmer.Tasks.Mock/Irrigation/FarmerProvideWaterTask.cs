@@ -1,6 +1,8 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
@@ -18,8 +20,17 @@ namespace SmartFarmer.Tasks.Irrigation
         {
             if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
 
-            //TODO implement parsing by string for time span
-            var amount = (double)parameters[0];
+            double amount = 0.0;
+            bool result = false;
+
+            if (parameters[0] is string)
+            {
+                result = double.TryParse(parameters[0] as string, NumberStyles.Number, CultureInfo.InvariantCulture, out amount);
+            }
+            else if (parameters[0].IsNumber())
+            {
+                amount = (double)parameters[0];
+            }
 
             await ProvideWater(amount, token);
         }

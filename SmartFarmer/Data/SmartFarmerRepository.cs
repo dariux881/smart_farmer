@@ -145,6 +145,36 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
 
+    public async Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlant(string plantId, string userId = null)
+    {
+        if (string.IsNullOrEmpty(plantId)) throw new ArgumentNullException(nameof(plantId));
+
+        // check if plant can be read by userId
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var plant = await 
+                _dbContext
+                    .PlantsInstance
+                        .Where(x => x.ID == plantId)
+                        .Include(x => x.Ground)
+                        .FirstAsync();
+            
+            if (plant.Ground.UserID != userId)
+            {
+                throw new InvalidOperationException("user " + userId + " cannot access plant " + plantId);
+            }
+        }
+
+        var steps = 
+            await _dbContext
+                .IrrigationHistory
+                .Where(x => x.PlantInstanceId == plantId)
+                .OrderByDescending(x => x.IrrigationDt)
+                .ToListAsync();
+
+        return new IrrigationHistory { Steps = steps };
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
     {
         return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();
@@ -225,7 +255,6 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return await _dbContext
             .Alerts
                 .Where(p => p.FarmerGroundId == groundId)
-                //TODO evaluate include
                 .ToArrayAsync();
     }
     

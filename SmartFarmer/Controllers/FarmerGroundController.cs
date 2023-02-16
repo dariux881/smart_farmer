@@ -98,6 +98,24 @@ namespace SmartFarmer.Controllers
             return Ok(plant);
         }
         
+        [HttpGet("irrigationHistory")]
+        [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+        public async Task<ActionResult<IrrigationHistory>> IrrigationHistoryByPlant(string plantId)
+        {
+            var userId = await GetUserIdByContext();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var plant = 
+                await _groundProvider
+                    .GetFarmerIrrigationHistoryByPlantAsync(
+                        userId,
+                        plantId);
+
+            return Ok(plant);
+        }
+
         [HttpGet("plant")]
         public async Task<ActionResult<IFarmerPlant>> GetPlant(string id)
         {
@@ -225,7 +243,8 @@ namespace SmartFarmer.Controllers
             return Ok(result);
         }
         
-        [HttpPost]
+        [HttpPost("addPlant")]
+        [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
         public async Task<ActionResult<bool>> AddPlant([FromBody] FarmerPlantRequestData data)
         {
             var userId = await GetUserIdByContext();

@@ -50,6 +50,10 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerPlantsById(plantIds);
     }
 
+    public async Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlantAsync(string userId, string plantId)
+    {
+        return await _repository.GetFarmerIrrigationHistoryByPlant(plantId, userId);
+    }
     
     public async Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId)
     {
