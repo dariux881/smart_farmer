@@ -85,6 +85,11 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.MarkFarmerAlertAsReadAsync(userId, id, read);
     }
 
+    public async Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data)
+    {
+        return await _repository.CreateFarmerGround(userId, data);
+    }
+
     public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
     {
         return await _repository.AddFarmerPlantInstance(userId, data);

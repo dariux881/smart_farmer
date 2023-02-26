@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
+using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Misc;
@@ -287,6 +288,33 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         }
 
         return true;
+    }
+
+    public async Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        var groundCount = await 
+            _dbContext
+                .Grounds
+                .Where(g => g.UserID == userId)
+                .CountAsync() + 1; // +1 for the next automatic Ground Name
+
+        var ground = new FarmerGround
+        {
+            GroundName = data.GroundName ?? "FarmerGround_" + userId + "_" + groundCount,
+            Latitude = data.Latitude,
+            Longitude = data.Longitude,
+            WidthInMeters = data.WidthInMeters,
+            LengthInMeters = data.LengthInMeters,
+            UserID = userId
+        };
+
+        await _dbContext.Grounds.AddAsync(ground);
+        await _dbContext.SaveChangesAsync();
+
+        return ground;
     }
 
     public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)

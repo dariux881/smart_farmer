@@ -17,5 +17,6 @@ public interface ISmartFarmerGroundManagementRepository
     Task<IFarmerPlant> GetFarmerPlantById(string id);
     Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids);
 
+    Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
     Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
 }
