@@ -1,34 +1,38 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Movement;
 
 namespace SmartFarmer.Utils
 {
     public class FarmerToolsManager
     {
         private static readonly Lazy<FarmerToolsManager> _instance = new(() => new FarmerToolsManager());
+        private IFarmerToolManager _toolManager;
 
         public static FarmerToolsManager Instance => _instance.Value;
 
         public FarmerToolsManager()
         {
-            _currentlyMountedTool = FarmerTool.None;
+            _toolManager = 
+                FarmerDiscoveredTaskProvider
+                    .GetTaskDelegateByInterfaceFullName(
+                        typeof(IFarmerToolManager).FullName) as IFarmerToolManager;
         }
-
-        private FarmerTool _currentlyMountedTool;
 
         public FarmerTool GetCurrentlyMountedTool()
         {
-            return _currentlyMountedTool;
+            if (_toolManager == null) throw new InvalidOperationException("invalid tool manager");
+            return _toolManager.GetMountedTool();
         }
 
-        public async Task MountTool(FarmerTool tool)
+        public async Task MountTool(FarmerTool tool, CancellationToken token)
         {
-            //TODO refer to external tool replace executor
-            _currentlyMountedTool = tool;
+            if (_toolManager == null) throw new InvalidOperationException("invalid tool manager");
 
-            //TODO raise exception in case of mounting failure
-
-            await Task.CompletedTask;
+            // refer to external tool replace executor
+            await _toolManager.MountTool(tool, token);
         }
     }
 }

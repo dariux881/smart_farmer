@@ -9,6 +9,8 @@ namespace SmartFarmer.Tasks.Movement
 {
     public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask
     {
+        private int _currentX, _currentY;
+
         public FarmerMoveOnGridTask()
         {
             RequiredTool = FarmerTool.None;
@@ -30,11 +32,19 @@ namespace SmartFarmer.Tasks.Movement
 
             SmartFarmerLog.Debug($"moving to {x}, {y}");
             await Task.Delay(1000);
+            _currentX = x;
+            _currentY = y;
             SmartFarmerLog.Debug($"now on {x}, {y}");
 
             EndTask();
 
             await Task.CompletedTask;
+        }
+            
+        public void GetCurrentPosition(out int x, out int y)
+        {
+            x = _currentX;
+            y = _currentY;
         }
     }
 }

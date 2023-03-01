@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tasks.Mock", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.TestsPlan", "SmartFarmer.TestsPlan\SmartFarmer.TestsPlan.csproj", "{93BA8B70-1997-4B85-90FB-F66867132D85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.App", "SmartFarmer.App\SmartFarmer.App.csproj", "{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{93BA8B70-1997-4B85-90FB-F66867132D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93BA8B70-1997-4B85-90FB-F66867132D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93BA8B70-1997-4B85-90FB-F66867132D85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

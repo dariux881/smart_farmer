@@ -6,6 +6,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Utils
 {
+    [Obsolete]
     public static class FarmerTaskProvider
     {
         private static ConcurrentDictionary<Type, IFarmerTask> _resolvedMappings;
