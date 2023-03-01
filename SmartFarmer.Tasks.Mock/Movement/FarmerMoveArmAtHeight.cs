@@ -9,6 +9,8 @@ namespace SmartFarmer.Tasks.Movement
 {
     public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
     {
+        private int _currentHeight;
+        
         public FarmerMoveArmAtHeight()
         {
             RequiredTool = FarmerTool.None;
@@ -29,11 +31,17 @@ namespace SmartFarmer.Tasks.Movement
 
             SmartFarmerLog.Debug($"moving to height {heightInCm} cm");
             await Task.Delay(1000);
+            _currentHeight = heightInCm;
             SmartFarmerLog.Debug($"now on {heightInCm} cm");
 
             EndTask();
 
             await Task.CompletedTask;
+        }
+          
+        public int GetCurrentHeight()
+        {
+            return _currentHeight;
         }
     }
 }
