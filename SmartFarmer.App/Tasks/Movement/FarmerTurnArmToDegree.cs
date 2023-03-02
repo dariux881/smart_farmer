@@ -9,6 +9,8 @@ namespace SmartFarmer.Tasks.Movement;
 
 public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
 {
+    private double _currentDegrees;
+
     public FarmerTurnArmToDegree()
     {
         RequiredTool = FarmerTool.None;
@@ -28,11 +30,17 @@ public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
         PrepareTask();
 
         SmartFarmerLog.Debug($"turning at {degrees} degrees");
-        await Task.Delay(1000);
+        throw new NotImplementedException();
+        _currentDegrees = degrees;
         SmartFarmerLog.Debug($"now at {degrees} degrees");
 
         EndTask();
 
         await Task.CompletedTask;
+    }
+
+    public double GetCurrentDegrees()
+    {
+        return _currentDegrees;
     }
 }

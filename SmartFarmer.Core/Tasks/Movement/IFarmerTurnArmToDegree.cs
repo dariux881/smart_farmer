@@ -7,4 +7,5 @@ namespace SmartFarmer.Tasks.Movement;
 public interface IFarmerTurnArmToDegree : IFarmerTask
 {
     Task TurnArmToDegree(double degree, CancellationToken token);
+    double GetCurrentDegrees();
 }

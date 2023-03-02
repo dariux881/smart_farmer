@@ -14,7 +14,7 @@ namespace SmartFarmer.Tasks
 
         [JsonConstructor]
         public FarmerPlanStep(string id, string taskClassFullName, object[] buildParameters)
-            : this(id, FarmerDiscoveredTaskProvider.GetTaskDelegateByClassFullName(taskClassFullName), buildParameters)
+            : this(id, FarmerTaskProvider.GetTaskDelegateByClassFullName(taskClassFullName), buildParameters)
         {
             
         }

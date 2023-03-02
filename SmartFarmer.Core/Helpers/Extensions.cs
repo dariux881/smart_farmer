@@ -1,3 +1,6 @@
+using System;
+using System.Globalization;
+
 namespace SmartFarmer.Helpers;
 
 public static class Extensions
@@ -14,4 +17,29 @@ public static class Extensions
                 || value is double
                 || value is decimal;
     }
+
+    public static double GetDouble(this object number)
+    {
+        double x;
+        switch (number)
+        {
+            case string yStr:
+                x = double.Parse(yStr, CultureInfo.InvariantCulture);
+                break;
+            default:
+                if (number.IsNumber())
+                {
+                    x = (double)number;
+                }
+                else
+                {
+                    throw new InvalidCastException(number + " is not a valid number");
+                }
+
+                break;
+        }
+
+        return x;
+    }
+
 }

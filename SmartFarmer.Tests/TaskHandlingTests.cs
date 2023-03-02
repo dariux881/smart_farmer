@@ -15,7 +15,7 @@ namespace SmartFarmer.Tests
         {
             var type = typeof(IFarmerLeavesStatusChecker);
 
-            var task = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
+            var task = FarmerTaskProvider.GetTaskDelegateByType(type);
 
             Assert.IsNotNull(task);
             Assert.IsTrue(task is IFarmerLeavesStatusChecker);
@@ -26,8 +26,8 @@ namespace SmartFarmer.Tests
         {
             var type = typeof(IFarmerParasiteChecker);
 
-            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
-            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type);
+            var task1 = FarmerTaskProvider.GetTaskDelegateByType(type);
+            var task2 = FarmerTaskProvider.GetTaskDelegateByType(type);
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -40,8 +40,8 @@ namespace SmartFarmer.Tests
             var type1 = typeof(IFarmerLeavesStatusChecker);
             var type2 = typeof(IFarmerParasiteChecker);
 
-            var task1 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type1);
-            var task2 = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(type2);
+            var task1 = FarmerTaskProvider.GetTaskDelegateByType(type1);
+            var task2 = FarmerTaskProvider.GetTaskDelegateByType(type2);
 
             Assert.IsNotNull(task1);
             Assert.IsNotNull(task2);
@@ -57,7 +57,7 @@ namespace SmartFarmer.Tests
             Exception foundEx = null;
 
             try {
-                task = FarmerDiscoveredTaskProvider.GetTaskDelegateByType(
+                task = FarmerTaskProvider.GetTaskDelegateByType(
                     type, 
                     new [] {"SmartFarmer.MockedTasks.GenericCollection"});
             }

@@ -1,38 +1,101 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Misc;
+using SmartFarmer.Settings;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Movement;
 
-namespace SmartFarmer.Utils
+namespace SmartFarmer.Utils;
+
+public class FarmerToolsManager
 {
-    public class FarmerToolsManager
+    private static readonly Lazy<FarmerToolsManager> _instance = new(() => new FarmerToolsManager());
+    public static FarmerToolsManager Instance => _instance.Value;
+
+    private FarmerTool _currentlyMountedTool;
+    private FarmerPoint _toolsCollectorPosition;
+    private SemaphoreSlim _mountingToolSem;
+    private IFarmerMoveOnGridTask _moveOnGrid;
+    private IFarmerMoveArmAtHeight _moveHeight;
+
+    private FarmerToolsManager()
     {
-        private static readonly Lazy<FarmerToolsManager> _instance = new(() => new FarmerToolsManager());
-        private IFarmerToolManager _toolManager;
 
-        public static FarmerToolsManager Instance => _instance.Value;
+    }
 
-        public FarmerToolsManager()
+    public FarmerToolsManager(FarmerPoint toolsCollectorPosition)
+    {
+        _currentlyMountedTool = FarmerTool.None;
+        _mountingToolSem = new SemaphoreSlim(1);
+
+        _toolsCollectorPosition = 
+            UserDefinedSettingsProvider
+                .GetUserDefinedSettings(Configuration.LocalUserId)
+                .TOOLS_COLLECTOR_POSITION;
+
+        InitializeDependencies();
+    }
+
+
+    public FarmerTool GetCurrentlyMountedTool()
+    {
+        _mountingToolSem.Wait();
+
+        var tool = _currentlyMountedTool;
+
+        _mountingToolSem.Release();
+
+        return tool;
+    }
+
+    public async Task MountTool(FarmerTool tool, CancellationToken token)
+    {
+        var currentTool = GetCurrentlyMountedTool();
+        if (currentTool == tool || tool == FarmerTool.None)
         {
-            _toolManager = 
-                FarmerDiscoveredTaskProvider
-                    .GetTaskDelegateByInterfaceFullName(
-                        typeof(IFarmerToolManager).FullName) as IFarmerToolManager;
+            await Task.CompletedTask;
+            return;
         }
 
-        public FarmerTool GetCurrentlyMountedTool()
+        _mountingToolSem.Wait();
+        
+        SmartFarmerLog.Debug($"Mounting tool {tool}");
+
+        _moveOnGrid.GetCurrentPosition(out var x, out var y);
+
+        SmartFarmerLog.Debug($"Moving to tool positions");
+
+        if (_toolsCollectorPosition != null)
         {
-            if (_toolManager == null) throw new InvalidOperationException("invalid tool manager");
-            return _toolManager.GetMountedTool();
+            await _moveOnGrid.MoveToPosition(_toolsCollectorPosition.X, _toolsCollectorPosition.Y, token);
         }
 
-        public async Task MountTool(FarmerTool tool, CancellationToken token)
-        {
-            if (_toolManager == null) throw new InvalidOperationException("invalid tool manager");
+        //TODO mount tool
+        //TODO raise exception in case of mounting failure
+        
+        _currentlyMountedTool = tool;
+        SmartFarmerLog.Debug($"Tool {tool} mounted");
 
-            // refer to external tool replace executor
-            await _toolManager.MountTool(tool, token);
-        }
+        SmartFarmerLog.Debug($"Returning to original position");
+        await _moveOnGrid.MoveToPosition(x, y, token);
+
+        _mountingToolSem.Release();
+        await Task.CompletedTask;
+    }
+
+    private void InitializeDependencies()
+    {
+        _moveOnGrid = 
+            FarmerTaskProvider
+                .GetTaskDelegateByInterfaceFullName(
+                    typeof(IFarmerMoveOnGridTask).FullName)
+                    as IFarmerMoveOnGridTask;
+        
+        _moveHeight =
+            FarmerTaskProvider
+                .GetTaskDelegateByInterfaceFullName(
+                    typeof(IFarmerMoveArmAtHeight).FullName)
+                    as IFarmerMoveArmAtHeight;
     }
 }

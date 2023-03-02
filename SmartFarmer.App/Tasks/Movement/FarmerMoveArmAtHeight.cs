@@ -30,7 +30,7 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         PrepareTask();
 
         SmartFarmerLog.Debug($"moving to height {heightInCm} cm");
-        await Task.Delay(1000);
+        throw new NotImplementedException();
         _currentHeight = heightInCm;
 
         SmartFarmerLog.Debug($"now on {heightInCm} cm");

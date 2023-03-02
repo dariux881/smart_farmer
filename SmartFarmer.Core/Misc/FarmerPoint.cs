@@ -4,7 +4,7 @@ public class FarmerPoint : IDisposable
 {
     private IFarmerPointNotifier _updater;
 
-    public FarmerPoint(double x, double y, IFarmerPointNotifier updater, double? maxWidth = null, double? maxLength = null)
+    public FarmerPoint(double x, double y, IFarmerPointNotifier updater = null, double? maxWidth = null, double? maxLength = null)
     {
         this.X = x;
         this.Y = y;

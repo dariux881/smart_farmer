@@ -23,20 +23,20 @@ namespace SmartFarmer.Tasks.Implementation
             this.EditableSteps.Add(
                 new FarmerPlanStep(
                     ID + "_1",
-                    FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveOnGridTask)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveOnGridTask)),
                     new object[] {plant.PlantX, plant.PlantY}));
 
             // If water is not needed, then return, avoiding adding useless tasks
             this.EditableSteps.Add(
                 new FarmerPlanStep(
                     ID + "_2",
-                    FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerCheckIfWaterIsNeeded)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerCheckIfWaterIsNeeded)),
                     new object[] {plant.ID}));
 
             this.EditableSteps.Add(
                 new FarmerPlanStep(
                     ID + "_3",
-                    FarmerDiscoveredTaskProvider.GetTaskDelegateByType(typeof(IFarmerProvideWaterTask)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerProvideWaterTask)),
                     new object[] {irrigationInfo.AmountOfWaterInLitersPerTime}));
         }
 
