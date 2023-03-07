@@ -10,10 +10,12 @@ namespace SmartFarmer.Tasks.Movement;
 public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
 {
     private double _currentDegrees;
+    private IFarmerDeviceHandler _deviceHandler;
 
-    public FarmerTurnArmToDegree()
+    public FarmerTurnArmToDegree(IFarmerDeviceHandler handler)
     {
         RequiredTool = FarmerTool.None;
+        _deviceHandler = handler;
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)
@@ -22,21 +24,27 @@ public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
 
         var degrees = (double)parameters[0];
 
-        await TurnArmToDegree(degrees, token);
+        await TurnArmToDegrees(degrees, token);
     }
 
-    public async Task TurnArmToDegree(double degrees, CancellationToken token)
+    public async Task TurnArmToDegrees(double degrees, CancellationToken token)
     {
         PrepareTask();
 
         SmartFarmerLog.Debug($"turning at {degrees} degrees");
-        throw new NotImplementedException();
+
+        var result = await _deviceHandler.TurnArmToDegreesAsync(degrees, token);
+        if (!result)
+        {
+            SmartFarmerLog.Error("Error in turning arm", true);
+            EndTask();
+            return;
+        }
+        
         _currentDegrees = degrees;
         SmartFarmerLog.Debug($"now at {degrees} degrees");
 
         EndTask();
-
-        await Task.CompletedTask;
     }
 
     public double GetCurrentDegrees()

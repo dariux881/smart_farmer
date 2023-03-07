@@ -43,7 +43,7 @@ namespace SmartFarmer.Misc
             Log.Warning(message);
         }
 
-        public static void Error(string message)
+        public static void Error(string message, bool generateAlert = false)
         {
             Log.Error(message);
         }

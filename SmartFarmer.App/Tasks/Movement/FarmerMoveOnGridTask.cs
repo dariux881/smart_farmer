@@ -8,13 +8,15 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask
+public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisposable
 {
     private FarmerPoint _currentPosition;
+    private IFarmerDeviceHandler _deviceHandler;
 
-    public FarmerMoveOnGridTask(IFarmerGround ground)
+    public FarmerMoveOnGridTask(IFarmerGround ground, IFarmerDeviceHandler handler)
     {
         RequiredTool = FarmerTool.None;
+        _deviceHandler = handler;
 
         InitPosition(ground);
     }
@@ -35,12 +37,20 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask
         PrepareTask();
 
         SmartFarmerLog.Debug($"moving to {x}, {y}");
-        throw new NotImplementedException();
+
+        var result = await _deviceHandler.MoveOnGridAsync(new FarmerPoint(x, y), token);
+        if (!result)
+        {
+            SmartFarmerLog.Error("Error in moving device on grid", true);
+            EndTask();
+            return;
+        }
+
+        //TODO update position
+
         SmartFarmerLog.Debug($"now on {x}, {y}");
 
         EndTask();
-
-        await Task.CompletedTask;
     }
 
     public void GetCurrentPosition(out double x, out double y)
@@ -49,12 +59,17 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask
         y = _currentPosition.Y;
     }
 
+    public void Dispose()
+    {
+        _currentPosition?.Dispose();
+    }
+
     private void InitPosition(IFarmerGround ground)
     {
         _currentPosition = 
             new FarmerPoint(
                 0.0, 0.0, // expected 0,0 -> to reset when initializing
-                new FarmerPositionNotifier(),
+                _deviceHandler,
                 ground?.WidthInMeters,
                 ground?.LengthInMeters);
     }

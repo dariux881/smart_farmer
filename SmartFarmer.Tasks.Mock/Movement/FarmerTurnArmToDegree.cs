@@ -22,10 +22,10 @@ namespace SmartFarmer.Tasks.Movement
 
             var degrees = (double)parameters[0];
 
-            await TurnArmToDegree(degrees, token);
+            await TurnArmToDegrees(degrees, token);
         }
 
-        public async Task TurnArmToDegree(double degrees, CancellationToken token)
+        public async Task TurnArmToDegrees(double degrees, CancellationToken token)
         {
             PrepareTask();
 
