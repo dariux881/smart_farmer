@@ -74,5 +74,22 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
         await _repository.LogOutUser(token);
     }
     
+    public async Task<IFarmerSettings> GetUserSettings(string userId)
+    {
+        var settings = await _repository.GetUserSettings(userId);
+
+        if (settings == null)
+        {
+            settings = new DefaultFarmerSettings();
+        }
+
+        return settings;
+    }
+
+    public async Task<bool> SaveUserSettings(string userId, IFarmerSettings settings)
+    {
+        return await _repository.SaveUserSettings(userId, settings);
+    }
+
     protected abstract string GenerateToken(User user);
 }

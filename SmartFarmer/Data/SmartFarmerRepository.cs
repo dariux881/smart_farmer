@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
@@ -361,6 +362,43 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         };
 
         await _dbContext.PlantsInstance.AddAsync(plant);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<IFarmerSettings> GetUserSettings(string userId)
+    {
+        var userSettingsStr = (await 
+            _dbContext
+                .Users
+                    .FirstOrDefaultAsync(u => u.ID == userId)
+                    )?.SerializedSettings;
+
+        if (string.IsNullOrEmpty(userSettingsStr))
+        {
+            await Task.CompletedTask;
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<FarmerSettings>(userSettingsStr);
+    }
+
+    public async Task<bool> SaveUserSettings(string userId, IFarmerSettings settings)
+    {
+        if (userId == null) throw new ArgumentNullException(nameof(userId));
+        if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+        // check user
+        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ID == userId);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // save settings
+        user.SerializedSettings = JsonSerializer.Serialize(settings);
         await _dbContext.SaveChangesAsync();
 
         return true;

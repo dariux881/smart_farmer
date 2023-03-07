@@ -22,6 +22,9 @@ public class User : IFarmerService
     public string Password { get; set; }
 
     [JsonIgnore]
+    public string SerializedSettings { get; set; }
+
+    [JsonIgnore]
     public List<Authorization> Authorizations { get; set; }
     public IReadOnlyCollection<string> AuthorizationIds => 
         Authorizations?
