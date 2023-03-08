@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Alerts;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
@@ -36,7 +37,21 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         var result = await _deviceHandler.MoveArmAtheightAsync(heightInCm, token);
         if (!result)
         {
-            SmartFarmerLog.Error("Error in changing height", true);
+            var message = "Error in changing height";
+
+            SmartFarmerLog
+                .Error(
+                    message, 
+                    new FarmerAlert()
+                    {
+                        When = DateTime.UtcNow,
+                        Message = message,
+                        RaisedByTaskId = this.ID,
+                        Level = AlertLevel.Error,
+                        Severity = AlertSeverity.High,
+                        Code = AlertCode.BlockedArm
+                    });
+
             EndTask();
             return;
         }

@@ -2,61 +2,85 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using SmartFarmer.Alerts;
+using SmartFarmer.Utils;
 
-namespace SmartFarmer.Misc
+namespace SmartFarmer.Misc;
+
+public static class SmartFarmerLog 
 {
-    public static class SmartFarmerLog 
+    private static IFarmerAlertProvider _alertProvider;
+
+    static SmartFarmerLog()
     {
-        static SmartFarmerLog()
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+            .Build();
+
+        SmartFarmerLog.InitLogger(configuration);
+    }
+
+    private static void InitLogger(IConfiguration configuration)
+    {
+        if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+            .CreateLogger();
+
+        Log.Information("logger created");
+    }
+
+    public static void SetAlertProvider(IFarmerAlertProvider alertProvider)
+    {
+        _alertProvider = alertProvider;
+    }
+
+    public static void Information(string message)
+    {
+        Log.Information(message);
+    }
+
+    public static void Debug(string message)
+    {
+        Log.Debug(message);
+    }
+
+    public static void Warning(string message, IFarmerAlert alert = null)
+    {
+        Log.Warning(message);
+
+        if (alert != null && _alertProvider != null)
         {
-            // Log.Logger = new LoggerConfiguration()
-            //     .MinimumLevel.Debug()
-            //     //.WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day)
-            //     .WriteTo.Console()
-            //     .CreateLogger();
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
-                .Build();
-
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
-                .CreateLogger();
-
-            Log.Information("logger created");
+            _alertProvider.AddFarmerService(alert);
         }
+    }
 
-        public static void Information(string message)
+    public static void Error(string message, IFarmerAlert alert = null)
+    {
+        Log.Error(message);
+
+        if (alert != null && _alertProvider != null)
         {
-            Log.Information(message);
+            _alertProvider.AddFarmerService(alert);
         }
+    }
 
-        public static void Debug(string message)
+    public static void Exception(Exception ex, IFarmerAlert alert = null)
+    {
+        var innerMessage = ex?.InnerException != null ? 
+            "\n" + ex?.InnerException.Message : 
+            string.Empty;
+
+        Log.Error("[EXC] " + ex?.Message + 
+                    innerMessage +
+                    "\n" + ex?.StackTrace);
+
+        if (alert != null && _alertProvider != null)
         {
-            Log.Debug(message);
-        }
-
-        public static void Warning(string message)
-        {
-            Log.Warning(message);
-        }
-
-        public static void Error(string message, bool generateAlert = false)
-        {
-            Log.Error(message);
-        }
-
-        public static void Exception(Exception ex)
-        {
-            var innerMessage = ex?.InnerException != null ? 
-                "\n" + ex?.InnerException.Message : 
-                string.Empty;
-
-            Log.Error("[EXC] " + ex?.Message + 
-                        innerMessage +
-                        "\n" + ex?.StackTrace);
+            _alertProvider.AddFarmerService(alert);
         }
     }
 }

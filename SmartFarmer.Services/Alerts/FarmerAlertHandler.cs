@@ -17,7 +17,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-    public void RaiseAlert(string message, string code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
+    public void RaiseAlert(string message, AlertCode code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
     {
         var alert = new FarmerAlert
             {

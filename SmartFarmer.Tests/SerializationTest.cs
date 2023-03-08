@@ -339,7 +339,7 @@ namespace SmartFarmer.Tests
 
             for (int i=0; i<alertCount; i++)
             {
-                alertHandler.RaiseAlert("message " + i, null, null, null, AlertLevel.Warning, AlertSeverity.Low);
+                alertHandler.RaiseAlert("message " + i, AlertCode.Unknown, null, null, AlertLevel.Warning, AlertSeverity.Low);
             }
 
             Assert.AreEqual(receivedAlerts.Count, _ground.AlertIds.Count);

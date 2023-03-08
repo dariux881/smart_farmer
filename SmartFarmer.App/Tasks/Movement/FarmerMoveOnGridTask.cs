@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Alerts;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
@@ -41,12 +42,24 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         var result = await _deviceHandler.MoveOnGridAsync(new FarmerPoint(x, y), token);
         if (!result)
         {
-            SmartFarmerLog.Error("Error in moving device on grid", true);
+            var message = "Error in moving device on grid";
+
+            SmartFarmerLog
+                .Error(
+                    message, 
+                    new FarmerAlert()
+                    {
+                        When = DateTime.UtcNow,
+                        Message = message,
+                        RaisedByTaskId = this.ID,
+                        Level = AlertLevel.Error,
+                        Severity = AlertSeverity.High,
+                        Code = AlertCode.BlockedOnGrid
+                    });
+                    
             EndTask();
             return;
         }
-
-        //TODO update position
 
         SmartFarmerLog.Debug($"now on {x}, {y}");
 

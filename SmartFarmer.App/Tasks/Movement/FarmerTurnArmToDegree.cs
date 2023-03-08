@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Alerts;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
@@ -36,7 +37,21 @@ public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
         var result = await _deviceHandler.TurnArmToDegreesAsync(degrees, token);
         if (!result)
         {
-            SmartFarmerLog.Error("Error in turning arm", true);
+            var message = "Error in turning arm";
+
+            SmartFarmerLog
+                .Error(
+                    message, 
+                    new FarmerAlert()
+                    {
+                        When = DateTime.UtcNow,
+                        Message = message,
+                        RaisedByTaskId = this.ID,
+                        Level = AlertLevel.Error,
+                        Severity = AlertSeverity.High,
+                        Code = AlertCode.BlockedArm
+                    });
+                    
             EndTask();
             return;
         }
