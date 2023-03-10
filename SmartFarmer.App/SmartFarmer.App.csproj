@@ -14,4 +14,16 @@
     <ProjectReference Include="..\SmartFarmer.Core\SmartFarmer.Core.csproj" />
     <ProjectReference Include="..\SmartFarmer.Services\SmartFarmer.Services.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.Production.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

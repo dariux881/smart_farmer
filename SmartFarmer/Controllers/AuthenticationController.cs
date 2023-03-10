@@ -25,6 +25,7 @@ public class AuthenticationController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<string>> LogIn([FromBody] LoginRequestData userLoginData)
     {
+        //TODO encrypt
         var token = await _userManager.LogInUser(userLoginData.UserName, userLoginData.Password, userLoginData.Parameters);
 
         if (string.IsNullOrEmpty(token)) {
