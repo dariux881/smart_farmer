@@ -25,11 +25,16 @@ public class Program
 
         var apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
 
-        Console.WriteLine("Hello World!");
-
         var httpReq = new HttpRequest();
 
-        var result = await httpReq.GetAsync(SmartFarmerApiConstants.GET_GROUNDS);
-        Console.WriteLine(result);
+        var result = await httpReq.GetAsync(SmartFarmerApiConstants.GET_GROUNDS, System.Threading.CancellationToken.None);
+
+        if (result != null && result.IsSuccessStatusCode)
+        {
+            SmartFarmerLog.Debug(await result.Content.ReadAsStringAsync());
+            return;
+        }
+
+        SmartFarmerLog.Debug(result.StatusCode.ToString());
     }
 }

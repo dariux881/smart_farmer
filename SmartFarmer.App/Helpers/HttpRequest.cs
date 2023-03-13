@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using SmartFarmer.Misc;
@@ -14,13 +15,20 @@ public class HttpRequest
 {
     public Exception LastException {get; private set; }
 
-    public async Task<string> GetAsync(string uri, List<KeyValuePair<string, string>> parameters = null, bool includeAuthentication = true)
+    public async Task<HttpResponseMessage> GetAsync(
+        string uri, 
+        CancellationToken token,
+        List<KeyValuePair<string, string>> parameters = null, 
+        bool includeAuthentication = true)
     {
         using (var client = new HttpClient())
         {
             PrepareHttpClient(client, includeAuthentication);
 
-            var query = HttpUtility.ParseQueryString(uri);
+            var builder = new UriBuilder(client.BaseAddress + uri);
+            builder.Port = client.BaseAddress.Port;
+
+            var query = HttpUtility.ParseQueryString(builder.Query);
             if (parameters != null && parameters.Any())
             {
                 foreach (var parameter in parameters)
@@ -28,14 +36,15 @@ public class HttpRequest
                     query[parameter.Key] = parameter.Value;
                 }
             }
-            string queryString = query.ToString();
+            builder.Query = query.ToString();
+            var url = builder.ToString();
 
             try
             {
-                string responseBody = await client.GetStringAsync(queryString);
-                SmartFarmerLog.Debug("Response received for uri=\"" + queryString + "\"");
+                var response = await client.GetAsync(url, token);
+                SmartFarmerLog.Debug("Response received for uri=\"" + url + "\"");
 
-                return responseBody;
+                return response;
             }
             catch (HttpRequestException e)
             {
@@ -46,8 +55,12 @@ public class HttpRequest
         }
     }
 
-    
-    public async Task<string> PostAsync<T>(string uri, T body, List<KeyValuePair<string, string>> parameters = null, bool includeAuthentication = true)
+    public async Task<string> PostAsync<T>(
+        string uri, 
+        T body,
+        CancellationToken token, 
+        List<KeyValuePair<string, string>> parameters = null, 
+        bool includeAuthentication = true)
     {
         using (var client = new HttpClient())
         {
@@ -55,7 +68,7 @@ public class HttpRequest
 
             try
             {
-                var response = await client.PostAsJsonAsync(uri, body);
+                var response = await client.PostAsJsonAsync(uri, body, token);
                 SmartFarmerLog.Debug("Response received for uri=\"" + uri+ "\"");
 
                 if (response.IsSuccessStatusCode)

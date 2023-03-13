@@ -22,7 +22,7 @@ public class AuthenticationController : ControllerBase
         _userManager = userManager;
     }
 
-    [HttpPost]
+    [HttpPost("LogIn")]
     public async Task<ActionResult<string>> LogIn([FromBody] LoginRequestData userLoginData)
     {
         //TODO encrypt
@@ -35,7 +35,7 @@ public class AuthenticationController : ControllerBase
         return Ok(token);
     }
     
-    [HttpGet]
+    [HttpGet("LogOut")]
     public async Task<ActionResult> LogOut(string token)
     {
         await _userManager.LogOutUser(token);
@@ -43,7 +43,7 @@ public class AuthenticationController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet]
+    [HttpGet("GetSettings")]
     public async Task<ActionResult<FarmerSettings>> GetUserSettings()
     {
         var userId = await GetUserIdByContext();
@@ -60,7 +60,7 @@ public class AuthenticationController : ControllerBase
     }
     
     [Authorize]
-    [HttpPost]
+    [HttpPost("SaveSettings")]
     public async Task<ActionResult<bool>> SaveUserSettings([FromBody] FarmerSettings settings)
     {
         var userId = await GetUserIdByContext();

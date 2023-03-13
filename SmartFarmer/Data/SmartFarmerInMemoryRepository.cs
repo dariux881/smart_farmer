@@ -42,6 +42,9 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             TimesPerWeek = 1
         };
 
+        _dbContext.IrrigationInfo.AddRange(new [] {irrInfo1, irrInfo2 });
+        _dbContext.SaveChanges();
+
         var plant1 = new FarmerPlant { 
             //ID = "plant1", 
             Code = "123",
@@ -59,6 +62,10 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             UserID="user0", 
             GroundName="Ground Name",
         };
+
+        _dbContext.Grounds.Add(ground1);
+        _dbContext.Plants.AddRange(new [] {plant1, plant2});
+        _dbContext.SaveChanges();
 
         var plantInstance1 = new FarmerPlantInstance { 
             //ID = "P1", 
@@ -84,6 +91,9 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             //ID = "plan1",
             Name = "example plan"
         };
+
+        _dbContext.Plans.Add(plan1);
+        _dbContext.SaveChanges();
 
         var p1Step1 = new FarmerPlanStep
         {
@@ -114,18 +124,11 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.Authorizations.Add(readUsersAuth);
         _dbContext.Authorizations.Add(editUsersAuth);
 
-        _dbContext.IrrigationInfo.AddRange(new [] {irrInfo1, irrInfo2 });
-        _dbContext.Plants.AddRange(new [] {plant1, plant2});
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
-        _dbContext.Plans.Add(plan1);
         _dbContext.PlanSteps.Add(p1Step1);
         _dbContext.PlanSteps.Add(p1Step2);
 
         _dbContext.Alerts.Add(alert);
-
-        _dbContext.SaveChanges();
-
-        _dbContext.Grounds.Add(ground1);
 
         _dbContext.SaveChanges();
     }
