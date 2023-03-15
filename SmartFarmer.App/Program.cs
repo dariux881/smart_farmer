@@ -29,12 +29,18 @@ public class Program
 
         var result = await httpReq.GetAsync(SmartFarmerApiConstants.GET_GROUNDS, System.Threading.CancellationToken.None);
 
-        if (result != null && result.IsSuccessStatusCode)
+        if (result == null)
+        {
+            SmartFarmerLog.Error("Invalid response");
+            return;
+        }
+
+        if (result.IsSuccessStatusCode)
         {
             SmartFarmerLog.Debug(await result.Content.ReadAsStringAsync());
             return;
         }
 
-        SmartFarmerLog.Debug(result.StatusCode.ToString());
+        SmartFarmerLog.Error(result.StatusCode.ToString());
     }
 }
