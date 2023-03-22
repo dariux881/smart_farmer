@@ -7,7 +7,8 @@
             "preLaunchTask": "build",
             "request": "launch",
             "console": "integratedTerminal",
-            "program": "${workspaceFolder}/SmartFarmer.App/bin/Debug/net6.0/SmartFarmer.App.exe",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceFolder}/SmartFarmer.App/bin/Debug/net6.0/SmartFarmer.App.dll",
         },
         {
             // Use IntelliSense to find out which attributes exist for C# debugging
