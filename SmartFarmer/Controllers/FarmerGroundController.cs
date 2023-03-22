@@ -212,7 +212,7 @@ namespace SmartFarmer.Controllers
             return Ok(alerts?.Length);
         }
 
-        [HttpGet("alertsCountInGround")]
+        [HttpGet("alertsCountToReadInGround")]
         [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
         public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetAlertsToReadCountByGround(string id)
         {
