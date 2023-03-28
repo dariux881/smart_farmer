@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Data.Alerts;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
@@ -47,9 +48,8 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
             SmartFarmerLog
                 .Error(
                     message, 
-                    new FarmerAlert()
+                    new FarmerAlertRequestData()
                     {
-                        When = DateTime.UtcNow,
                         Message = message,
                         RaisedByTaskId = this.ID,
                         Level = AlertLevel.Error,

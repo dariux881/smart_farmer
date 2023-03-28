@@ -2,6 +2,7 @@ using NUnit.Framework;
 using SmartFarmer.Alerts;
 using SmartFarmer.Utils;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SmartFarmer.Tests
 {
@@ -22,7 +23,7 @@ namespace SmartFarmer.Tests
         }
 
         [Test]
-        public void RaisingAlert_ExpectedGroundFound()
+        public async Task RaisingAlert_ExpectedGroundFound()
         {
             var alertHandler = FarmerAlertHandler.Instance;
 
@@ -32,16 +33,16 @@ namespace SmartFarmer.Tests
 
             var message = "test";
 
-            alertHandler.RaiseAlert(message, AlertCode.Unknown, null, null, AlertLevel.Error, AlertSeverity.Low);
+            await alertHandler.RaiseAlert(message, AlertCode.Unknown, null, null, AlertLevel.Error, AlertSeverity.Low);
 
             Assert.IsNotEmpty(_ground.AlertIds);
-            var alert = 
-                _ground
-                    .AlertIds
-                        .Select(x => FarmerAlertProvider.Instance.GetFarmerService(x))
-                        .FirstOrDefault(x => x.Message == message);
 
-            Assert.IsNotNull(alert);
+            foreach (var alertId in _ground.AlertIds)
+            {
+                var receivedAlert = await FarmerAlertProvider.Instance.GetFarmerService(alertId);
+                Assert.IsNotNull(receivedAlert);
+                Assert.AreEqual(message, receivedAlert.Message);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 using SmartFarmer.Utils;
@@ -11,7 +12,7 @@ namespace SmartFarmer.Tests.Utils
 {
     public class InformationLoader
     {
-        public static IEnumerable<IFarmerPlant> LoadPlantsFromCsvFile(string filename)
+        public static async Task<IEnumerable<IFarmerPlant>> LoadPlantsFromCsvFile(string filename)
         {
             List<IFarmerPlant> plants = new List<IFarmerPlant>();
 
@@ -42,7 +43,7 @@ namespace SmartFarmer.Tests.Utils
                             TimesPerWeek = int.Parse(waterTimes, CultureInfo.InvariantCulture)
                         };
 
-                    FarmerIrrigationInfoProvider.Instance.AddFarmerService(irrigationInfo);
+                    await FarmerIrrigationInfoProvider.Instance.AddFarmerService(irrigationInfo);
 
                     plants.Add(new FarmerPlant(
                         id + "", 
@@ -63,7 +64,7 @@ namespace SmartFarmer.Tests.Utils
             return plants;
         }
 
-        public static IEnumerable<IFarmerPlantInstance> LoadPlantInstanceFromCsvFile(
+        public static async Task<IEnumerable<IFarmerPlantInstance>> LoadPlantInstanceFromCsvFile(
             string filename)
         {
             List<IFarmerPlantInstance> plantsInstance = new List<IFarmerPlantInstance>();
@@ -88,7 +89,7 @@ namespace SmartFarmer.Tests.Utils
                 var x = tokens[3].Trim();
                 var y = tokens[4].Trim();
 
-                var plantKind = FarmerPlantProvider.Instance.GetFarmerService(kind);
+                var plantKind = await FarmerPlantProvider.Instance.GetFarmerService(kind);
 
                 if (!numberByPlant.ContainsKey(plantKind.ID))
                 {

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SmartFarmer.Data.Security;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Helpers;
 using SmartFarmer.Services;
@@ -23,7 +24,7 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("LogIn")]
-    public async Task<ActionResult<string>> LogIn([FromBody] LoginRequestData userLoginData)
+    public async Task<ActionResult<LoginResponseData>> LogIn([FromBody] LoginRequestData userLoginData)
     {
         //TODO encrypt
         var token = await _userManager.LogInUser(userLoginData.UserName, userLoginData.Password, userLoginData.Parameters);
@@ -32,7 +33,12 @@ public class AuthenticationController : ControllerBase
             return Unauthorized();
         }
 
-        return Ok(token);
+        var response = new LoginResponseData()
+        {
+            Token = token
+        };
+
+        return Ok(response);
     }
     
     [HttpGet("LogOut")]

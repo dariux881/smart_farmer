@@ -1,8 +1,9 @@
+using System.Threading.Tasks;
+
 namespace SmartFarmer.Utils;
 
 public interface IFarmerServiceProvider<T> where T : IFarmerService
 {
-    bool AddFarmerService(T service);
-    string GenerateServiceId();
-    T GetFarmerService(string serviceId);
+    Task<string> AddFarmerService(T service);
+    Task<T> GetFarmerService(string serviceId);
 }

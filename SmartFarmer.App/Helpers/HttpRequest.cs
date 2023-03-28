@@ -18,7 +18,7 @@ public class HttpRequest
     public async Task<HttpResponseMessage> GetAsync(
         string uri, 
         CancellationToken token,
-        List<KeyValuePair<string, string>> parameters = null, 
+        KeyValuePair<string, string>[] parameters = null, 
         bool includeAuthentication = true)
     {
         using (var client = new HttpClient())
@@ -55,11 +55,11 @@ public class HttpRequest
         }
     }
 
-    public async Task<string> PostAsync<T>(
+    public async Task<HttpResponseMessage> PostAsync<T>(
         string uri, 
         T body,
         CancellationToken token, 
-        List<KeyValuePair<string, string>> parameters = null, 
+        KeyValuePair<string, string>[] parameters = null, 
         bool includeAuthentication = true)
     {
         using (var client = new HttpClient())
@@ -70,15 +70,7 @@ public class HttpRequest
             {
                 var response = await client.PostAsJsonAsync(uri, body, token);
                 SmartFarmerLog.Debug("Response received for uri=\"" + uri+ "\"");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Get the URI of the created resource.
-                    var returnContent = await response.Content?.ReadAsStringAsync();
-                    return returnContent;
-                }
-
-                return null;
+                return response;
             }
             catch (HttpRequestException e)
             {
@@ -100,7 +92,7 @@ public class HttpRequest
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     SmartFarmerApiConstants.USER_AUTHENTICATION_HEADER_KEY, 
-                    ApiConfiguration.Token);
+                    LocalConfiguration.Token);
         }
     }
 }

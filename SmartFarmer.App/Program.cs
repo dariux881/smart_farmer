@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Utils;
@@ -14,7 +16,9 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        SmartFarmerLog.SetAlertProvider(FarmerAlertProvider.Instance);
+        InitializeServices();
+
+        SmartFarmerLog.SetAlertHandler(FarmerServiceLocator.GetService<IFarmerAlertHandler>(true));
 
         var builder = new ConfigurationBuilder()
                 .SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location))
@@ -25,22 +29,48 @@ public class Program
 
         var apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
 
-        var httpReq = new HttpRequest();
+        var user = new Data.Security.LoginRequestData() {
+                UserName = "test", 
+                Password = "test"
+            };
+        // login
+        var loginResponse = await FarmerRequestHelper.Login(
+            user, 
+            CancellationToken.None);
 
-        var result = await httpReq.GetAsync(SmartFarmerApiConstants.GET_GROUNDS, System.Threading.CancellationToken.None);
-
-        if (result == null)
+        // save login result
+        if (loginResponse == null)
         {
-            SmartFarmerLog.Error("Invalid response");
+            SmartFarmerLog.Error("Invalid login for user " + user.UserName);
             return;
         }
 
-        if (result.IsSuccessStatusCode)
+        LocalConfiguration.LoggedUserId = loginResponse.UserId;
+        LocalConfiguration.Token = loginResponse.Token;
+
+        // get grounds
+        var grounds = await FarmerRequestHelper.GetGrounds(CancellationToken.None);
+        if (grounds == null)
         {
-            SmartFarmerLog.Debug(await result.Content.ReadAsStringAsync());
+            SmartFarmerLog.Error("invalid grounds");
             return;
         }
 
-        SmartFarmerLog.Error(result.StatusCode.ToString());
+        if (!grounds.Any())
+        {
+            SmartFarmerLog.Debug("no assigned grounds");
+            return;
+        }
+
+        SmartFarmerLog.Debug("List of grounds:\n\t" + grounds.Select(x => x.ID).Aggregate((g1, g2) => g1 + ", " + g2));
+
+        var ground = await FarmerRequestHelper.GetGround(grounds.First().ID, CancellationToken.None);
+    }
+
+    private static void InitializeServices()
+    {
+        FarmerServiceLocator.InitializeServiceLocator();
+
+        FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => new FarmerAlertHandler());
     }
 }

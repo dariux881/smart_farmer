@@ -1,7 +1,7 @@
 
 using System;
 
-namespace SmartFarmer.DTOs.Plants;
+namespace SmartFarmer.Data.Plants;
 
 public class FarmerPlantRequestData
 {

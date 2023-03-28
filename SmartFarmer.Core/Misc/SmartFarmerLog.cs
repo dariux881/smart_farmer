@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using SmartFarmer.Alerts;
@@ -10,7 +11,7 @@ namespace SmartFarmer.Misc;
 
 public static class SmartFarmerLog 
 {
-    private static IFarmerAlertProvider _alertProvider;
+    private static IFarmerAlertHandler _alertHandler;
 
     static SmartFarmerLog()
     {
@@ -34,9 +35,9 @@ public static class SmartFarmerLog
         Log.Information("logger created");
     }
 
-    public static void SetAlertProvider(IFarmerAlertProvider alertProvider)
+    public static void SetAlertHandler(IFarmerAlertHandler alertHandler)
     {
-        _alertProvider = alertProvider;
+        _alertHandler = alertHandler;
     }
 
     public static void Information(string message)
@@ -49,27 +50,27 @@ public static class SmartFarmerLog
         Log.Debug(message);
     }
 
-    public static void Warning(string message, IFarmerAlert alert = null)
+    public static void Warning(string message, FarmerAlertRequestData alert = null)
     {
         Log.Warning(message);
 
-        if (alert != null && _alertProvider != null)
+        if (alert != null && _alertHandler != null)
         {
-            _alertProvider.AddFarmerService(alert);
+            Task.Run(async () => await _alertHandler.RaiseAlert(alert));
         }
     }
 
-    public static void Error(string message, IFarmerAlert alert = null)
+    public static void Error(string message, FarmerAlertRequestData alert = null)
     {
         Log.Error(message);
 
-        if (alert != null && _alertProvider != null)
+        if (alert != null && _alertHandler != null)
         {
-            _alertProvider.AddFarmerService(alert);
+            Task.Run(async () => await _alertHandler.RaiseAlert(alert));
         }
     }
 
-    public static void Exception(Exception ex, IFarmerAlert alert = null)
+    public static void Exception(Exception ex, FarmerAlertRequestData alert = null)
     {
         var innerMessage = ex?.InnerException != null ? 
             "\n" + ex?.InnerException.Message : 
@@ -79,9 +80,9 @@ public static class SmartFarmerLog
                     innerMessage +
                     "\n" + ex?.StackTrace);
 
-        if (alert != null && _alertProvider != null)
+        if (alert != null && _alertHandler != null)
         {
-            _alertProvider.AddFarmerService(alert);
+           Task.Run(async () => await _alertHandler.RaiseAlert(alert));
         }
     }
 }

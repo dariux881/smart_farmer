@@ -25,5 +25,4 @@ public interface ISmartFarmerReadGroundControllerService
 
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId);
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids);
-    Task<bool> MarkFarmerAlertAsRead(string userId, string id, bool read);
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
 using SmartFarmer.DTOs;
+using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Misc;
@@ -260,6 +261,56 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
     
+    public async Task<string> CreateFarmerAlert(string userId, FarmerAlertRequestData data)
+    {
+        var grounds = new List<string>();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+        }
+
+        if (!grounds.Any())
+        {
+            await Task.CompletedTask;
+            return null;
+        }
+
+        var groundId = data.FarmerGroundId;
+        if (!grounds.Contains(groundId))
+        {
+            await Task.CompletedTask;
+            throw new InvalidOperationException("Ground " + groundId + " is not held by user " + userId);
+        }
+        
+        var alert = new FarmerAlert
+            {
+                FarmerGroundId = groundId,
+                RaisedByTaskId = data.RaisedByTaskId,
+                PlantInstanceId = data.PlantInstanceId,
+                Message = data.Message,
+                Level = data.Level,
+                Severity = data.Severity,
+                Code = data.Code,
+                When = DateTime.UtcNow,
+                MarkedAsRead = false
+            };
+
+        try
+        {
+            _dbContext.Alerts.Add(alert);
+
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return null;
+        }
+
+        return alert.ID;
+    }
+
     public async Task<bool> MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
     {
         var grounds = new List<string>();

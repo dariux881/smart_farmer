@@ -1,6 +1,4 @@
 using System;
-using SmartFarmer.Tasks.Generic;
-using SmartFarmer.Plants;
 
 namespace SmartFarmer.Alerts
 {

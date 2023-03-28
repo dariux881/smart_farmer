@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Data.Alerts;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
@@ -42,9 +43,8 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
             SmartFarmerLog
                 .Error(
                     message, 
-                    new FarmerAlert()
+                    new FarmerAlertRequestData()
                     {
-                        When = DateTime.UtcNow,
                         Message = message,
                         RaisedByTaskId = this.ID,
                         Level = AlertLevel.Error,

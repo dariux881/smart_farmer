@@ -1,47 +1,16 @@
 
 using System;
-using System.Collections.Concurrent;
-using SmartFarmer.Misc;
 using SmartFarmer.Plants;
 
 namespace SmartFarmer.Utils;
 
-public class FarmerPlantInstanceProvider : IFarmerPlantInstanceProvider
+public class FarmerPlantInstanceProvider : FarmerServiceLocalProviderBase<IFarmerPlantInstance>, IFarmerPlantInstanceProvider
 {
     private static readonly Lazy<FarmerPlantInstanceProvider> _instance = new(() => new FarmerPlantInstanceProvider());
-    private ConcurrentDictionary<string, IFarmerPlantInstance> _plants;
-
     public static FarmerPlantInstanceProvider Instance => _instance.Value;
 
     public FarmerPlantInstanceProvider()
+        : base("PlantInstance_")
     {
-        _plants = new ConcurrentDictionary<string, IFarmerPlantInstance>();
-    }
-
-    public string GenerateServiceId()
-    {
-        string id;
-
-        do
-        {
-            id = "PlantInstance_" + StringUtils.RandomString(10);
-        } while (_plants.ContainsKey(id));
-
-        return id;
-    }
-
-    public bool AddFarmerService(IFarmerPlantInstance plant)
-    {
-        return _plants.TryAdd(plant.ID, plant);
-    }
-
-    public IFarmerPlantInstance GetFarmerService(string plantId)
-    {
-        if (_plants.TryGetValue(plantId, out var plant))
-        {
-            return plant;
-        }
-
-        return null;
     }
 }
