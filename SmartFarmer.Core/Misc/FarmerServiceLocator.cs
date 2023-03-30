@@ -101,7 +101,7 @@ public class FarmerServiceLocator
     private static void AutoDiscovery()
     {
         initializationSem.Wait();
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
         initializationSem.Release();
     }
 }

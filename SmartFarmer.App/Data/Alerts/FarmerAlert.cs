@@ -15,9 +15,6 @@ public class FarmerAlert : IFarmerAlert
     public FarmerPlantInstance PlantInstance { get; set; }
     public string PlantInstanceId { get; set; }
 
-    public FarmerGround FarmerGround { get; set; }
-    public string FarmerGroundId { get; set; }
-
     public AlertCode Code { get; set; }
     public string Message { get; set; }
     public AlertLevel Level { get; set; }

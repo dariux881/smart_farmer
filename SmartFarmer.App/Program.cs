@@ -33,15 +33,16 @@ public class Program
                 UserName = "test", 
                 Password = "test"
             };
+
         // login
         var loginResponse = await FarmerRequestHelper.Login(
             user, 
             CancellationToken.None);
 
         // save login result
-        if (loginResponse == null)
+        if (loginResponse == null || !loginResponse.IsSuccess)
         {
-            SmartFarmerLog.Error("Invalid login for user " + user.UserName);
+            SmartFarmerLog.Error("Invalid login for user " + user.UserName + " error: " + loginResponse?.ErrorMessage);
             return;
         }
 
@@ -49,7 +50,7 @@ public class Program
         LocalConfiguration.Token = loginResponse.Token;
 
         // get grounds
-        var grounds = await FarmerRequestHelper.GetGrounds(CancellationToken.None);
+        var grounds = await FarmerRequestHelper.GetGroundsList(CancellationToken.None);
         if (grounds == null)
         {
             SmartFarmerLog.Error("invalid grounds");

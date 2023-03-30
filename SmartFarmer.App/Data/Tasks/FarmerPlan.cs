@@ -23,11 +23,6 @@ public class FarmerPlan : IFarmerPlan
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 
     [JsonIgnore]
-    public FarmerGround Ground { get; set; }
-    [JsonIgnore]
-    public string GroundId { get; set; }
-
-    [JsonIgnore]
     public bool IsInProgress { get; private set; }
     [JsonIgnore]
     public Exception LastException { get; private set; }

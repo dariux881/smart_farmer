@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,7 +19,13 @@ namespace SmartFarmer.Helpers;
 ////
 public partial class FarmerRequestHelper
 {
-    public static async Task<IEnumerable<IFarmerGround>> GetGrounds(CancellationToken token)
+    private static ConcurrentDictionary<string, object> _groundElementsCache;
+
+    static FarmerRequestHelper() {
+        _groundElementsCache = new ConcurrentDictionary<string, object>();
+    }
+
+    public static async Task<IEnumerable<IFarmerGround>> GetGroundsList(CancellationToken token)
     {
         var httpReq = new HttpRequest();
 
@@ -55,18 +63,44 @@ public partial class FarmerRequestHelper
         var groundStr = await response.Content.ReadAsStringAsync(token);
         var ground = groundStr.Deserialize<FarmerGround>();
 
-        if (ground == null) return null; //FIXME throw exception
+        if (ground == null) throw new InvalidCastException("invalid ground");
 
         // getting plans
         await ResolvePlans(ground, ground.GetPlanIds(), token);
-
         // getting alerts
         await ResolveAlerts(ground, ground.GetAlertIds(), token);
-
         // getting plants
         await ResolvePlantsInstances(ground, ground.GetPlantIds(), token);
 
         return ground;
+    }
+
+    public static async Task<IFarmerPlant> GetPlant(string plantId, CancellationToken token)
+    {
+        if (_groundElementsCache.TryGetValue(plantId, out var plantObj) && plantObj is FarmerPlant plantCache)
+        {
+            await Task.CompletedTask;
+            return plantCache as IFarmerPlant;
+        }
+
+        var httpReq = new HttpRequest();
+
+        var response = await 
+            httpReq
+                .GetAsync(
+                    SmartFarmerApiConstants.GET_PLANT,
+                    token,
+                    new KeyValuePair<string, string>[] { 
+                        new KeyValuePair<string, string>("id", plantId) });
+        
+        var plantStr = await response.Content.ReadAsStringAsync(token);
+        var plant = plantStr.Deserialize<FarmerPlant>();
+
+        if (plant == null) return null;
+
+        _groundElementsCache.TryAdd(plantId, plant);
+
+        return plant;
     }
 
     public static async Task<IEnumerable<IFarmerPlan>> GetPlans(string[] planIds, CancellationToken token)
@@ -113,10 +147,16 @@ public partial class FarmerRequestHelper
             return null;
         }
 
-        var groundStr = await response.Content.ReadAsStringAsync(token);
+        var plantsStr = await response.Content.ReadAsStringAsync(token);
+        var plants = plantsStr.Deserialize<List<FarmerPlantInstance>>() as IEnumerable<IFarmerPlantInstance>;
 
-        //TODO resolve Plant
-        return groundStr.Deserialize<List<FarmerPlantInstance>>() as IEnumerable<IFarmerPlantInstance>;
+        // resolving Plants
+        foreach (var plant in plants)
+        {
+            await ResolvePlant(plant as FarmerPlantInstance, plant.PlantKindID, token);
+        }
+
+        return plants;
     }
 
     private static async Task ResolvePlans(FarmerGround ground, string[] ids, CancellationToken token)
@@ -131,13 +171,11 @@ public partial class FarmerRequestHelper
 
     private static async Task ResolveAlerts(FarmerGround ground, string[] ids, CancellationToken token)
     {
-        foreach (var alertId in ids)
+        var alerts = await GetAlerts(ids, token) as IEnumerable<FarmerAlert>;
+
+        if (alerts != null)
         {
-            var alert = await GetAlert(alertId, token);
-            if (alert != null)
-            {
-                ground.Alerts.Add(alert as FarmerAlert);
-            }
+            ground.Alerts.AddRange(alerts);
         }
     }
 
@@ -148,6 +186,16 @@ public partial class FarmerRequestHelper
         if (plants != null && plants.Count() == ids.Length) 
         {
             ground.Plants.AddRange(plants as List<FarmerPlantInstance>);
+        }
+    }
+
+    private static async Task ResolvePlant(FarmerPlantInstance plantInstance, string plantId, CancellationToken token)
+    {
+        var plant = await GetPlant(plantId, token) as FarmerPlant;
+        
+        if (plant != null)
+        {
+            plantInstance.Plant = plant;
         }
     }
 }

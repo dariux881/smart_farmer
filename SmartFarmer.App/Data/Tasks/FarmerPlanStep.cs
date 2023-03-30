@@ -44,12 +44,6 @@ public class FarmerPlanStep : IFarmerPlanStep
     }
 
     [JsonIgnore]
-    public FarmerPlan Plan { get; set;}
-
-    [JsonIgnore]
-    public string PlanId { get; set; }
-
-    [JsonIgnore]
     public bool IsInProgress { get; set; }
 
     [JsonIgnore]
@@ -61,7 +55,6 @@ public class FarmerPlanStep : IFarmerPlanStep
     {
         throw new NotImplementedException();
     }
-
 
     private void SerializeParameters()
     {

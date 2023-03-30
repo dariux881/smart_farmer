@@ -33,10 +33,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized();
         }
 
-        var response = new LoginResponseData()
-        {
-            Token = token
-        };
+        var response = new LoginResponseData(token, await GetUserIdByContext(), null);
 
         return Ok(response);
     }

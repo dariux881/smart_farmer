@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -21,7 +22,7 @@ public partial class FarmerRequestHelper
                 .GetAsync(
                     SmartFarmerApiConstants.GET_ALERTS,
                     token,
-                    new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("id", alertId) });
+                    new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("ids", alertId) });
         
         if (response == null || !response.IsSuccessStatusCode)
         {
@@ -29,7 +30,38 @@ public partial class FarmerRequestHelper
         }
 
         var alertStr = await response.Content.ReadAsStringAsync(token);
-        return alertStr.Deserialize<FarmerAlert>();
+        var alerts = alertStr.Deserialize<List<FarmerAlert>>();
+
+        if (alerts != null && alerts.Any())
+        {
+            return alerts.First();
+        }
+
+        return null;
+    }
+
+    public static async Task<IEnumerable<IFarmerAlert>> GetAlerts(string[] ids, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        var response = await 
+            httpReq
+                .GetAsync(
+                    SmartFarmerApiConstants.GET_ALERTS,
+                    token,
+                    new KeyValuePair<string, string>[] 
+                    { 
+                        new KeyValuePair<string, string>(
+                            "ids", 
+                            ids.Aggregate((p1, p2) => p1 + "#" + p2)) });
+        
+        if (response == null || !response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var alertStr = await response.Content.ReadAsStringAsync(token);
+        return alertStr.Deserialize<List<FarmerAlert>>() as IEnumerable<IFarmerAlert>;
     }
 
     public static async Task<string> RaiseAlert(FarmerAlertRequestData data, CancellationToken token)

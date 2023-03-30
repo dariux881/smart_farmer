@@ -14,10 +14,3 @@ public interface IFarmerPlantInstance : IFarmerService
     DateTime PlantedWhen { get; }
     DateTime? LastIrrigation { get; }
 }
-
-public interface IIrrigationHistoryStep : IFarmerService
-{
-    string PlantInstanceId { get; }
-    DateTime IrrigationDt { get; }
-    double? Amount { get; }
-}
