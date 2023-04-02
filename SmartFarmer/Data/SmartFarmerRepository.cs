@@ -178,6 +178,40 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return new IrrigationHistory { Steps = steps };
     }
 
+    public async Task<bool> MarkIrrigationInstance(FarmerPlantIrrigationInstance irrigation, string userId = null)
+    {
+        if (irrigation == null || string.IsNullOrEmpty(irrigation.PlantId)) throw new ArgumentNullException("invalid irrigation information");
+
+        // check if plant can be read by userId
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var plant = await 
+                _dbContext
+                    .PlantsInstance
+                        .Where(x => x.ID == irrigation.PlantId)
+                        .Include(x => x.Ground)
+                        .FirstAsync();
+            
+            if (plant.Ground.UserID != userId)
+            {
+                throw new InvalidOperationException("user " + userId + " cannot access plant " + irrigation.PlantId);
+            }
+        }
+
+        var step = new IrrigationHistoryStep()
+        {
+            PlantInstanceId = irrigation.PlantId,
+            IrrigationDt = irrigation.When ?? DateTime.UtcNow,
+            Amount = irrigation.AmountInLiters
+        };
+
+        _dbContext
+            .IrrigationHistory.Add(step);
+        
+        var result = await _dbContext.SaveChangesAsync();
+        return result == 1;
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
     {
         return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();

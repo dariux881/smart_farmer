@@ -7,14 +7,19 @@ using System.Text.Json.Serialization;
 //using Newtonsoft.Json;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Helpers;
 
 namespace SmartFarmer.DTOs.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
+    private string _farmerDaysMask;
+    private List<FarmerWeekDay> _days;
+
     public FarmerPlan()
     {
         Steps = new List<FarmerPlanStep>();
+        _days = new List<FarmerWeekDay>();
     }
 
     public string Name { get; set; }
@@ -33,6 +38,38 @@ public class FarmerPlan : IFarmerPlan
     public Exception LastException { get; private set; }
 
     public string ID { get; set; }
+
+    public int Priority { get; set; }
+    public DateTime? ValidFromDt { get; set; }
+    public DateTime? ValidToDt { get; set; }
+
+    [JsonIgnore]
+    public IReadOnlyList<FarmerWeekDay> PlannedDays => _days.AsReadOnly();
+
+    public string FarmerDaysMask 
+    {
+        get => _farmerDaysMask;
+        set {
+            if (value == null) 
+            {
+                _days.Clear();
+                return;
+            }
+
+            _farmerDaysMask = value;
+            var dayCounts = 7;
+            if (_farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
+
+            for(int i=0; i<dayCounts; i++)
+            {
+                var dayAllowed = _farmerDaysMask.ElementAt(i) == '1';
+                if (!dayAllowed) continue;
+
+                var day = (FarmerWeekDay)i;
+                _days.Add(day);
+            }
+        }
+    }
 
     public async Task Execute(CancellationToken token)
     {

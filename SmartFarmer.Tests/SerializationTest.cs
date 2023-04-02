@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SmartFarmer.Alerts;
+using SmartFarmer.Helpers;
 using SmartFarmer.MockedTasks;
 using SmartFarmer.MockedTasks.GenericCollection;
 using SmartFarmer.Plants;
@@ -62,6 +63,12 @@ namespace SmartFarmer.Tests
             }
 
             public string Name { get; set; }
+
+            public int Priority { get; set; }
+            public DateTime? ValidFromDt { get; set; }
+            public DateTime? ValidToDt { get; set; }
+
+            public IReadOnlyList<FarmerWeekDay> PlannedDays { get; set; }
 
             public IReadOnlyList<string> StepIds => _steps.Select(x => x.ID).ToList().AsReadOnly();
             public IReadOnlyList<IFarmerPlanStep> Steps => _steps.AsReadOnly();
@@ -339,7 +346,7 @@ namespace SmartFarmer.Tests
 
             for (int i=0; i<alertCount; i++)
             {
-                await alertHandler.RaiseAlert("message " + i, AlertCode.Unknown, null, null, AlertLevel.Warning, AlertSeverity.Low);
+                await alertHandler.RaiseAlert("message " + i, AlertCode.Unknown, null, null, null, AlertLevel.Warning, AlertSeverity.Low);
             }
 
             Assert.AreEqual(receivedAlerts.Count, _ground.AlertIds.Count);

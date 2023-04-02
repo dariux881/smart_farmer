@@ -10,6 +10,7 @@ public interface IFarmerAlertHandler : IFarmerServiceProvider<IFarmerAlert>
         AlertCode code, 
         string taskId, 
         string plantInstanceId, 
+        string groundId,
         AlertLevel level, 
         AlertSeverity severity);
     

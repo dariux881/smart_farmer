@@ -13,6 +13,7 @@ public interface ISmartFarmerGroundManagementRepository
     Task<IFarmerPlantInstance> GetFarmerPlantInstanceById(string id, string userId = null);
     Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantsInstanceById(string[] ids, string userId = null);
     Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlant(string plantId, string userId = null);
+    Task<bool> MarkIrrigationInstance(FarmerPlantIrrigationInstance irrigation, string userId = null);
 
     Task<IFarmerPlant> GetFarmerPlantById(string id);
     Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids);

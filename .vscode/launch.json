@@ -7,6 +7,9 @@
             "preLaunchTask": "build",
             "request": "launch",
             "console": "integratedTerminal",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
             "cwd": "${workspaceRoot}",
             "program": "${workspaceFolder}/SmartFarmer.App/bin/Debug/net6.0/SmartFarmer.App.dll",
         },

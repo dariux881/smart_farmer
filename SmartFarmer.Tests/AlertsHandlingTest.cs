@@ -33,7 +33,7 @@ namespace SmartFarmer.Tests
 
             var message = "test";
 
-            await alertHandler.RaiseAlert(message, AlertCode.Unknown, null, null, AlertLevel.Error, AlertSeverity.Low);
+            await alertHandler.RaiseAlert(message, AlertCode.Unknown, null, null, null, AlertLevel.Error, AlertSeverity.Low);
 
             Assert.IsNotEmpty(_ground.AlertIds);
 

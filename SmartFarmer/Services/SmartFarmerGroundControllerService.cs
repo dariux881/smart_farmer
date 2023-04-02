@@ -53,6 +53,11 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerIrrigationHistoryByPlant(plantId, userId);
     }
     
+    public async Task<bool> MarkIrrigationInstance(string userId, FarmerPlantIrrigationInstance irrigationInstance)
+    {
+        return await _repository.MarkIrrigationInstance(irrigationInstance, userId);
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId)
     {
         return await _repository.GetFarmerPlanByIdAsync(planId, userId);

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Helpers;
@@ -14,6 +15,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
             service.Code,
             service.RaisedByTaskId,
             service.PlantInstanceId,
+            LocalConfiguration.LocalGroundIds.FirstOrDefault(),
             service.Level,
             service.Severity);
     }
@@ -28,7 +30,14 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         return await FarmerRequestHelper.GetAlert(alertId, System.Threading.CancellationToken.None);
     }
 
-    public async Task<string> RaiseAlert(string message, AlertCode code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
+    public async Task<string> RaiseAlert(
+        string message, 
+        AlertCode code, 
+        string taskId, 
+        string plantInstanceId, 
+        string groundId,
+        AlertLevel level, 
+        AlertSeverity severity)
     {
         return await RaiseAlert(
             new FarmerAlertRequestData()
@@ -39,7 +48,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
                 PlantInstanceId = plantInstanceId,
                 Level = level,
                 Severity = severity,
-                FarmerGroundId = LocalConfiguration.LocalGroundId
+                FarmerGroundId = groundId
             });
     }
 

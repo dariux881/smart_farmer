@@ -19,6 +19,7 @@ public class SmartFarmerApiConstants
     public const string GET_PLANT_IN_GROUND = GROUNDS_BASE + "/plantInGround";
     public const string GET_PLANTS_IN_GROUND = GROUNDS_BASE + "/plantsInGround";
     public const string GET_PLANT_IRRIGATION_HISTORY = GROUNDS_BASE + "/irrigationHistory";
+    public const string SET_PLANT_IRRIGATION_STEP = GROUNDS_BASE + "/markIrrigation";
     public const string GET_PLANT = GROUNDS_BASE + "/plant";
     public const string GET_PLANTS = GROUNDS_BASE + "/plants";
     public const string GET_PLAN = GROUNDS_BASE + "/plan";

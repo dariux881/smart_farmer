@@ -18,7 +18,14 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-    public async Task<string> RaiseAlert(string message, AlertCode code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
+    public async Task<string> RaiseAlert(
+        string message, 
+        AlertCode code, 
+        string taskId, 
+        string plantInstanceId,
+        string groundId,
+        AlertLevel level, 
+        AlertSeverity severity)
     {
         var alert = new FarmerAlert
             {
@@ -26,7 +33,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
                 When = DateTime.UtcNow,
                 Code = code,
                 RaisedByTaskId = taskId,
-                PlantInstanceId = plantInstanceId,
+                PlantInstanceId = plantInstanceId,                
                 Level = level,
                 Severity = severity
             };
@@ -72,6 +79,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<string> AddFarmerService(IFarmerAlert service)
     {
+        await Task.CompletedTask;
         throw new NotImplementedException();
     }
 

@@ -118,6 +118,22 @@ public class FarmerGroundController : ControllerBase
         return Ok(plant);
     }
 
+    [HttpPost("markIrrigation")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult<bool>> MarkIrrigation([FromBody] FarmerPlantIrrigationInstance irrigation)
+    {
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+        
+        var result = 
+            await _groundProvider
+                .MarkIrrigationInstance(userId, irrigation);
+
+        return Ok(result);
+    }
+
     [HttpGet("plant")]
     public async Task<ActionResult<IFarmerPlant>> GetPlant(string id)
     {

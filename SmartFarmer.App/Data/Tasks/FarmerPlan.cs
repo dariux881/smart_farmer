@@ -3,28 +3,61 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization;
-//using Newtonsoft.Json;
+using Newtonsoft.Json;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Helpers;
 
 namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
+    private List<FarmerWeekDay> _days;
+
     public FarmerPlan()
     {
         Steps = new List<FarmerPlanStep>();
     }
 
+    [JsonConstructor]
+    public FarmerPlan(string farmerDaysMask)
+        : this()
+    {
+        _days = new List<FarmerWeekDay>();
+
+        if (!string.IsNullOrEmpty(farmerDaysMask))
+        {
+            FillRecurrentTask(farmerDaysMask);
+        }
+    }
+
+    private void FillRecurrentTask(string farmerDaysMask)
+    {
+        var dayCounts = 7;
+        if (farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
+
+        for(int i=0; i<dayCounts; i++)
+        {
+            var dayAllowed = farmerDaysMask.ElementAt(i) == '1';
+            if (!dayAllowed) continue;
+
+            var day = (FarmerWeekDay)i;
+            _days.Add(day);
+        }
+    }
+
     public string Name { get; set; }
+
+    public int Priority { get; set; }
+    public DateTime? ValidFromDt { get; set; }
+    public DateTime? ValidToDt { get; set; }
+
+    public IReadOnlyList<FarmerWeekDay> PlannedDays => _days.AsReadOnly();
 
     public List<FarmerPlanStep> Steps { get; set; }
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 
-    [JsonIgnore]
     public bool IsInProgress { get; private set; }
-    [JsonIgnore]
     public Exception LastException { get; private set; }
 
     public string ID { get; set; }
