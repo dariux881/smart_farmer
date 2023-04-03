@@ -100,15 +100,15 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             //ID = "p1s1",
             PlanId = plan1.ID,
             BuildParameters = new object[] { 5.0, "abc"},
-            TaskClassFullName = "taskClassFullName1"
+            TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeight"
         };
-        var p1Step2 = new FarmerPlanStep
-        {
-            //ID = "p1s2",
-            PlanId = plan1.ID,
-            TaskClassFullName = "taskClassFullName2",
-            Delay = new System.TimeSpan(0, 0, 5)
-        };
+        // var p1Step2 = new FarmerPlanStep
+        // {
+        //     //ID = "p1s2",
+        //     PlanId = plan1.ID,
+        //     TaskClassFullName = "taskClassFullName2",
+        //     Delay = new System.TimeSpan(0, 0, 5)
+        // };
 
         var alert = new FarmerAlert
         {
@@ -126,7 +126,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
         _dbContext.PlanSteps.Add(p1Step1);
-        _dbContext.PlanSteps.Add(p1Step2);
+        // _dbContext.PlanSteps.Add(p1Step2);
 
         _dbContext.Alerts.Add(alert);
 

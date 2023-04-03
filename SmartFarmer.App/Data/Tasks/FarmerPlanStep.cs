@@ -2,14 +2,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization;
-//using Newtonsoft.Json; don't use this namespace
+using Newtonsoft.Json;
 using SmartFarmer.Tasks.Generic;
-using System.Linq;
-using System.Text.Json;
 using SmartFarmer.Utils;
 using SmartFarmer.Misc;
-using SmartFarmer.Exceptions;
 
 namespace SmartFarmer.Data.Tasks;
 
@@ -18,39 +14,32 @@ public class FarmerPlanStep : IFarmerPlanStep
     private object[] _buildParameters;
     private IFarmerTaskProvider _taskProvider = FarmerServiceLocator.GetService<IFarmerTaskProvider>(true);
 
+    public FarmerPlanStep() 
+    {
+
+    }
+
+    [JsonConstructor]
+    public FarmerPlanStep(string[] buildParametersString)
+        : this()
+    {
+        BuildParameters = buildParametersString;
+    }
+
     public string TaskClassFullName { get; set; }
 
     public TimeSpan Delay { get; set; }
 
-    [JsonIgnore]
     public object[] BuildParameters 
     { 
         get => _buildParameters;
         set {
             _buildParameters = value;
-            SerializeParameters();
         }
     }
 
-    [JsonIgnore]
-    public string BuildParametersSerialized { get; set; }
-
-    public string[] BuildParametersString 
-    { 
-        get {
-            if (string.IsNullOrEmpty(BuildParametersSerialized))
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<string[]>(BuildParametersSerialized);
-        }
-    }
-
-    [JsonIgnore]
     public bool IsInProgress { get; set; }
 
-    [JsonIgnore]
     public Exception LastException { get; set; }
 
     public string ID { get; set; }
@@ -90,20 +79,5 @@ public class FarmerPlanStep : IFarmerPlanStep
         {
             IsInProgress = false;
         }
-    }
-
-    private void SerializeParameters()
-    {
-        if (BuildParameters == null) {
-            BuildParametersSerialized = null;
-            return;
-        }
-
-        BuildParametersSerialized = 
-            JsonSerializer
-                .Serialize(
-                    BuildParameters
-                        .Select(x => x.ToString())
-                        .ToArray());
     }
 }

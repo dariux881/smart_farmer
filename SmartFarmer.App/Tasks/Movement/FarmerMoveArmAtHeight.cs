@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
-using SmartFarmer.Data.Alerts;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
@@ -24,7 +24,19 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
     {
         if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
 
-        var height = (int)parameters[0];
+        int height;
+        if (parameters[0] is string heightStr)
+        {
+            height = int.Parse(heightStr);
+        }
+        else if (parameters[0].IsNumber())
+        {
+            height = (int)parameters[0];
+        }
+        else
+        {
+            throw new InvalidCastException(nameof(parameters));
+        }
 
         await MoveToHeight(height, token);
     }

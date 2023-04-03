@@ -9,7 +9,7 @@ public class FarmerServiceLocator
 {
     private static bool initialized;
     private static ConcurrentDictionary<string, object> _registry;
-    // private static ConcurrentDictionary<string, Func<object>> _registryFunctions;
+    private static ConcurrentDictionary<string, Func<object>> _registryFunctions;
     private static SemaphoreSlim initializationSem;
 
     static FarmerServiceLocator() {
@@ -26,7 +26,7 @@ public class FarmerServiceLocator
         }
 
         if (_registry == null) _registry = new ConcurrentDictionary<string, object>();
-        // if (_registryFunctions == null) _registryFunctions = new ConcurrentDictionary<string, Func<object>>();
+        if (_registryFunctions == null) _registryFunctions = new ConcurrentDictionary<string, Func<object>>();
 
         // if (autoDiscovery)
         // {
@@ -73,7 +73,8 @@ public class FarmerServiceLocator
         initializationSem.Wait();
 
         try{
-            _registry.TryAdd(typeof(T).FullName, activator());
+            _registryFunctions.TryAdd(typeof(T).FullName, activator as Func<object>);
+            //_registry.TryAdd(typeof(T).FullName, activator());
         }
         catch(Exception ex)
         {
@@ -87,15 +88,48 @@ public class FarmerServiceLocator
 
     public static T GetService<T>(bool required = false)
     {
-        var key = typeof(T).FullName;
-        if (_registry.TryGetValue(key, out var serviceImplementor))
+        var service = GetServiceCore(typeof(T));
+        if (service != null)
         {
-            return (T)serviceImplementor;
+            return (T)service;
         }
 
-        if (required) throw new InvalidOperationException("service " + key + " not found but is required");
+        if (required) throw new InvalidOperationException("service " + typeof(T).FullName + " not found but is required");
 
         return default(T);
+    }
+
+    public static object GetServiceByType(Type t, bool required = false)
+    {
+        var service = GetServiceCore(t);
+        if (service != null)
+        {
+            return service;
+        }
+
+        if (required) throw new InvalidOperationException("service " + t.FullName + " not found but is required");
+
+        return null;
+    }
+
+    private static object GetServiceCore(Type t)
+    {
+        var key = t.FullName;
+
+        if (_registry.TryGetValue(key, out var serviceImplementor))
+        {
+            return serviceImplementor;
+        }
+
+        if (_registryFunctions.TryRemove(key, out var serviceActivator))
+        {
+            var instance = serviceActivator();
+            _registry.TryAdd(key, instance);
+
+            return instance;
+        }
+
+        return null;
     }
 
     private static void AutoDiscovery()

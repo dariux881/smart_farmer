@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
-using SmartFarmer.Helpers;
 
 namespace SmartFarmer.Data.Tasks;
 
@@ -31,21 +30,6 @@ public class FarmerPlan : IFarmerPlan
         }
     }
 
-    private void FillRecurrentTask(string farmerDaysMask)
-    {
-        var dayCounts = 7;
-        if (farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
-
-        for(int i=0; i<dayCounts; i++)
-        {
-            var dayAllowed = farmerDaysMask.ElementAt(i) == '1';
-            if (!dayAllowed) continue;
-
-            var day = (DayOfWeek)i;
-            _days.Add(day);
-        }
-    }
-
     public string Name { get; set; }
 
     public int Priority { get; set; }
@@ -54,7 +38,11 @@ public class FarmerPlan : IFarmerPlan
 
     public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
 
-    public List<FarmerPlanStep> Steps { get; set; }
+    public List<FarmerPlanStep> Steps { 
+        get; 
+        set;
+    }
+    
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 
     public bool IsInProgress { get; private set; }
@@ -78,20 +66,31 @@ public class FarmerPlan : IFarmerPlan
                 await step.Execute(null, token);
             }
         }
-        catch (TaskCanceledException taskCanceled)
-        {
-            LastException = taskCanceled;
-            SmartFarmerLog.Exception(taskCanceled);
-        }
         catch (Exception ex)
         {
             LastException = ex;
             SmartFarmerLog.Exception(ex);
+            throw;
         }
         finally
         {
             IsInProgress = false;
             SmartFarmerLog.Information("stopping plan \"" + Name + "\"");
+        }
+    }
+    
+    private void FillRecurrentTask(string farmerDaysMask)
+    {
+        var dayCounts = 7;
+        if (farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
+
+        for(int i=0; i<dayCounts; i++)
+        {
+            var dayAllowed = farmerDaysMask.ElementAt(i) == '1';
+            if (!dayAllowed) continue;
+
+            var day = (DayOfWeek)i;
+            _days.Add(day);
         }
     }
 }

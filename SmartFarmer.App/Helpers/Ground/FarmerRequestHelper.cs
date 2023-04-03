@@ -29,50 +29,66 @@ public partial class FarmerRequestHelper
     {
         var httpReq = new HttpRequest();
 
-        var response = await 
-            httpReq
-                .GetAsync(
-                    SmartFarmerApiConstants.GROUNDS_BASE,
-                    token);
-        
-        if (response == null || !response.IsSuccessStatusCode)
+        try
         {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GROUNDS_BASE,
+                        token);
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var groundStr = await response.Content.ReadAsStringAsync(token);
+            return groundStr.Deserialize<List<FarmerGround>>() as IEnumerable<IFarmerGround>;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
             return null;
         }
-
-        var groundStr = await response.Content.ReadAsStringAsync(token);
-        return groundStr.Deserialize<List<FarmerGround>>() as IEnumerable<IFarmerGround>;
     }
 
     public static async Task<IFarmerGround> GetGround(string groundId, CancellationToken token)
     {
         var httpReq = new HttpRequest();
 
-        var response = await 
-            httpReq
-                .GetAsync(
-                    SmartFarmerApiConstants.GET_GROUND,
-                    token,
-                    new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("id", groundId) });
-        
-        if (response == null || !response.IsSuccessStatusCode)
+        try
         {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_GROUND,
+                        token,
+                        new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("id", groundId) });
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var groundStr = await response.Content.ReadAsStringAsync(token);
+            var ground = groundStr.Deserialize<FarmerGround>();
+
+            if (ground == null) throw new InvalidCastException("invalid ground");
+
+            // getting plans
+            await ResolvePlans(ground, ground.GetPlanIds(), token);
+            // getting alerts
+            await ResolveAlerts(ground, ground.GetAlertIds(), token);
+            // getting plants
+            await ResolvePlantsInstances(ground, ground.GetPlantIds(), token);
+
+            return ground;
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
             return null;
         }
-
-        var groundStr = await response.Content.ReadAsStringAsync(token);
-        var ground = groundStr.Deserialize<FarmerGround>();
-
-        if (ground == null) throw new InvalidCastException("invalid ground");
-
-        // getting plans
-        await ResolvePlans(ground, ground.GetPlanIds(), token);
-        // getting alerts
-        await ResolveAlerts(ground, ground.GetAlertIds(), token);
-        // getting plants
-        await ResolvePlantsInstances(ground, ground.GetPlantIds(), token);
-
-        return ground;
     }
 
     public static async Task<IFarmerPlant> GetPlant(string plantId, CancellationToken token)
@@ -85,78 +101,105 @@ public partial class FarmerRequestHelper
 
         var httpReq = new HttpRequest();
 
-        var response = await 
-            httpReq
-                .GetAsync(
-                    SmartFarmerApiConstants.GET_PLANT,
-                    token,
-                    new KeyValuePair<string, string>[] { 
-                        new KeyValuePair<string, string>("id", plantId) });
-        
-        var plantStr = await response.Content.ReadAsStringAsync(token);
-        var plant = plantStr.Deserialize<FarmerPlant>();
+        try
+        {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_PLANT,
+                        token,
+                        new KeyValuePair<string, string>[] { 
+                            new KeyValuePair<string, string>("id", plantId) });
+            
+            var plantStr = await response.Content.ReadAsStringAsync(token);
+            var plant = plantStr.Deserialize<FarmerPlant>();
 
-        if (plant == null) return null;
+            if (plant == null) return null;
 
-        _groundElementsCache.TryAdd(plantId, plant);
+            _groundElementsCache.TryAdd(plantId, plant);
 
-        return plant;
+            return plant;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
+            return null;
+        }
     }
 
     public static async Task<IEnumerable<IFarmerPlan>> GetPlans(string[] planIds, CancellationToken token)
     {
         var httpReq = new HttpRequest();
 
-        var response = await 
-            httpReq
-                .GetAsync(
-                    SmartFarmerApiConstants.GET_PLANS,
-                    token,
-                    new KeyValuePair<string, string>[] { 
-                        new KeyValuePair<string, string>(
-                            "ids", 
-                            planIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
-        
-        if (response == null || !response.IsSuccessStatusCode)
+        try
         {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_PLANS,
+                        token,
+                        new KeyValuePair<string, string>[] { 
+                            new KeyValuePair<string, string>(
+                                "ids", 
+                                planIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var planStr = await response.Content.ReadAsStringAsync(token);
+
+            // resolve Plan
+            return planStr.Deserialize<List<FarmerPlan>>() as IEnumerable<IFarmerPlan>;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
             return null;
         }
-
-        var groundStr = await response.Content.ReadAsStringAsync(token);
-
-        // resolve Plan
-        return groundStr.Deserialize<List<FarmerPlan>>() as IEnumerable<IFarmerPlan>;
     }
 
     public static async Task<IEnumerable<IFarmerPlantInstance>> GetPlantsInstance(string[] plantIds, CancellationToken token)
     {
         var httpReq = new HttpRequest();
 
-        var response = await 
-            httpReq
-                .GetAsync(
-                    SmartFarmerApiConstants.GET_PLANTS_IN_GROUND,
-                    token,
-                    new KeyValuePair<string, string>[] { 
-                        new KeyValuePair<string, string>(
-                            "idsSplit", 
-                            plantIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
-        
-        if (response == null || !response.IsSuccessStatusCode)
+        try
         {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_PLANTS_IN_GROUND,
+                        token,
+                        new KeyValuePair<string, string>[] { 
+                            new KeyValuePair<string, string>(
+                                "idsSplit", 
+                                plantIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var plantsStr = await response.Content.ReadAsStringAsync(token);
+            var plants = plantsStr.Deserialize<List<FarmerPlantInstance>>() as IEnumerable<IFarmerPlantInstance>;
+
+            // resolving Plants
+            foreach (var plant in plants)
+            {
+                await ResolvePlant(plant as FarmerPlantInstance, plant.PlantKindID, token);
+            }
+
+            return plants;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
             return null;
         }
-
-        var plantsStr = await response.Content.ReadAsStringAsync(token);
-        var plants = plantsStr.Deserialize<List<FarmerPlantInstance>>() as IEnumerable<IFarmerPlantInstance>;
-
-        // resolving Plants
-        foreach (var plant in plants)
-        {
-            await ResolvePlant(plant as FarmerPlantInstance, plant.PlantKindID, token);
-        }
-
-        return plants;
     }
 
     private static async Task ResolvePlans(FarmerGround ground, string[] ids, CancellationToken token)

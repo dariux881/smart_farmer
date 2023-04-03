@@ -11,6 +11,7 @@ using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer;
@@ -191,5 +192,19 @@ public class Program
 
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => new FarmerAlertHandler());
         FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
+        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager());
+
+        InitializeServicesForTasks();
+    }
+
+    private static void InitializeServicesForTasks()
+    {
+        var moveOnGrid = new FarmerMoveOnGridTask(null, null);
+        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid);
+        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid);
+
+        var moveAtHeight = new FarmerMoveArmAtHeight(null);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight);
     }
 }

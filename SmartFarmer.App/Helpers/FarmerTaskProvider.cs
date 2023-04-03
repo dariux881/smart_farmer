@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using SmartFarmer.Exceptions;
+using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
@@ -153,7 +154,16 @@ public class FarmerTaskProvider : IFarmerTaskProvider
             throw new TaskNotFoundException(null, new Exception("implementation of " + taskType.FullName + " has not been found"));
         }
 
-        var taskInstance = Activator.CreateInstance(task) as IFarmerTask;
+        IFarmerTask taskInstance;
+        var predefinedTaskInstance = FarmerServiceLocator.GetServiceByType(taskType, false) as IFarmerTask;
+        if (predefinedTaskInstance != null)
+        {
+            taskInstance = predefinedTaskInstance;
+        }
+        else
+        {
+            taskInstance = Activator.CreateInstance(task) as IFarmerTask;
+        }
 
         if (taskInstance == null)
         {
