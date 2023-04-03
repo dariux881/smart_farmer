@@ -10,6 +10,7 @@ public class FarmerServiceLocator
     private static bool initialized;
     private static ConcurrentDictionary<string, object> _registry;
     private static ConcurrentDictionary<string, Func<object>> _registryFunctions;
+    private const string KEY_SEPARATOR = "_";
     private static SemaphoreSlim initializationSem;
 
     static FarmerServiceLocator() {
@@ -53,6 +54,7 @@ public class FarmerServiceLocator
         initializationSem.Release();
     }
 
+    [Obsolete]
     public static void AddInstance<T, U>(U serviceInstance) 
         where U : class, T
     {
@@ -68,13 +70,50 @@ public class FarmerServiceLocator
         initializationSem.Release();
     }
 
-    public static void MapService<T>(Func<T> activator)
+    public static void MapService<T>(Func<T> activator, IFarmerGround ground = null)
+    {
+        var key = typeof(T).FullName;
+        if (ground != null)
+        {
+            key = ground.ID + KEY_SEPARATOR + key;
+        }
+
+        MapServiceCore<T>(key, activator);
+    }
+
+    public static T GetService<T>(bool required = false, IFarmerGround ground = null)
+    {
+        var service = GetServiceCore(typeof(T), ground);
+        if (service != null)
+        {
+            return (T)service;
+        }
+
+        if (required) throw new InvalidOperationException("service " + typeof(T).FullName + " not found but is required");
+
+        return default(T);
+    }
+
+    public static object GetServiceByType(Type t, bool required = false, IFarmerGround ground = null)
+    {
+        var service = GetServiceCore(t, ground);
+        if (service != null)
+        {
+            return service;
+        }
+
+        if (required) throw new InvalidOperationException("service " + t.FullName + " not found but is required");
+
+        return null;
+    }
+
+    private static void MapServiceCore<T>(string key, Func<T> activator)
     {
         initializationSem.Wait();
 
         try{
-            _registryFunctions.TryAdd(typeof(T).FullName, activator as Func<object>);
-            //_registry.TryAdd(typeof(T).FullName, activator());
+            _registryFunctions.TryAdd(key, activator as Func<object>);
+            //_registry.TryAdd(key, activator());
         }
         catch(Exception ex)
         {
@@ -86,35 +125,13 @@ public class FarmerServiceLocator
         }
     }
 
-    public static T GetService<T>(bool required = false)
-    {
-        var service = GetServiceCore(typeof(T));
-        if (service != null)
-        {
-            return (T)service;
-        }
-
-        if (required) throw new InvalidOperationException("service " + typeof(T).FullName + " not found but is required");
-
-        return default(T);
-    }
-
-    public static object GetServiceByType(Type t, bool required = false)
-    {
-        var service = GetServiceCore(t);
-        if (service != null)
-        {
-            return service;
-        }
-
-        if (required) throw new InvalidOperationException("service " + t.FullName + " not found but is required");
-
-        return null;
-    }
-
-    private static object GetServiceCore(Type t)
+    private static object GetServiceCore(Type t, IFarmerGround ground = null)
     {
         var key = t.FullName;
+        if (ground != null)
+        {
+            key = ground.ID + KEY_SEPARATOR + key;
+        }
 
         if (_registry.TryGetValue(key, out var serviceImplementor))
         {

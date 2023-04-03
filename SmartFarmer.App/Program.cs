@@ -124,16 +124,17 @@ public class Program
         var locallyInterestedGrounds = 
             LocalConfiguration.LocalGroundIds.Any() ?
                 grounds
-                    .Select(x => x.ID)
                     .Where(x => 
-                        LocalConfiguration.LocalGroundIds.Contains(x)).ToList() :
-                new List<string>() { grounds.First().ID };
+                        LocalConfiguration.LocalGroundIds.Contains(x.ID)).ToList() :
+                new List<IFarmerGround>() { grounds.First() };
 
         var tasks = new List<Task>();
 
         foreach (var value in locallyInterestedGrounds)
         {
-            var groundId = value;
+            InitializeServicesForTasks(value);
+
+            var groundId = value.ID;
             tasks.Add(Task.Run(async () => {
                 var ground = await FarmerRequestHelper
                     .GetGround(groundId, cancellationToken);
@@ -192,19 +193,18 @@ public class Program
 
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => new FarmerAlertHandler());
         FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
-        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager());
-
-        InitializeServicesForTasks();
     }
 
-    private static void InitializeServicesForTasks()
+    private static void InitializeServicesForTasks(IFarmerGround ground)
     {
-        var moveOnGrid = new FarmerMoveOnGridTask(null, null);
-        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid);
-        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid);
+        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
+
+        var moveOnGrid = new FarmerMoveOnGridTask(ground, null);
+        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
+        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
 
         var moveAtHeight = new FarmerMoveArmAtHeight(null);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight, ground);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight, ground);
     }
 }
