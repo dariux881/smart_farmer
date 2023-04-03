@@ -14,7 +14,7 @@ namespace SmartFarmer.Tasks.Generic
 
         DateTime? ValidFromDt { get; }
         DateTime? ValidToDt { get; }
-        IReadOnlyList<FarmerWeekDay> PlannedDays { get; }
+        IReadOnlyList<DayOfWeek> PlannedDays { get; }
 
         // lower values means major priority
         int Priority { get; }

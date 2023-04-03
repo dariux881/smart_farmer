@@ -6,9 +6,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using SmartFarmer.Data;
 using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer;
@@ -22,6 +24,79 @@ public class Program
         //TODO move in Ground Manager
         await PrepareEnvironment();
         await InitializeGrounds();
+
+        var plans = GetPlansToRun();
+        await ExecutePlans(plans);
+    }
+
+    private static async Task ExecutePlans(IDictionary<string, IEnumerable<IFarmerPlan>> plans)
+    {
+        var tasks = new List<Task>();
+        var cancellationToken = new CancellationToken();
+
+        foreach (var groundPlans in plans)
+        {
+            var localGroundPlans = groundPlans.Value;
+            tasks.Add(Task.Run(async () => {
+                foreach(var plan in localGroundPlans)
+                {
+                    try
+                    {
+                        await plan.Execute(cancellationToken);
+                    }
+                    catch (TaskCanceledException taskCanceled)
+                    {
+                        SmartFarmerLog.Exception(taskCanceled);
+                    }
+                    catch (Exception ex)
+                    {
+                        SmartFarmerLog.Exception(ex);
+                        SmartFarmerLog.Exception(plan.LastException);
+                    }
+                    finally
+                    {
+                        SmartFarmerLog.Information("stopping plan \"" + plan.Name + "\"");
+                    }
+                    
+                }
+            }));
+        }
+
+        try {  
+            await Task.WhenAll(tasks);  
+        } 
+        catch {}
+    }
+
+    private static IDictionary<string, IEnumerable<IFarmerPlan>> GetPlansToRun()
+    {
+        var plans = new Dictionary<string, IEnumerable<IFarmerPlan>>();
+
+        foreach (var gGround in LocalConfiguration.Grounds.Values)
+        {
+            var ground = gGround as FarmerGround;
+            if (ground == null) continue;
+            
+            var now = DateTime.UtcNow;
+            var today = now.DayOfWeek;
+
+            var plansInGround = 
+                ground
+                    .Plans
+                        .Where(x => 
+                            (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
+                            (x.ValidToDt == null || x.ValidToDt > now)) // valid end
+                        .Where(x => x.PlannedDays == null || !x.PlannedDays.Any() || x.PlannedDays.Contains(today)) // valid day of the week
+                        .OrderBy(x => x.Priority)
+                        .ToList();
+            
+            if (plansInGround.Any())
+            {
+                plans.Add(ground.ID, plansInGround);
+            }
+        }
+
+        return plans;
     }
 
     private static async Task InitializeGrounds()
@@ -66,9 +141,8 @@ public class Program
             }));
         }
 
-        Task t = Task.WhenAll(tasks);  
         try {  
-            t.Wait();  
+           await Task.WhenAll(tasks);
         }  
         catch {}
 
@@ -116,5 +190,6 @@ public class Program
         FarmerServiceLocator.InitializeServiceLocator();
 
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => new FarmerAlertHandler());
+        FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
     }
 }

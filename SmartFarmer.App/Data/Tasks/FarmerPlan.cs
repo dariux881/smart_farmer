@@ -12,7 +12,7 @@ namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
-    private List<FarmerWeekDay> _days;
+    private List<DayOfWeek> _days;
 
     public FarmerPlan()
     {
@@ -23,7 +23,7 @@ public class FarmerPlan : IFarmerPlan
     public FarmerPlan(string farmerDaysMask)
         : this()
     {
-        _days = new List<FarmerWeekDay>();
+        _days = new List<DayOfWeek>();
 
         if (!string.IsNullOrEmpty(farmerDaysMask))
         {
@@ -41,7 +41,7 @@ public class FarmerPlan : IFarmerPlan
             var dayAllowed = farmerDaysMask.ElementAt(i) == '1';
             if (!dayAllowed) continue;
 
-            var day = (FarmerWeekDay)i;
+            var day = (DayOfWeek)i;
             _days.Add(day);
         }
     }
@@ -52,7 +52,7 @@ public class FarmerPlan : IFarmerPlan
     public DateTime? ValidFromDt { get; set; }
     public DateTime? ValidToDt { get; set; }
 
-    public IReadOnlyList<FarmerWeekDay> PlannedDays => _days.AsReadOnly();
+    public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
 
     public List<FarmerPlanStep> Steps { get; set; }
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();

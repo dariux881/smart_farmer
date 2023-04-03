@@ -14,12 +14,12 @@ namespace SmartFarmer.DTOs.Tasks;
 public class FarmerPlan : IFarmerPlan
 {
     private string _farmerDaysMask;
-    private List<FarmerWeekDay> _days;
+    private List<DayOfWeek> _days;
 
     public FarmerPlan()
     {
         Steps = new List<FarmerPlanStep>();
-        _days = new List<FarmerWeekDay>();
+        _days = new List<DayOfWeek>();
     }
 
     public string Name { get; set; }
@@ -44,7 +44,7 @@ public class FarmerPlan : IFarmerPlan
     public DateTime? ValidToDt { get; set; }
 
     [JsonIgnore]
-    public IReadOnlyList<FarmerWeekDay> PlannedDays => _days.AsReadOnly();
+    public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
 
     public string FarmerDaysMask 
     {
@@ -65,7 +65,7 @@ public class FarmerPlan : IFarmerPlan
                 var dayAllowed = _farmerDaysMask.ElementAt(i) == '1';
                 if (!dayAllowed) continue;
 
-                var day = (FarmerWeekDay)i;
+                var day = (DayOfWeek)i;
                 _days.Add(day);
             }
         }

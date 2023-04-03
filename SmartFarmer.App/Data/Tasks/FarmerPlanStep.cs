@@ -7,12 +7,16 @@ using System.Text.Json.Serialization;
 using SmartFarmer.Tasks.Generic;
 using System.Linq;
 using System.Text.Json;
+using SmartFarmer.Utils;
+using SmartFarmer.Misc;
+using SmartFarmer.Exceptions;
 
 namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlanStep : IFarmerPlanStep
 {
     private object[] _buildParameters;
+    private IFarmerTaskProvider _taskProvider = FarmerServiceLocator.GetService<IFarmerTaskProvider>(true);
 
     public string TaskClassFullName { get; set; }
 
@@ -51,9 +55,41 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string ID { get; set; }
 
-    public Task Execute(object[] parameters, CancellationToken token)
+    public async Task Execute(object[] parameters, CancellationToken token)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(TaskClassFullName)) throw new InvalidOperationException("task not properly configured");
+
+        IFarmerTask task;
+        try {
+            task = _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName);
+        }
+        catch(Exception ex)
+        {
+            LastException = ex;
+            await Task.CompletedTask;
+            throw;
+        }
+
+        if (task == null) throw new InvalidOperationException("task implementor not found");
+        
+        await Task.Delay(Delay, token);
+        
+        SmartFarmerLog.Information("preparing task " + TaskClassFullName);
+
+        try
+        {
+            IsInProgress = true;
+            await task.Execute(parameters ?? BuildParameters, token);
+        }
+        catch(Exception ex)
+        {
+            LastException = ex;
+            throw;
+        }
+        finally
+        {
+            IsInProgress = false;
+        }
     }
 
     private void SerializeParameters()

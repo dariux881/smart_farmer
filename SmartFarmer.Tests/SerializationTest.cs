@@ -68,7 +68,7 @@ namespace SmartFarmer.Tests
             public DateTime? ValidFromDt { get; set; }
             public DateTime? ValidToDt { get; set; }
 
-            public IReadOnlyList<FarmerWeekDay> PlannedDays { get; set; }
+            public IReadOnlyList<DayOfWeek> PlannedDays { get; set; }
 
             public IReadOnlyList<string> StepIds => _steps.Select(x => x.ID).ToList().AsReadOnly();
             public IReadOnlyList<IFarmerPlanStep> Steps => _steps.AsReadOnly();
