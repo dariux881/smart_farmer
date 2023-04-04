@@ -132,7 +132,7 @@ public class Program
 
         foreach (var value in locallyInterestedGrounds)
         {
-            InitializeServicesForTasks(value);
+            await InitializeServicesForTasks(value, cancellationToken);
 
             var groundId = value.ID;
             tasks.Add(Task.Run(async () => {
@@ -195,7 +195,7 @@ public class Program
         FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
     }
 
-    private static void InitializeServicesForTasks(IFarmerGround ground)
+    private static async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
     {
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
@@ -208,5 +208,8 @@ public class Program
         var moveAtHeight = new FarmerMoveArmAtHeight(deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight, ground);
         FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight, ground);
+
+        await moveOnGrid.Initialize(cancellationToken);
+        await moveAtHeight.Initialize(cancellationToken);
     }
 }
