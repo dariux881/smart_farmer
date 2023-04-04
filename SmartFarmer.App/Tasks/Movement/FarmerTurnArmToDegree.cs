@@ -12,9 +12,9 @@ namespace SmartFarmer.Tasks.Movement;
 public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
 {
     private double _currentDegrees;
-    private IFarmerDeviceHandler _deviceHandler;
+    private IFarmerTurnToolDevice _deviceHandler;
 
-    public FarmerTurnArmToDegree(IFarmerDeviceHandler handler)
+    public FarmerTurnArmToDegree(IFarmerTurnToolDevice handler)
     {
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;

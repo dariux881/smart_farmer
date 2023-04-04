@@ -12,9 +12,9 @@ namespace SmartFarmer.Tasks.Movement;
 public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
 {
     private double _currentHeight = double.NaN;
-    private IFarmerDeviceHandler _deviceHandler;
+    private IFarmerMoveAtHeightDevice _deviceHandler;
 
-    public FarmerMoveArmAtHeight(IFarmerDeviceHandler handler)
+    public FarmerMoveArmAtHeight(IFarmerMoveAtHeightDevice handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -25,7 +25,7 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
     public async Task<bool> Initialize(CancellationToken token)
     {
         var desiredHeight = 0.0;
-        var result = await _deviceHandler.MoveArmAtheightAsync(desiredHeight, token);
+        var result = await _deviceHandler.MoveArmAtMaxHeightAsync(token);
 
         if (result) _currentHeight = desiredHeight;
 
@@ -47,7 +47,7 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
 
         SmartFarmerLog.Debug($"moving to height {heightInCm} cm");
         
-        var result = await _deviceHandler.MoveArmAtheightAsync(heightInCm, token);
+        var result = await _deviceHandler.MoveArmAtHeightAsync(heightInCm, token);
         if (!result)
         {
             var message = "Error in changing height";

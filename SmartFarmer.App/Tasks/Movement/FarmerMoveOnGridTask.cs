@@ -13,10 +13,10 @@ namespace SmartFarmer.Tasks.Movement;
 public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisposable
 {
     private FarmerPoint _currentPosition;
-    private IFarmerDeviceHandler _deviceHandler;
+    private IFarmerMoveOnGridDevice _deviceHandler;
 
 
-    public FarmerMoveOnGridTask(IFarmerGround ground, IFarmerDeviceHandler handler)
+    public FarmerMoveOnGridTask(IFarmerGround ground, IFarmerMoveOnGridDevice handler)
     {
         if (ground == null) throw new ArgumentNullException(nameof(ground));
         if (handler == null) throw new ArgumentNullException(nameof(handler));

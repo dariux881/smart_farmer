@@ -4,7 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Tasks.Movement;
 
-public class ExternalDeviceProxy : IFarmerDeviceHandler, IDisposable
+public class ExternalDeviceProxy : 
+    IFarmerMoveOnGridDevice,
+    IFarmerMoveAtHeightDevice,
+    IFarmerTurnToolDevice, 
+    IDisposable
 {
     private FarmerPositionNotifier _notifier;
 
@@ -21,22 +25,27 @@ public class ExternalDeviceProxy : IFarmerDeviceHandler, IDisposable
 
     public event EventHandler NewPoint;
 
-    public Task<bool> MoveArmAtheightAsync(double heightInCm, CancellationToken token)
+    public async Task<bool> MoveArmAtHeightAsync(double heightInCm, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }
 
-    public Task<bool> MoveOnGridAsync(FarmerPoint position, CancellationToken token)
+    public async Task<bool> MoveArmAtMaxHeightAsync(CancellationToken token)
     {
         throw new System.NotImplementedException();
     }
 
-    public Task<bool> PointDeviceAsync(double degrees, CancellationToken token)
+    public async Task<bool> MoveOnGridAsync(FarmerPoint position, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }
 
-    public Task<bool> TurnArmToDegreesAsync(double degrees, CancellationToken token)
+    public async Task<bool> PointDeviceAsync(double degrees, CancellationToken token)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public async Task<bool> TurnArmToDegreesAsync(double degrees, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }
