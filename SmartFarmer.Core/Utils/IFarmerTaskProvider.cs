@@ -9,7 +9,7 @@ public interface IFarmerTaskProvider
     Assembly[] AvailableAssemblies { get; }
 
     void ConfigureMapping<T>(Func<T> initializer) where T : IFarmerTask;
-    IFarmerTask GetTaskDelegateByClassFullName(string taskTypeFullName, string[] excludedNamespaces = null, string[] assemblyNames = null);
-    IFarmerTask GetTaskDelegateByInterfaceFullName(string taskTypeFullName, string[] excludedNamespaces = null, string[] assemblyNames = null);
-    IFarmerTask GetTaskDelegateByType(Type taskType, string[] excludedNamespaces = null, string[] assemblyNames = null);
+    IFarmerTask GetTaskDelegateByClassFullName(string taskTypeFullName, string[] excludedNamespaces = null, string[] assemblyNames = null, IFarmerService fService = null);
+    IFarmerTask GetTaskDelegateByInterfaceFullName(string taskTypeFullName, string[] excludedNamespaces = null, string[] assemblyNames = null, IFarmerService fService = null);
+    IFarmerTask GetTaskDelegateByType(Type taskType, string[] excludedNamespaces = null, string[] assemblyNames = null, IFarmerService fService = null);
 }

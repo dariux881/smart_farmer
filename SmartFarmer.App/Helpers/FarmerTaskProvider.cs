@@ -31,6 +31,7 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         _loadedAssemblies ??
         AppDomain.CurrentDomain.GetAssemblies();
 
+    [Obsolete]
     public void ConfigureMapping<T>(Func<T> initializer)
         where T : IFarmerTask
     {
@@ -42,17 +43,19 @@ public class FarmerTaskProvider : IFarmerTaskProvider
     public IFarmerTask GetTaskDelegateByClassFullName(
         string taskTypeFullName,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
-        return GetTaskDelegateByType(taskTypeFullName, false, excludedNamespaces, assemblyNames);
+        return GetTaskDelegateByType(taskTypeFullName, false, excludedNamespaces, assemblyNames, fService);
     }
 
     public IFarmerTask GetTaskDelegateByInterfaceFullName(
         string taskTypeFullName,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
-        return GetTaskDelegateByType(taskTypeFullName, true, excludedNamespaces, assemblyNames);
+        return GetTaskDelegateByType(taskTypeFullName, true, excludedNamespaces, assemblyNames, fService);
     }
 
     /// <summary>
@@ -64,7 +67,8 @@ public class FarmerTaskProvider : IFarmerTaskProvider
     public IFarmerTask GetTaskDelegateByType(
         Type taskType,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
         if (taskType == null) throw new ArgumentNullException(nameof(taskType));
 
@@ -74,14 +78,15 @@ public class FarmerTaskProvider : IFarmerTaskProvider
             throw new InvalidTaskException();
         }
 
-        return GetTaskDelegateByType(taskType.FullName, taskType.IsInterface, excludedNamespaces, assemblyNames);
+        return GetTaskDelegateByType(taskType.FullName, taskType.IsInterface, excludedNamespaces, assemblyNames, fService);
     }
 
     private IFarmerTask GetTaskDelegateByType(
         string taskTypeFullName,
         bool isInterface,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
         if (_resolvedMappings.TryGetValue(taskTypeFullName, out var resolved))
         {
@@ -108,7 +113,8 @@ public class FarmerTaskProvider : IFarmerTaskProvider
             assemblies,
             GetTypeByFullName(taskTypeFullName),
             isInterface,
-            excludedNamespaces);
+            excludedNamespaces,
+            fService);
 
         if (taskInstance != null)
         {
@@ -128,7 +134,8 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         Assembly[] assemblies,
         Type taskType,
         bool isInterface,
-        string[] excludedNamespaces = null)
+        string[] excludedNamespaces = null,
+        IFarmerService fService = null)
     {
         var task = assemblies
             .SelectMany(s => s.GetTypes())
@@ -155,7 +162,7 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         }
 
         IFarmerTask taskInstance;
-        var predefinedTaskInstance = FarmerServiceLocator.GetServiceByType(taskType, false) as IFarmerTask;
+        var predefinedTaskInstance = FarmerServiceLocator.GetServiceByType(taskType, false, fService) as IFarmerTask;
         if (predefinedTaskInstance != null)
         {
             taskInstance = predefinedTaskInstance;
@@ -168,7 +175,10 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         if (taskInstance == null)
         {
             // task initialization failure
-            throw new TaskInitializationException();
+            var category = isInterface ? "interface" : "class";
+            var exception = new TaskInitializationException("Error creating/getting instance of "+ category + " " + taskType.FullName);
+
+            throw exception;
         }
 
         return taskInstance;

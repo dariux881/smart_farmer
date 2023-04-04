@@ -27,27 +27,40 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> MoveArmAtHeightAsync(double heightInCm, CancellationToken token)
     {
-        throw new System.NotImplementedException();
+        await Task.CompletedTask;
+        //TODO implement
+        return true;
     }
 
     public async Task<bool> MoveArmAtMaxHeightAsync(CancellationToken token)
     {
-        throw new System.NotImplementedException();
+        await Task.CompletedTask;
+        //TODO implement
+        return true;
     }
 
     public async Task<bool> MoveOnGridAsync(FarmerPoint position, CancellationToken token)
     {
-        throw new System.NotImplementedException();
+        await Task.CompletedTask;
+        
+        _notifier.X = position.X;
+        _notifier.Y = position.Y;
+
+        return true;
     }
 
     public async Task<bool> PointDeviceAsync(double degrees, CancellationToken token)
     {
-        throw new System.NotImplementedException();
+        await Task.CompletedTask;
+        //TODO implement
+        return true;
     }
 
     public async Task<bool> TurnArmToDegreesAsync(double degrees, CancellationToken token)
     {
-        throw new System.NotImplementedException();
+        await Task.CompletedTask;
+        //TODO implement
+        return true;
     }
 
     public void Dispose()

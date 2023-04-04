@@ -12,6 +12,7 @@ namespace SmartFarmer.Data.Tasks;
 public class FarmerPlan : IFarmerPlan
 {
     private List<DayOfWeek> _days;
+    private IFarmerGround _ground;
 
     public FarmerPlan()
     {
@@ -38,10 +39,7 @@ public class FarmerPlan : IFarmerPlan
 
     public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
 
-    public List<FarmerPlanStep> Steps { 
-        get; 
-        set;
-    }
+    public List<FarmerPlanStep> Steps { get; set; }
     
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 
@@ -49,6 +47,15 @@ public class FarmerPlan : IFarmerPlan
     public Exception LastException { get; private set; }
 
     public string ID { get; set; }
+
+    public IFarmerPlan PropagateGround(IFarmerGround ground)
+    {
+        _ground = ground;
+
+        Steps.ForEach(step => step.PropagateGround(ground));
+        
+        return this;
+    }
 
     public async Task Execute(CancellationToken token)
     {

@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using SmartFarmer.Misc;
 
 namespace SmartFarmer.Data;
 
@@ -73,6 +76,37 @@ public class FarmerGround : IFarmerGround
         return alertIdsToResolve ?? AlertIds.ToArray();
     }
 
+    public async Task<bool> ExecutePlan(string planId, CancellationToken token)
+    {
+        if (!PlanIds.Contains(planId))
+        {
+            SmartFarmerLog.Error("Plan is not defined");
+
+            await Task.CompletedTask;
+            return false;
+        }
+
+        var plan = _plans.FirstOrDefault(x => x.ID == planId);
+        if (plan == null)
+        {
+            SmartFarmerLog.Error("Invalid plan");
+
+            await Task.CompletedTask;
+            return false;
+        }
+
+        try {
+            await plan.Execute(token);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
+        }
+
+        return true;
+    }
+
     public void AddAlerts(List<IFarmerAlert> alerts)
     {
         alertIdsToResolve = 
@@ -99,6 +133,12 @@ public class FarmerGround : IFarmerGround
             planIdsToResolve
                 .Except( plans.Select(x => x.ID).ToArray() )
                 .ToArray();
+
+        plans
+            .Where(x => x is FarmerPlan)
+            .Cast<FarmerPlan>()
+            .ToList()
+            .ForEach(plan => plan.PropagateGround(this));
 
         _plans.AddRange(plans);
     }

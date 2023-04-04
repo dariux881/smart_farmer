@@ -73,13 +73,28 @@ public class FarmerServiceLocator
 
     public static void MapService<T>(Func<T> activator, IFarmerService fService = null)
     {
-        var key = typeof(T).FullName;
-        if (fService != null)
-        {
-            key = fService.ID + KEY_SEPARATOR + key;
-        }
+        string key = BuildKey(typeof(T), fService);
 
         MapServiceCore<T>(key, activator);
+    }
+
+    public static void RemoveService<T>(IFarmerService fService = null)
+    {
+        string key = BuildKey(typeof(T), fService);
+
+        if (_registryFunctions.TryRemove(key, out var func))
+        {
+            return;
+        }
+
+        if (_registry.TryRemove(key, out var service))
+        {
+            if (service is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+            return;
+        }
     }
 
     public static T GetService<T>(bool required = false, IFarmerService fService = null)
@@ -126,13 +141,19 @@ public class FarmerServiceLocator
         }
     }
 
-    private static object GetServiceCore(Type t, IFarmerService fService = null)
+    private static string BuildKey(Type t, IFarmerService fService)
     {
         var key = t.FullName;
         if (fService != null)
         {
             key = fService.ID + KEY_SEPARATOR + key;
         }
+
+        return key;
+    }
+    private static object GetServiceCore(Type t, IFarmerService fService = null)
+    {
+        var key = BuildKey(t, fService);
 
         if (_registry.TryGetValue(key, out var serviceImplementor))
         {

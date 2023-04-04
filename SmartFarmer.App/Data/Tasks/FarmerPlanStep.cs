@@ -13,6 +13,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 {
     private object[] _buildParameters;
     private IFarmerTaskProvider _taskProvider = FarmerServiceLocator.GetService<IFarmerTaskProvider>(true);
+    private IFarmerGround _ground;
 
     public FarmerPlanStep() 
     {
@@ -44,13 +45,19 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string ID { get; set; }
 
+    public IFarmerPlanStep PropagateGround(IFarmerGround ground)
+    {
+        _ground = ground;
+        return this;
+    }
+
     public async Task Execute(object[] parameters, CancellationToken token)
     {
         if (string.IsNullOrEmpty(TaskClassFullName)) throw new InvalidOperationException("task not properly configured");
 
         IFarmerTask task;
         try {
-            task = _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName);
+            task = _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName, null, null, _ground);
         }
         catch(Exception ex)
         {
