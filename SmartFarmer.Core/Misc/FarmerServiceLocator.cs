@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using SmartFarmer.Utils;
 
 namespace SmartFarmer.Misc;
 
@@ -70,20 +71,20 @@ public class FarmerServiceLocator
         initializationSem.Release();
     }
 
-    public static void MapService<T>(Func<T> activator, IFarmerGround ground = null)
+    public static void MapService<T>(Func<T> activator, IFarmerService fService = null)
     {
         var key = typeof(T).FullName;
-        if (ground != null)
+        if (fService != null)
         {
-            key = ground.ID + KEY_SEPARATOR + key;
+            key = fService.ID + KEY_SEPARATOR + key;
         }
 
         MapServiceCore<T>(key, activator);
     }
 
-    public static T GetService<T>(bool required = false, IFarmerGround ground = null)
+    public static T GetService<T>(bool required = false, IFarmerService fService = null)
     {
-        var service = GetServiceCore(typeof(T), ground);
+        var service = GetServiceCore(typeof(T), fService);
         if (service != null)
         {
             return (T)service;
@@ -94,9 +95,9 @@ public class FarmerServiceLocator
         return default(T);
     }
 
-    public static object GetServiceByType(Type t, bool required = false, IFarmerGround ground = null)
+    public static object GetServiceByType(Type t, bool required = false, IFarmerService fService = null)
     {
-        var service = GetServiceCore(t, ground);
+        var service = GetServiceCore(t, fService);
         if (service != null)
         {
             return service;
@@ -125,12 +126,12 @@ public class FarmerServiceLocator
         }
     }
 
-    private static object GetServiceCore(Type t, IFarmerGround ground = null)
+    private static object GetServiceCore(Type t, IFarmerService fService = null)
     {
         var key = t.FullName;
-        if (ground != null)
+        if (fService != null)
         {
-            key = ground.ID + KEY_SEPARATOR + key;
+            key = fService.ID + KEY_SEPARATOR + key;
         }
 
         if (_registry.TryGetValue(key, out var serviceImplementor))
