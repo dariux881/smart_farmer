@@ -260,17 +260,17 @@ public partial class FarmerRequestHelper
 
         if (plans != null && plans.Count() == ids.Length) 
         {
-            ground.Plans.AddRange(plans as List<FarmerPlan>);
+            ground.AddPlans(plans.ToList());
         }
     }
 
     private static async Task ResolveAlerts(FarmerGround ground, string[] ids, CancellationToken token)
     {
-        var alerts = await GetAlerts(ids, token) as IEnumerable<FarmerAlert>;
+        var alerts = await GetAlerts(ids, token);
 
         if (alerts != null)
         {
-            ground.Alerts.AddRange(alerts);
+            ground.AddAlerts(alerts.ToList());
         }
     }
 
@@ -280,7 +280,7 @@ public partial class FarmerRequestHelper
 
         if (plants != null && plants.Count() == ids.Length) 
         {
-            ground.Plants.AddRange(plants as List<FarmerPlantInstance>);
+            ground.AddPlants(plants.ToList());
         }
     }
 
