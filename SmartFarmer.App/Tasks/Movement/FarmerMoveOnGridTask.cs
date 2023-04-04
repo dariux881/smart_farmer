@@ -15,12 +15,21 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
     private FarmerPoint _currentPosition;
     private IFarmerDeviceHandler _deviceHandler;
 
+
     public FarmerMoveOnGridTask(IFarmerGround ground, IFarmerDeviceHandler handler)
     {
+        if (ground == null) throw new ArgumentNullException(nameof(ground));
+        if (handler == null) throw new ArgumentNullException(nameof(handler));
+
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;
 
-        InitPosition(ground);
+        InitCurrentPosition(ground);
+    }
+
+    public async Task<bool> Initialize(CancellationToken token)
+    {
+        return await _deviceHandler.MoveOnGridAsync(new FarmerPoint(0, 0), token);
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)
@@ -77,7 +86,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         _currentPosition?.Dispose();
     }
 
-    private void InitPosition(IFarmerGround ground)
+    private void InitCurrentPosition(IFarmerGround ground)
     {
         _currentPosition = 
             new FarmerPoint(

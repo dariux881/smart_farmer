@@ -21,7 +21,7 @@ public class ExternalDeviceProxy : IFarmerDeviceHandler, IDisposable
 
     public event EventHandler NewPoint;
 
-    public Task<bool> MoveArmAtheightAsync(int heightInCm, CancellationToken token)
+    public Task<bool> MoveArmAtheightAsync(double heightInCm, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }

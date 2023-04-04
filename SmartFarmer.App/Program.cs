@@ -199,11 +199,13 @@ public class Program
     {
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
-        var moveOnGrid = new FarmerMoveOnGridTask(ground, null);
+        var deviceHandler = new ExternalDeviceProxy();
+
+        var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
         FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
 
-        var moveAtHeight = new FarmerMoveArmAtHeight(null);
+        var moveAtHeight = new FarmerMoveArmAtHeight(deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight, ground);
         FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight, ground);
     }

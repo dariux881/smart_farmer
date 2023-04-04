@@ -9,7 +9,7 @@ namespace SmartFarmer.Tasks.Movement
 {
     public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
     {
-        private int _currentHeight;
+        private double _currentHeight;
         
         public FarmerMoveArmAtHeight()
         {
@@ -25,7 +25,7 @@ namespace SmartFarmer.Tasks.Movement
             await MoveToHeight(height, token);
         }
 
-        public async Task MoveToHeight(int heightInCm, CancellationToken token)
+        public async Task MoveToHeight(double heightInCm, CancellationToken token)
         {
             PrepareTask();
 
@@ -39,7 +39,7 @@ namespace SmartFarmer.Tasks.Movement
             await Task.CompletedTask;
         }
           
-        public int GetCurrentHeight()
+        public double GetCurrentHeight()
         {
             return _currentHeight;
         }

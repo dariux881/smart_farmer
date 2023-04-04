@@ -11,37 +11,37 @@ namespace SmartFarmer.Tasks.Movement;
 
 public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
 {
-    private int _currentHeight;
+    private double _currentHeight = double.NaN;
     private IFarmerDeviceHandler _deviceHandler;
 
     public FarmerMoveArmAtHeight(IFarmerDeviceHandler handler)
     {
+        if (handler == null) throw new ArgumentNullException(nameof(handler));
+
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;
+    }
+
+    public async Task<bool> Initialize(CancellationToken token)
+    {
+        var desiredHeight = 0.0;
+        var result = await _deviceHandler.MoveArmAtheightAsync(desiredHeight, token);
+
+        if (result) _currentHeight = desiredHeight;
+
+        return result;
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)
     {
         if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
 
-        int height;
-        if (parameters[0] is string heightStr)
-        {
-            height = int.Parse(heightStr);
-        }
-        else if (parameters[0].IsNumber())
-        {
-            height = (int)parameters[0];
-        }
-        else
-        {
-            throw new InvalidCastException(nameof(parameters));
-        }
+        var height = parameters[0].GetDouble();
 
         await MoveToHeight(height, token);
     }
 
-    public async Task MoveToHeight(int heightInCm, CancellationToken token)
+    public async Task MoveToHeight(double heightInCm, CancellationToken token)
     {
         PrepareTask();
 
@@ -75,7 +75,7 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         EndTask();
     }
 
-    public int GetCurrentHeight()
+    public double GetCurrentHeight()
     {
         return _currentHeight;
     }
