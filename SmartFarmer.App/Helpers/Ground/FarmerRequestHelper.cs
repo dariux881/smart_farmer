@@ -128,40 +128,6 @@ public partial class FarmerRequestHelper
         }
     }
 
-    public static async Task<IEnumerable<IFarmerPlan>> GetPlans(string[] planIds, CancellationToken token)
-    {
-        var httpReq = new HttpRequest();
-
-        try
-        {
-            var response = await 
-                httpReq
-                    .GetAsync(
-                        SmartFarmerApiConstants.GET_PLANS,
-                        token,
-                        new KeyValuePair<string, string>[] { 
-                            new KeyValuePair<string, string>(
-                                "ids", 
-                                planIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
-            
-            if (response == null || !response.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            var planStr = await response.Content.ReadAsStringAsync(token);
-
-            // resolve Plan
-            return planStr.Deserialize<List<FarmerPlan>>() as IEnumerable<IFarmerPlan>;
-        }
-        catch (Exception ex)
-        {
-            SmartFarmerLog.Exception(ex);
-
-            return null;
-        }
-    }
-
     public static async Task<IEnumerable<IFarmerPlantInstance>> GetPlantsInstance(string[] plantIds, CancellationToken token)
     {
         var httpReq = new HttpRequest();
@@ -193,6 +159,92 @@ public partial class FarmerRequestHelper
             }
 
             return plants;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
+            return null;
+        }
+    }
+
+    public static async Task<IrrigationHistory> GetPlantIrrigationHistory(string plantId, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_PLANT_IRRIGATION_HISTORY,
+                        token,
+                        new KeyValuePair<string, string>[] { 
+                            new KeyValuePair<string, string>(
+                                "plantId", plantId) });
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var plantStr = await response.Content.ReadAsStringAsync(token);
+
+            // resolve Plan
+            return plantStr.Deserialize<IrrigationHistory>() as IrrigationHistory;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return null;
+        }
+    }
+
+    public static async Task<bool> MarkIrrigationInstance(FarmerPlantIrrigationInstance step, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .PostAsync(
+                        SmartFarmerApiConstants.SET_PLANT_IRRIGATION_STEP, step, token);
+            
+            return response != null && response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
+        }
+    }
+
+    public static async Task<IEnumerable<IFarmerPlan>> GetPlans(string[] planIds, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .GetAsync(
+                        SmartFarmerApiConstants.GET_PLANS,
+                        token,
+                        new KeyValuePair<string, string>[] { 
+                            new KeyValuePair<string, string>(
+                                "ids", 
+                                planIds.Aggregate((p1, p2) => p1 + "#" + p2)) });
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var planStr = await response.Content.ReadAsStringAsync(token);
+
+            // resolve Plan
+            return planStr.Deserialize<List<FarmerPlan>>() as IEnumerable<IFarmerPlan>;
         }
         catch (Exception ex)
         {
