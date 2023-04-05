@@ -35,24 +35,27 @@ public class GroundActivityManager
                 case -1 : 
                     break;
                 case 0 : 
-                    foreach (var plan in LocalConfiguration.Grounds.First().Value.PlanIds)
+                    foreach (var plan in (LocalConfiguration.Grounds.First().Value as FarmerGround).PlanIds)
                     {
                         Console.WriteLine(plan);
                     }
 
                     break;
                 case 1 :
-                    
-                    var ground = 
-                        LocalConfiguration
-                            .Grounds
-                                .First()
-                                .Value as FarmerGround;
-                    
-                    var result = await ground.ExecutePlan(additionalData, CancellationToken.None);
+                    var result = await (LocalConfiguration.Grounds.First().Value as FarmerGround).ExecutePlan(additionalData, CancellationToken.None);
 
                     break;
-                case 2 : 
+                case 2:
+                    
+                    Console.WriteLine("alerts:");
+                    foreach (var alert in (LocalConfiguration.Grounds.First().Value as FarmerGround).Alerts)
+                    {
+                        Console.WriteLine("\t" + alert.ID + " - level: " + alert.Level + " - Severity: " + alert.Severity + "\n\t\t" + alert.Message);
+                    }
+
+                    break;
+
+                case 5: 
                     ClearLocalData();
                     await InitializeGrounds();
                     break;
@@ -75,7 +78,8 @@ public class GroundActivityManager
             "\n"+
             "0 - list plans\n" +
             "1 - execute plan\n" +
-            "2 - update grounds\n"+
+            "2 - list alerts\n"+
+            "5 - update grounds\n"+
             "-1 - exit\n"+
             " select: ";
 
@@ -221,6 +225,7 @@ public class GroundActivityManager
 
     private static async Task PrepareEnvironment()
     {
+        SmartFarmerLog.SetShowThreadInfo(true);
         SmartFarmerLog.SetAlertHandler(FarmerServiceLocator.GetService<IFarmerAlertHandler>(true));
 
         var builder = new ConfigurationBuilder()

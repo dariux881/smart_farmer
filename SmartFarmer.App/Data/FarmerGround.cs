@@ -117,6 +117,16 @@ public class FarmerGround : IFarmerGround
         _alerts.AddRange(alerts);
     }
 
+    public void AddAlert(IFarmerAlert alert)
+    {
+        alertIdsToResolve = 
+            alertIdsToResolve
+                .Except( new [] {alert.ID} )
+                .ToArray();
+
+        _alerts.Add(alert);
+    }
+
     public void AddAlert(string alertId)
     {
         throw new InvalidOperationException();

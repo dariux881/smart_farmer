@@ -26,6 +26,7 @@ public partial class FarmerRequestHelper
         
         if (response == null || !response.IsSuccessStatusCode)
         {
+            SmartFarmerLog.Warning(response.ReasonPhrase);
             return null;
         }
 
@@ -57,6 +58,7 @@ public partial class FarmerRequestHelper
         
         if (response == null || !response.IsSuccessStatusCode)
         {
+            SmartFarmerLog.Warning(response.ReasonPhrase);
             return null;
         }
 
@@ -68,19 +70,20 @@ public partial class FarmerRequestHelper
     {
         var httpReq = new HttpRequest();
 
-        var result = 
+        var response = 
             await httpReq
                 .PostAsync(
                     SmartFarmerApiConstants.CREATE_ALERT,
                     data, 
                     token);
 
-        if (result == null || !result.IsSuccessStatusCode)
+        if (response == null || !response.IsSuccessStatusCode)
         {
+            SmartFarmerLog.Warning(response.ReasonPhrase);
             return null;
         }
 
-        var returnContent = await result.Content?.ReadAsStringAsync();
+        var returnContent = await response.Content?.ReadAsStringAsync(token);
         return returnContent;
     }
 }

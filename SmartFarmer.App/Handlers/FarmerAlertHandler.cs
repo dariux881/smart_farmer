@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Data;
+using SmartFarmer.Data.Alerts;
 using SmartFarmer.Helpers;
+using SmartFarmer.Misc;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Handlers;
@@ -54,6 +58,23 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<string> RaiseAlert(FarmerAlertRequestData data)
     {
-        return await FarmerRequestHelper.RaiseAlert(data, System.Threading.CancellationToken.None);
+        var alertId = await FarmerRequestHelper.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
+        //FIXME alertId contains \"\". Fails all after this
+        var alert = await GetAlertById(alertId);
+
+        if (alert == null) return null;
+
+        LocalConfiguration.Grounds.TryGetValue(data.FarmerGroundId, out var ground);
+        if (ground != null && ground is FarmerGround fGround && alert != null)
+        {
+            SmartFarmerLog.Debug("adding alert to ground " + ground.ID);
+            fGround.AddAlert(alert);
+        }
+        else
+        {
+            SmartFarmerLog.Warning("ground found? " + (ground != null) + " alert found? " + (alert != null));
+        }
+
+        return alert.ID;
     }
 }

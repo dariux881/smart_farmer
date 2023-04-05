@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 using SmartFarmer.Misc;
+using SmartFarmer.Exceptions;
 
 namespace SmartFarmer.Data.Tasks;
 
@@ -80,7 +81,12 @@ public class FarmerPlanStep : IFarmerPlanStep
         catch(Exception ex)
         {
             LastException = ex;
-            throw;
+            throw 
+            new FarmerTaskExecutionException(
+                task.ID, 
+                null, //TODO check if the task can provide plantId
+                ex.Message ?? ex.InnerException?.Message,
+                ex);
         }
         finally
         {

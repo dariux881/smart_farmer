@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 
@@ -73,10 +74,34 @@ public class FarmerPlan : IFarmerPlan
                 await step.Execute(null, token);
             }
         }
+        catch (FarmerBaseException fEx)
+        {
+            SmartFarmerLog.Exception(
+                fEx, 
+                new SmartFarmer.Alerts.FarmerAlertRequestData()
+                {
+                    Code = fEx.Code,
+                    FarmerGroundId = _ground.ID,
+                    Message = fEx.Message,
+                    Level = fEx.Level,
+                    Severity = fEx.Severity,
+                    RaisedByTaskId = fEx.RaisedByTaskId,
+                    PlantInstanceId = fEx.PlantId
+                });
+        }
         catch (Exception ex)
         {
             LastException = ex;
-            SmartFarmerLog.Exception(ex);
+            SmartFarmerLog.Exception(
+                ex, 
+                new SmartFarmer.Alerts.FarmerAlertRequestData()
+                {
+                    Code = SmartFarmer.Alerts.AlertCode.Unknown,
+                    FarmerGroundId = _ground.ID,
+                    Message = ex.Message,
+                    Level = SmartFarmer.Alerts.AlertLevel.Error,
+                    Severity = SmartFarmer.Alerts.AlertSeverity.High,
+                });
             throw;
         }
         finally

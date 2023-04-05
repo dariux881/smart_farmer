@@ -30,6 +30,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         var editUsersAuth = new Authorization { ID = Constants.AUTH_EDIT_USERS, Name="Edit users, creating or deleting them, changing their permissions" };
 
         user.Authorizations.Add(readGroundAuth);
+        user.Authorizations.Add(editGroundAuth);
 
         var irrInfo1 = new FarmerIrrigationTaskInfo {
             //ID = "ii0",

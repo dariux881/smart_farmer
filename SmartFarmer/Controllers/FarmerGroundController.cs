@@ -279,9 +279,9 @@ public class FarmerGroundController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("createAlert")]
+    [HttpPost("createAlert")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
-    public async Task<ActionResult<string>> CreateAlert(FarmerAlertRequestData data)
+    public async Task<ActionResult<string>> CreateAlert([FromBody]FarmerAlertRequestData data)
     {
         var userId = await GetUserIdByContext();
 

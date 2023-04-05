@@ -75,7 +75,8 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         // limiting to known task
         if (!taskType.GetInterfaces().Contains(typeof(IFarmerTask)))
         {
-            throw new InvalidTaskException();
+            var taskName = taskType.FullName;
+            throw new InvalidTaskException(taskName + " is not defined", null, taskName);
         }
 
         return GetTaskDelegateByType(taskType.FullName, taskType.IsInterface, excludedNamespaces, assemblyNames, fService);
@@ -158,7 +159,8 @@ public class FarmerTaskProvider : IFarmerTaskProvider
         if (task == null)
         {
             // not found task
-            throw new TaskNotFoundException(null, new Exception("implementation of " + taskType.FullName + " has not been found"));
+            var taskName = taskType.FullName;
+            throw new TaskNotFoundException("implementation of " + taskName + " has not been found", null, taskName);
         }
 
         IFarmerTask taskInstance;
