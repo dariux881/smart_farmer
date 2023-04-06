@@ -39,7 +39,10 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, System.Threading.CancellationToken.None);
         if (result)
         {
-            var alert = await GetAlertById(alertId) as FarmerAlert;
+            var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
+            if (ground == null) return false;
+
+            var alert = ground.Alerts.First(x => x.ID == alertId);
             if (alert != null)
             {
                 alert.MarkedAsRead = status;

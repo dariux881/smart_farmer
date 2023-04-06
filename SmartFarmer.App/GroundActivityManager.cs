@@ -96,19 +96,9 @@ public class GroundActivityManager
         }
     }
 
-    private static IFarmerGround GetGroundByPlan(string planId)
-    {
-        return LocalConfiguration.Grounds.Values.FirstOrDefault(x => x.PlanIds.Contains(planId));
-    }
-
-    private static IFarmerGround GetGroundByAlert(string alertId)
-    {
-        return LocalConfiguration.Grounds.Values.FirstOrDefault(x => x.AlertIds.Contains(alertId));
-    }
-
     private static async Task<bool> InvertAlertReadStatus(string alertId)
     {
-        var ground = GetGroundByAlert(alertId) as FarmerGround;
+        var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
         if (ground == null) return false;
 
         var alert = ground.Alerts.First(x => x.ID == alertId);
@@ -119,7 +109,7 @@ public class GroundActivityManager
 
     private static async Task ExecutePlan(string planId)
     {
-        var ground = GetGroundByPlan(planId);
+        var ground = GroundUtils.GetGroundByPlan(planId);
         if (ground == null || ground is not FarmerGround fGround)
         {
             SmartFarmerLog.Error("No valid ground found for plan " + planId);
@@ -136,7 +126,7 @@ public class GroundActivityManager
 
         foreach (var planId in planIds)
         {
-            var ground = GetGroundByPlan(planId) as FarmerGround;
+            var ground = GroundUtils.GetGroundByPlan(planId) as FarmerGround;
 
             if (ground == null) continue;
             var plan = ground.Plans.First(x => x.ID == planId);
