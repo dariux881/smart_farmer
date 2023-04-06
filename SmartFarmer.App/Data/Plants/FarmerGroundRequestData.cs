@@ -1,4 +1,4 @@
-namespace SmartFarmer.DTOs.Plants;
+namespace SmartFarmer.Data.Plants;
 
 public class FarmerGroundRequestData
 {

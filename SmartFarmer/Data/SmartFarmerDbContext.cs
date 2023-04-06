@@ -21,11 +21,13 @@ public class SmartFarmerDbContext : DbContext
 
         // Configurations
         new FarmerGroundTypeConfiguration().Configure(modelBuilder.Entity<FarmerGround>());
+        new FarmerPlantTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlant>());
         new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
         new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
         new FarmerPlanStepTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlanStep>());
         new FarmerAlertTypeConfiguration().Configure(modelBuilder.Entity<FarmerAlert>());
         new FarmerIrrigationHistoryStepConfiguration().Configure(modelBuilder.Entity<IrrigationHistoryStep>());
+        new FarmerIrrigationTaskInfoConfiguration().Configure(modelBuilder.Entity<FarmerIrrigationTaskInfo>());
 
         new FarmerUserTypeConfiguration().Configure(modelBuilder.Entity<User>());
     }

@@ -18,8 +18,11 @@ public class FarmerPlanTypeConfiguration : IEntityTypeConfiguration<FarmerPlan>
             .HasForeignKey("GroundId");
         
         builder
+            .Ignore(s => s.PlannedDays);
+
+        builder
             .Ignore(s => s.IsInProgress);
-        
+
         builder
             .Ignore(s => s.LastException);
 

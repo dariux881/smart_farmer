@@ -1,4 +1,4 @@
-namespace SmartFarmer.DTOs.Security;
+namespace SmartFarmer.Data.Security;
 
 public class LoginRequestData
 {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 
@@ -28,6 +29,13 @@ namespace SmartFarmer.Tasks
 
         public string ID { get; private set; }
         public string Name { get; private set; }
+
+        public int Priority { get; set; }
+        public DateTime? ValidFromDt { get; set; }
+        public DateTime? ValidToDt { get; set; }
+
+        public IReadOnlyList<DayOfWeek> PlannedDays { get; set; }
+
         [JsonIgnore]
         public List<IFarmerPlanStep> EditableSteps { get; protected init; }
         public IReadOnlyList<string> StepIds => EditableSteps.Select(x => x.ID).ToList().AsReadOnly();

@@ -14,7 +14,7 @@ namespace SmartFarmer.Tasks
 
         [JsonConstructor]
         public FarmerPlanStep(string id, string taskClassFullName, object[] buildParameters)
-            : this(id, FarmerDiscoveredTaskProvider.GetTaskDelegateByClassFullName(taskClassFullName), buildParameters)
+            : this(id, FarmerTaskProvider.GetTaskDelegateByClassFullName(taskClassFullName), buildParameters)
         {
             
         }
@@ -50,7 +50,7 @@ namespace SmartFarmer.Tasks
                 // this task requires a tool that is not currently mounted. Mounting tool first. 
                 // Exceptions may arise. Exceptions will stop next executions
                 SmartFarmerLog.Information("mounting tool " + _task.RequiredTool);
-                await toolManager.MountTool(_task.RequiredTool);
+                await toolManager.MountTool(_task.RequiredTool, token);
             }
             else
             {

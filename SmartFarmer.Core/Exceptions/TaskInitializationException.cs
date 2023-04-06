@@ -1,10 +1,21 @@
 using System;
 
-namespace SmartFarmer.Exceptions
+namespace SmartFarmer.Exceptions;
+
+public class TaskInitializationException : FarmerBaseException
 {
-    public class TaskInitializationException : Exception
+    public string TaskName { get; protected set; }
+
+    public TaskInitializationException(
+        string message = null,
+        Exception innerException = null,
+        string taskName = null)
+        : base(message, innerException)
     {
+        TaskName = taskName;
 
+        Code = Alerts.AlertCode.InvalidProgramConfiguration;
+        Level = Alerts.AlertLevel.Error;
+        Severity = Alerts.AlertSeverity.High;
     }
-
 }

@@ -10,7 +10,7 @@ namespace SmartFarmer.Alerts
         DateTime When { get; }
         string RaisedByTaskId { get; }
         string PlantInstanceId { get; }
-        string Code { get; }
+        AlertCode Code { get; }
         string Message { get; }
         AlertLevel Level { get; }
         AlertSeverity Severity { get; }

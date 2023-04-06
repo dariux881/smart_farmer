@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Alerts;
@@ -17,25 +18,73 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-    public void RaiseAlert(string message, string code, string taskId, string plantInstanceId, AlertLevel level, AlertSeverity severity)
+    public async Task<string> RaiseAlert(
+        string message, 
+        AlertCode code, 
+        string taskId, 
+        string plantInstanceId,
+        string groundId,
+        AlertLevel level, 
+        AlertSeverity severity)
     {
         var alert = new FarmerAlert
             {
-                ID = _alertProvider.GenerateServiceId(),
                 Message = message,
                 When = DateTime.UtcNow,
                 Code = code,
                 RaisedByTaskId = taskId,
-                PlantInstanceId = plantInstanceId,
+                PlantInstanceId = plantInstanceId,                
                 Level = level,
                 Severity = severity
             };
 
-        var result = _alertProvider.AddFarmerService(alert);
+        var result = await _alertProvider.AddFarmerService(alert);
 
-        if (result)
+        if (result != null)
         {
-            NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(alert.ID));
+            NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(result));
         }
+
+        return result;
+    }
+
+    public async Task<string> RaiseAlert(FarmerAlertRequestData data)
+    {
+        var alert = new FarmerAlert
+            {
+                Message = data.Message,
+                When = DateTime.UtcNow,
+                Code = data.Code,
+                RaisedByTaskId = data.RaisedByTaskId,
+                PlantInstanceId = data.PlantInstanceId,
+                Level = data.Level,
+                Severity = data.Severity
+            };
+
+        var result = await _alertProvider.AddFarmerService(alert);
+
+        if (result != null)
+        {
+            NewAlertCreated?.Invoke(this, new FarmerAlertHandlerEventArgs(result));
+        }
+
+        return result;
+    }
+
+
+    public async Task<IFarmerAlert> GetAlertById(string alertId)
+    {
+        return await _alertProvider.GetFarmerService(alertId);
+    }
+
+    public async Task<string> AddFarmerService(IFarmerAlert service)
+    {
+        await Task.CompletedTask;
+        throw new NotImplementedException();
+    }
+
+    public async Task<IFarmerAlert> GetFarmerService(string serviceId)
+    {
+        return await GetAlertById(serviceId);
     }
 }

@@ -6,5 +6,6 @@ namespace SmartFarmer.Tasks.Movement;
 
 public interface IFarmerMoveOnGridTask : IFarmerTask
 {
-    Task MoveToPosition(int x, int y, CancellationToken token);
+    Task MoveToPosition(double x, double y, CancellationToken token);
+    void GetCurrentPosition(out double x, out double y);
 }

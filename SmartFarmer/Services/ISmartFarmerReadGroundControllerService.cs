@@ -18,6 +18,7 @@ public interface ISmartFarmerReadGroundControllerService
     Task<IFarmerPlant> GetFarmerPlantByIdAsync(string plantId);
     Task<IEnumerable<IFarmerPlant>> GetFarmerPlantByIdsAsync(string[] plantIds);
     Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlantAsync(string userId, string plantId);
+    Task<bool> MarkIrrigationInstance(string userId, FarmerPlantIrrigationInstance irrigationInstance);
     
     Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId);
     Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds);
@@ -25,5 +26,4 @@ public interface ISmartFarmerReadGroundControllerService
 
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId);
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids);
-    Task<bool> MarkFarmerAlertAsRead(string userId, string id, bool read);
 }

@@ -6,39 +6,56 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using SmartFarmer.Exceptions;
+using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Utils;
 
-namespace SmartFarmer.Utils;
+namespace SmartFarmer.Helpers;
 
-public static class FarmerDiscoveredTaskProvider
+public class FarmerTaskProvider : IFarmerTaskProvider
 {
-    private static ConcurrentDictionary<string, IFarmerTask> _resolvedMappings;
-    private static Assembly[] _loadedAssemblies;
+    private ConcurrentDictionary<string, IFarmerTask> _resolvedMappings;
+    private ConcurrentDictionary<string, Func<IFarmerTask>> _customMappings;
 
-    static FarmerDiscoveredTaskProvider()
+    private Assembly[] _loadedAssemblies;
+
+    public FarmerTaskProvider()
     {
         _resolvedMappings = new ConcurrentDictionary<string, IFarmerTask>();
+        _customMappings = new ConcurrentDictionary<string, Func<IFarmerTask>>();
+
         LoadAssembliesFromFolder();
     }
 
-    public static Assembly[] AvailableAssemblies => 
-        _loadedAssemblies ?? 
+    public Assembly[] AvailableAssemblies =>
+        _loadedAssemblies ??
         AppDomain.CurrentDomain.GetAssemblies();
 
-    public static IFarmerTask GetTaskDelegateByClassFullName(
-        string taskTypeFullName, 
-        string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+    [Obsolete]
+    public void ConfigureMapping<T>(Func<T> initializer)
+        where T : IFarmerTask
     {
-        return GetTaskDelegateByType(taskTypeFullName, false, excludedNamespaces, assemblyNames);
+        var key = typeof(T).FullName;
+
+        _customMappings.TryAdd(key, initializer as Func<IFarmerTask>);
     }
 
-    public static IFarmerTask GetTaskDelegateByInterfaceFullName(
-        string taskTypeFullName, 
+    public IFarmerTask GetTaskDelegateByClassFullName(
+        string taskTypeFullName,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
-        return GetTaskDelegateByType(taskTypeFullName, true, excludedNamespaces, assemblyNames);
+        return GetTaskDelegateByType(taskTypeFullName, false, excludedNamespaces, assemblyNames, fService);
+    }
+
+    public IFarmerTask GetTaskDelegateByInterfaceFullName(
+        string taskTypeFullName,
+        string[] excludedNamespaces = null,
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
+    {
+        return GetTaskDelegateByType(taskTypeFullName, true, excludedNamespaces, assemblyNames, fService);
     }
 
     /// <summary>
@@ -47,43 +64,58 @@ public static class FarmerDiscoveredTaskProvider
     /// <param name="taskType">The interface of the specific task.</param>
     /// <param name="excludedNamespaces">Optional namespaces to be excluded.</param>
     /// <param name="assemblyNames">Optional assembly names.</param>
-    public static IFarmerTask GetTaskDelegateByType(
-        Type taskType, 
+    public IFarmerTask GetTaskDelegateByType(
+        Type taskType,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
         if (taskType == null) throw new ArgumentNullException(nameof(taskType));
 
         // limiting to known task
         if (!taskType.GetInterfaces().Contains(typeof(IFarmerTask)))
         {
-            throw new InvalidTaskException();
+            var taskName = taskType.FullName;
+            throw new InvalidTaskException(taskName + " is not defined", null, taskName);
         }
 
-        return GetTaskDelegateByType(taskType.FullName, taskType.IsInterface, excludedNamespaces, assemblyNames);
+        return GetTaskDelegateByType(taskType.FullName, taskType.IsInterface, excludedNamespaces, assemblyNames, fService);
     }
 
-    private static IFarmerTask GetTaskDelegateByType(
-        string taskTypeFullName, 
+    private IFarmerTask GetTaskDelegateByType(
+        string taskTypeFullName,
         bool isInterface,
         string[] excludedNamespaces = null,
-        string[] assemblyNames = null)
+        string[] assemblyNames = null,
+        IFarmerService fService = null)
     {
         if (_resolvedMappings.TryGetValue(taskTypeFullName, out var resolved))
         {
             return resolved;
         }
 
-        var assemblies = 
+        if (_customMappings.TryGetValue(taskTypeFullName, out var activator))
+        {
+            var customTask = activator.Invoke();
+            if (customTask != null)
+            {
+                _resolvedMappings.TryAdd(taskTypeFullName, customTask);
+            }
+
+            return customTask;
+        }
+
+        var assemblies =
             AvailableAssemblies
                 .Where(x => assemblyNames == null || assemblyNames.Contains(x.FullName))
                 .ToArray();
 
         var taskInstance = GetTaskDelegateByTypeCore(
-            assemblies, 
-            GetTypeByFullName(taskTypeFullName), 
+            assemblies,
+            GetTypeByFullName(taskTypeFullName),
             isInterface,
-            excludedNamespaces);
+            excludedNamespaces,
+            fService);
 
         if (taskInstance != null)
         {
@@ -99,26 +131,27 @@ public static class FarmerDiscoveredTaskProvider
     /// <param name="assemblies">The set of assemblies.</param>
     /// <param name="taskType">The interface of the specific task.</param>
     /// <param name="excludedNamespaces">Optional namespaces to be excluded.</param>
-    private static IFarmerTask GetTaskDelegateByTypeCore(
-        Assembly[] assemblies, 
-        Type taskType, 
+    private IFarmerTask GetTaskDelegateByTypeCore(
+        Assembly[] assemblies,
+        Type taskType,
         bool isInterface,
-        string[] excludedNamespaces = null)
+        string[] excludedNamespaces = null,
+        IFarmerService fService = null)
     {
         var task = assemblies
             .SelectMany(s => s.GetTypes())
             .Where(p =>
-                p.IsClass && 
+                p.IsClass &&
                 !p.IsAbstract &&
                 (
-                    !isInterface || 
+                    !isInterface ||
                     (
                         p.GetInterfaces().Any(x => x.GUID == taskType.GUID)// &&
-                        //taskType.IsAssignableFrom(p)
+                                                                           //taskType.IsAssignableFrom(p)
                     )
-                ) && 
+                ) &&
                 (
-                    excludedNamespaces == null || 
+                    excludedNamespaces == null ||
                     !excludedNamespaces.Any(n => n == p.Namespace)
                 ))
             .FirstOrDefault();
@@ -126,22 +159,35 @@ public static class FarmerDiscoveredTaskProvider
         if (task == null)
         {
             // not found task
-            throw new TaskNotFoundException(null, new Exception("implementation of " + taskType.FullName + " has not been found"));
+            var taskName = taskType.FullName;
+            throw new TaskNotFoundException("implementation of " + taskName + " has not been found", null, taskName);
         }
 
-        var taskInstance = Activator.CreateInstance(task) as IFarmerTask;
+        IFarmerTask taskInstance;
+        var predefinedTaskInstance = FarmerServiceLocator.GetServiceByType(taskType, false, fService) as IFarmerTask;
+        if (predefinedTaskInstance != null)
+        {
+            taskInstance = predefinedTaskInstance;
+        }
+        else
+        {
+            taskInstance = Activator.CreateInstance(task) as IFarmerTask;
+        }
 
         if (taskInstance == null)
         {
             // task initialization failure
-            throw new TaskInitializationException();
+            var category = isInterface ? "interface" : "class";
+            var exception = new TaskInitializationException("Error creating/getting instance of "+ category + " " + taskType.FullName);
+
+            throw exception;
         }
 
         return taskInstance;
     }
 
     ///
-    private static Type GetTypeByFullName(string taskTypeFullName)
+    private Type GetTypeByFullName(string taskTypeFullName)
     {
         foreach (var assembly in AvailableAssemblies)
         {
@@ -158,7 +204,7 @@ public static class FarmerDiscoveredTaskProvider
     /// Load assemblies from folder to include all assemblies in current domain. 
     /// By default, not used assemblies are not loaded in current domain
     /// </summary>
-    private static void LoadAssembliesFromFolder()
+    private void LoadAssembliesFromFolder()
     {
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 

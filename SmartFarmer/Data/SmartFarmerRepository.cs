@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
 using SmartFarmer.DTOs;
+using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Misc;
@@ -176,6 +178,40 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return new IrrigationHistory { Steps = steps };
     }
 
+    public async Task<bool> MarkIrrigationInstance(FarmerPlantIrrigationInstance irrigation, string userId = null)
+    {
+        if (irrigation == null || string.IsNullOrEmpty(irrigation.PlantId)) throw new ArgumentNullException("invalid irrigation information");
+
+        // check if plant can be read by userId
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var plant = await 
+                _dbContext
+                    .PlantsInstance
+                        .Where(x => x.ID == irrigation.PlantId)
+                        .Include(x => x.Ground)
+                        .FirstAsync();
+            
+            if (plant.Ground.UserID != userId)
+            {
+                throw new InvalidOperationException("user " + userId + " cannot access plant " + irrigation.PlantId);
+            }
+        }
+
+        var step = new IrrigationHistoryStep()
+        {
+            PlantInstanceId = irrigation.PlantId,
+            IrrigationDt = irrigation.When ?? DateTime.UtcNow,
+            Amount = irrigation.AmountInLiters
+        };
+
+        _dbContext
+            .IrrigationHistory.Add(step);
+        
+        var result = await _dbContext.SaveChangesAsync();
+        return result == 1;
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
     {
         return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();
@@ -259,6 +295,56 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
     
+    public async Task<string> CreateFarmerAlert(string userId, FarmerAlertRequestData data)
+    {
+        var grounds = new List<string>();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+        }
+
+        if (!grounds.Any())
+        {
+            await Task.CompletedTask;
+            return null;
+        }
+
+        var groundId = data.FarmerGroundId;
+        if (!grounds.Contains(groundId))
+        {
+            await Task.CompletedTask;
+            throw new InvalidOperationException("Ground " + groundId + " is not held by user " + userId);
+        }
+        
+        var alert = new FarmerAlert
+            {
+                FarmerGroundId = groundId,
+                RaisedByTaskId = data.RaisedByTaskId,
+                PlantInstanceId = data.PlantInstanceId,
+                Message = data.Message,
+                Level = data.Level,
+                Severity = data.Severity,
+                Code = data.Code,
+                When = DateTime.UtcNow,
+                MarkedAsRead = false
+            };
+
+        try
+        {
+            _dbContext.Alerts.Add(alert);
+
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return null;
+        }
+
+        return alert.ID;
+    }
+
     public async Task<bool> MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
     {
         var grounds = new List<string>();
@@ -361,6 +447,43 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         };
 
         await _dbContext.PlantsInstance.AddAsync(plant);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<IFarmerSettings> GetUserSettings(string userId)
+    {
+        var userSettingsStr = (await 
+            _dbContext
+                .Users
+                    .FirstOrDefaultAsync(u => u.ID == userId)
+                    )?.SerializedSettings;
+
+        if (string.IsNullOrEmpty(userSettingsStr))
+        {
+            await Task.CompletedTask;
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<FarmerSettings>(userSettingsStr);
+    }
+
+    public async Task<bool> SaveUserSettings(string userId, IFarmerSettings settings)
+    {
+        if (userId == null) throw new ArgumentNullException(nameof(userId));
+        if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+        // check user
+        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.ID == userId);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // save settings
+        user.SerializedSettings = JsonSerializer.Serialize(settings);
         await _dbContext.SaveChangesAsync();
 
         return true;

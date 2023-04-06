@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Plants
@@ -28,17 +29,7 @@ namespace SmartFarmer.Plants
             {
                 _plantKindId = value;
 
-                if (this.Plant == null)
-                {
-                    this.Plant = FarmerPlantProvider.Instance.GetFarmerService(_plantKindId);
-                    return;
-                }
-
-                var calculatedKind = FarmerPlantProvider.Instance.GetFarmerService(this.Plant.ID);
-                if (_plantKindId != calculatedKind?.ID)
-                {
-                    Plant = calculatedKind;
-                }
+                Task.Run(async () => await AssociatePlant());
             }
         }
 
@@ -66,5 +57,26 @@ namespace SmartFarmer.Plants
 
         public List<DateTime> IrrigationHistory { get; private set; }
 
+        private async Task AssociatePlant()
+        {
+            if (string.IsNullOrEmpty(PlantKindID))
+            {
+                this.Plant = null;
+                await Task.CompletedTask;
+                return;
+            }
+
+            if (this.Plant == null)
+            {
+                this.Plant = await FarmerPlantProvider.Instance.GetFarmerService(PlantKindID);
+                return;
+            }
+
+            var calculatedKind = await FarmerPlantProvider.Instance.GetFarmerService(this.Plant.ID);
+            if (_plantKindId != calculatedKind?.ID)
+            {
+                Plant = calculatedKind;
+            }
+        }
     }
 }

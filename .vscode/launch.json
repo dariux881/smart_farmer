@@ -2,10 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Local App",
+            "type": "coreclr",
+            "preLaunchTask": "build",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceFolder}/SmartFarmer.App/bin/Debug/net6.0/SmartFarmer.App.dll",
+        },
+        {
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-            "name": ".NET Core Launch (web)",
+            "name": "Web App",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",

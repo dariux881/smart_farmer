@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SmartFarmer.Alerts;
 using SmartFarmer.Plants;
@@ -95,20 +96,9 @@ public class FarmerGround : IFarmerGround, IDisposable
             GroundIrrigationPlan = planProvider.GetFarmerService(groundIrrigationPlanId) as IFarmerAutoIrrigationPlan;
         }
 
-        _plants = plantIds?
-                    .Select(x => plantInstanceProvider?.GetFarmerService(x))
-                    .ToList()
-                    ?? new List<IFarmerPlantInstance>();
-
-        _plans = planIds?
-                    .Select(x => planProvider?.GetFarmerService(x))
-                    .ToList()
-                    ?? new List<IFarmerPlan>();
-
-        _alerts = alertIds?
-                    .Select(x => alertProvider?.GetFarmerService(x))
-                    .ToList()
-                    ?? new List<IFarmerAlert>();
+        Task.Run(async () => await GatherPlants(plantIds));
+        Task.Run(async () => await GatherPlans(planIds));
+        Task.Run(async () => await GatherAlerts(alertIds));
 
         UserID = userId;
     }
@@ -199,35 +189,35 @@ public class FarmerGround : IFarmerGround, IDisposable
     {
         if (plantIds == null) throw new ArgumentNullException(nameof(plantIds));
 
-        this.AddPlants(plantIds.Select(x => _plantsInstanceProvider.GetFarmerService(x)).ToArray());
+        // this.AddPlants(plantIds.Select(x => _plantsInstanceProvider.GetFarmerService(x)).ToArray());
     }
 
     public void AddPlant(string plant)
     {
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-        this.AddPlant(_plantsInstanceProvider.GetFarmerService(plant));
+        // this.AddPlant(_plantsInstanceProvider.GetFarmerService(plant));
     }
 
     public void RemovePlant(string plant)
     {
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
-        this.RemovePlant(_plantsInstanceProvider.GetFarmerService(plant));
+        // this.RemovePlant(_plantsInstanceProvider.GetFarmerService(plant));
     }
 
     public void AddPlan(string planId)
     {
         if (planId == null) throw new ArgumentNullException(nameof(planId));
 
-        this.AddPlan(_planProvider.GetFarmerService(planId));
+        // this.AddPlan(_planProvider.GetFarmerService(planId));
     }
 
     public void RemovePlan(string planId)
     {
         if (planId == null) throw new ArgumentNullException(nameof(planId));
 
-        this.RemovePlan(_planProvider.GetFarmerService(planId));
+        // this.RemovePlan(_planProvider.GetFarmerService(planId));
     }
 
 
@@ -235,21 +225,21 @@ public class FarmerGround : IFarmerGround, IDisposable
     {
         if (string.IsNullOrEmpty(alertId)) throw new ArgumentNullException(nameof(alertId));
 
-        AddAlert(_alertProvider?.GetFarmerService(alertId));
+        // AddAlert(_alertProvider?.GetFarmerService(alertId));
     }
 
     public void RemoveAlert(string alertId)
     {
         if (string.IsNullOrEmpty(alertId)) throw new ArgumentNullException(nameof(alertId));
 
-        RemoveAlert(_alertProvider?.GetFarmerService(alertId));
+        // RemoveAlert(_alertProvider?.GetFarmerService(alertId));
     }
 
     public void MarkAlertAsRead(string alertId, bool read)
     {
         if (string.IsNullOrEmpty(alertId)) throw new ArgumentNullException(nameof(alertId));
 
-        MarkAlertAsRead(_alertProvider?.GetFarmerService(alertId), read);
+        // MarkAlertAsRead(_alertProvider?.GetFarmerService(alertId), read);
     }
 
     public void Dispose()
@@ -264,10 +254,11 @@ public class FarmerGround : IFarmerGround, IDisposable
 
 #region Private Methods
 
-    private void BuildAutoGroundIrrigationPlan()
+    private async Task BuildAutoGroundIrrigationPlan()
     {
         if (!_buildAutoIrrigationPlan)
         {
+            await Task.CompletedTask;
             return;
         }
 
@@ -283,16 +274,16 @@ public class FarmerGround : IFarmerGround, IDisposable
 
         var oldGroundIrrigationPlanId = GroundIrrigationPlan?.ID;
 
-        GroundIrrigationPlan = 
-            new FarmerAutoIrrigationPlan(FarmerPlanProvider.Instance.GenerateServiceId())
-            {
-                CanAutoGroundIrrigationPlanStart = 
-                    userSettings.AUTOIRRIGATION_AUTOSTART,
-                PlannedAt = 
-                    userSettings.AUTOIRRIGATION_PLANNED_TIME
-            };
+        // GroundIrrigationPlan = 
+        //     new FarmerAutoIrrigationPlan()
+        //     {
+        //         CanAutoGroundIrrigationPlanStart = 
+        //             userSettings.AUTOIRRIGATION_AUTOSTART,
+        //         PlannedAt = 
+        //             userSettings.AUTOIRRIGATION_PLANNED_TIME
+        //     };
 
-        FarmerPlanProvider.Instance.AddFarmerService(GroundIrrigationPlan);
+        // await FarmerPlanProvider.Instance.AddFarmerService(GroundIrrigationPlan);
 
         // if (oldGroundIrrigationPlanId == null)
         // {
@@ -300,14 +291,14 @@ public class FarmerGround : IFarmerGround, IDisposable
         // }
 
         // asking irrigation
-        orderedPlants.ForEach(plant => 
-            {
-                var plantKind = _plantsProvider.GetFarmerService(plant.PlantKindID);
+        // orderedPlants.ForEach(plant => 
+        //     {
+        //         var plantKind = _plantsProvider.GetFarmerService(plant.PlantKindID);
 
-                GroundIrrigationPlan.AddIrrigationStep(
-                    plant, 
-                    _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
-            });
+        //         GroundIrrigationPlan.AddIrrigationStep(
+        //             plant, 
+        //             _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
+        //     });
     }
 
     private IReadOnlyCollection<IFarmerPlantInstance> OrderPlantsToMinimizeMovements()
@@ -391,5 +382,54 @@ public class FarmerGround : IFarmerGround, IDisposable
     }
 
 #endregion
+
+
+    private async Task GatherAlerts(string[] alertIds)
+    {
+        _alerts = new List<IFarmerAlert>();
+        
+        if (alertIds == null) return;
+
+        foreach (var alertId in alertIds)
+        {
+            var alert = await _alertProvider?.GetFarmerService(alertId);
+            if (alert != null)
+            {
+                _alerts.Add(alert);
+            }
+        }
+    }
+
+    private async Task GatherPlans(string[] planIds)
+    {
+        _plans = new List<IFarmerPlan>();
+        
+        if (planIds == null) return;
+
+        foreach (var planId in planIds)
+        {
+            var plan = await _planProvider?.GetFarmerService(planId);
+            if (plan != null)
+            {
+                _plans.Add(plan);
+            }
+        }
+    }
+
+    private async Task GatherPlants(string[] plantIds)
+    {
+        _plants = new List<IFarmerPlantInstance>();
+        
+        if (plantIds == null) return;
+
+        foreach (var plantId in plantIds)
+        {
+            var plant = await _plantsInstanceProvider?.GetFarmerService(plantId);
+            if (plant != null)
+            {
+                _plants.Add(plant);
+            }
+        }
+    }
 #endregion
 }

@@ -1,62 +1,134 @@
 using System;
 using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using SmartFarmer.Alerts;
+using SmartFarmer.Utils;
 
-namespace SmartFarmer.Misc
+namespace SmartFarmer.Misc;
+
+public static class SmartFarmerLog 
 {
-    public static class SmartFarmerLog 
+    private static IFarmerAlertHandler _alertHandler;
+    private static Object lockObj = new Object();
+    private static bool _showThreadInfo = false;
+
+    static SmartFarmerLog()
     {
-        static SmartFarmerLog()
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location))
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+            .Build();
+
+        SmartFarmerLog.InitLogger(configuration);
+    }
+
+    private static void InitLogger(IConfiguration configuration)
+    {
+        if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+            .CreateLogger();
+
+        Log.Information("logger created");
+    }
+
+    public static void SetAlertHandler(IFarmerAlertHandler alertHandler)
+    {
+        _alertHandler = alertHandler;
+    }
+
+    public static void SetShowThreadInfo(bool show)
+    {
+        _showThreadInfo = show;
+    }
+
+    public static void Information(string message)
+    {
+        Log.Information(message);
+        ShowThreadInformation("Task #" + Task.CurrentId.ToString());
+    }
+
+    public static void Debug(string message)
+    {
+        Log.Debug(message);
+        ShowThreadInformation("Task #" + Task.CurrentId.ToString());
+    }
+
+    public static void Warning(string message)
+    {
+        Log.Warning(message);
+        ShowThreadInformation("Task #" + Task.CurrentId.ToString());
+    }
+
+    public static async Task<string> Warning(string message, FarmerAlertRequestData alert)
+    {
+        Warning(message);
+
+        if (alert != null && _alertHandler != null)
         {
-            // Log.Logger = new LoggerConfiguration()
-            //     .MinimumLevel.Debug()
-            //     //.WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day)
-            //     .WriteTo.Console()
-            //     .CreateLogger();
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
-                .Build();
-
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
-                .CreateLogger();
-
-            Log.Information("logger created");
+            return await _alertHandler.RaiseAlert(alert);
         }
+        return null;
+    }
 
-        public static void Information(string message)
+    public static void Error(string message)
+    {
+        Log.Error(message);
+    }
+
+    public static async Task<string> Error(string message, FarmerAlertRequestData alert)
+    {
+        Error(message);
+        ShowThreadInformation("Task #" + Task.CurrentId.ToString());
+        
+        if (alert != null && _alertHandler != null)
         {
-            Log.Information(message);
+            return await _alertHandler.RaiseAlert(alert);
         }
+        return null;
+    }
 
-        public static void Debug(string message)
+    public static void Exception(Exception ex)
+    {
+        var innerMessage = ex?.InnerException != null ? 
+            "\n" + ex?.InnerException.Message : 
+            string.Empty;
+
+        Log.Error("[EXC] " + ex?.Message + 
+                    innerMessage +
+                    "\n" + ex?.StackTrace);
+    }
+
+    public static async Task<string> Exception(Exception ex, FarmerAlertRequestData alert)
+    {
+        Exception(ex);
+        ShowThreadInformation("Task #" + Task.CurrentId.ToString());
+
+        if (alert != null && _alertHandler != null)
         {
-            Log.Debug(message);
+           return await _alertHandler.RaiseAlert(alert);
         }
+        return null;
+    }
 
-        public static void Warning(string message)
-        {
-            Log.Warning(message);
+    private static void ShowThreadInformation(String taskName)
+    {
+        if (!_showThreadInfo) return;
+
+        String msg = null;
+        Thread thread = Thread.CurrentThread;
+        lock(lockObj) {
+            msg = String.Format("{0} thread information\n", taskName) +
+                String.Format("   Background: {0}\n", thread.IsBackground) +
+                String.Format("   Thread Pool: {0}\n", thread.IsThreadPoolThread) +
+                String.Format("   Thread ID: {0}\n", thread.ManagedThreadId);
         }
-
-        public static void Error(string message)
-        {
-            Log.Error(message);
-        }
-
-        public static void Exception(Exception ex)
-        {
-            var innerMessage = ex?.InnerException != null ? 
-                "\n" + ex?.InnerException.Message : 
-                string.Empty;
-
-            Log.Error("[EXC] " + ex?.Message + 
-                        innerMessage +
-                        "\n" + ex?.StackTrace);
-        }
+        Console.WriteLine(msg);
     }
 }

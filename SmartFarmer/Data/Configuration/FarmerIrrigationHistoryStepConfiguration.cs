@@ -8,6 +8,9 @@ public class FarmerIrrigationHistoryStepConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<IrrigationHistoryStep> builder)
     {
+        builder
+            .Property(f => f.ID)
+            .ValueGeneratedOnAdd();
 
     }
 }

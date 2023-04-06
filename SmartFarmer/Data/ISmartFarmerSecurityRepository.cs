@@ -14,4 +14,7 @@ public interface ISmartFarmerSecurityRepository
 
     Task LogInUser(UserLogin userLogin);
     Task LogOutUser(string token);
+
+    Task<IFarmerSettings> GetUserSettings(string userId);
+    Task<bool> SaveUserSettings(string userId, IFarmerSettings settings);
 }

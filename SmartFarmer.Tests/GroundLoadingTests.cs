@@ -5,6 +5,7 @@ using SmartFarmer.Tests.Utils;
 using SmartFarmer.Utils;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SmartFarmer.Tests
 {
@@ -26,21 +27,21 @@ namespace SmartFarmer.Tests
         }
 
         [SetUp]
-        public void Setup()
+        public async Task Setup()
         {
             var basePath = Path.Combine(".", "Configuration");
-            var plants = InformationLoader.LoadPlantsFromCsvFile(Path.Combine(basePath, "Plants.csv"));
+            var plants = await InformationLoader.LoadPlantsFromCsvFile(Path.Combine(basePath, "Plants.csv"));
 
             foreach (var plant in plants)
             {
-                FarmerPlantProvider.Instance.AddFarmerService(plant);
+                await FarmerPlantProvider.Instance.AddFarmerService(plant);
             }
 
-            var plantsInGround = InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
+            var plantsInGround = await InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
             
             foreach (var plant in plantsInGround)
             {
-                FarmerPlantInstanceProvider.Instance.AddFarmerService(plant);
+                await FarmerPlantInstanceProvider.Instance.AddFarmerService(plant);
             }
             
             _ground.AddPlants(plantsInGround.Select(x => x.ID).ToArray());

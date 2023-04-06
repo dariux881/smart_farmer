@@ -1,8 +1,7 @@
-namespace SmartFarmer.Alerts
+namespace SmartFarmer.Alerts;
+
+public enum AlertLevel
 {
-    public enum AlertLevel
-    {
-        Warning,
-        Error
-    }
+    Warning,
+    Error
 }
