@@ -52,7 +52,7 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         {
             var message = "Error in changing height";
 
-            SmartFarmerLog
+            await SmartFarmerLog
                 .Error(
                     message, 
                     new FarmerAlertRequestData()

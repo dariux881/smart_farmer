@@ -40,7 +40,7 @@ public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
         {
             var message = "Error in turning arm";
 
-            SmartFarmerLog
+            await SmartFarmerLog
                 .Error(
                     message, 
                     new FarmerAlertRequestData()

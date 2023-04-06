@@ -76,7 +76,7 @@ public class FarmerPlan : IFarmerPlan
         }
         catch (FarmerBaseException fEx)
         {
-            SmartFarmerLog.Exception(
+            await SmartFarmerLog.Exception(
                 fEx, 
                 new SmartFarmer.Alerts.FarmerAlertRequestData()
                 {
@@ -92,7 +92,7 @@ public class FarmerPlan : IFarmerPlan
         catch (Exception ex)
         {
             LastException = ex;
-            SmartFarmerLog.Exception(
+            await SmartFarmerLog.Exception(
                 ex, 
                 new SmartFarmer.Alerts.FarmerAlertRequestData()
                 {

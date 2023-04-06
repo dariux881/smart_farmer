@@ -83,7 +83,8 @@ public partial class FarmerRequestHelper
             return null;
         }
 
-        var returnContent = await response.Content?.ReadAsStringAsync(token);
+        var returnContent = (await response.Content?.ReadAsStringAsync(token)).RemoveAdditionalQuotes();
+
         return returnContent;
     }
 }

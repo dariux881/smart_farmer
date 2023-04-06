@@ -54,7 +54,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         {
             var message = "Error in moving device on grid";
 
-            SmartFarmerLog
+            await SmartFarmerLog
                 .Error(
                     message, 
                     new FarmerAlertRequestData()

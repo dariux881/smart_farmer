@@ -24,5 +24,15 @@ public static class StringUtils
     {
         return JsonConvert.DeserializeObject<T>(obj);
     }
+    public static string RemoveAdditionalQuotes(this string text)
+    {
+        if (text != null && 
+            text.StartsWith("\"") &&
+            text.EndsWith("\""))
+        {
+            text = text.Substring(1, text.Length-2);
+        }
 
+        return text;
+    }
 }
