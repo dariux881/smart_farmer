@@ -28,10 +28,6 @@ public class GroundActivityManager
         await PrepareEnvironment();
         await InitializeGrounds();
 
-        //TODO move in auto ground manager
-        // var plans = GetPlansToRun();
-        // await ExecutePlans(plans);
-
         var tasks = new List<Task>();
         foreach (var opManager in _operationalManagers)
         {
@@ -62,7 +58,7 @@ public class GroundActivityManager
 
         if (OperationalMode.HasFlag(AppOperationalMode.Auto))
         {
-            //TODO
+            _operationalManagers.Add(new AutomaticOperationalManager());
         }
 
         _operationalManagers.ForEach(opMan =>
@@ -157,35 +153,6 @@ public class GroundActivityManager
             await Task.WhenAll(tasks);  
         } 
         catch {}
-    }
-
-    private static IEnumerable<string> GetPlansToRun()
-    {
-        var plans = new List<string>();
-
-        foreach (var gGround in LocalConfiguration.Grounds.Values)
-        {
-            var ground = gGround as FarmerGround;
-            if (ground == null) continue;
-            
-            var now = DateTime.UtcNow;
-            var today = now.DayOfWeek;
-
-            var plansInGround = 
-                ground
-                    .Plans
-                        .Where(x => 
-                            (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
-                            (x.ValidToDt == null || x.ValidToDt > now)) // valid end
-                        .Where(x => x.PlannedDays == null || !x.PlannedDays.Any() || x.PlannedDays.Contains(today)) // valid day of the week
-                        .OrderBy(x => x.Priority)
-                        .Select(x => x.ID)
-                        .ToList();
-            
-            plans.AddRange(plansInGround);
-        }
-
-        return plans;
     }
 
     private void ClearLocalData()
