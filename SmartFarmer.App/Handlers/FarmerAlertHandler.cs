@@ -34,6 +34,21 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         return await FarmerRequestHelper.GetAlert(alertId, System.Threading.CancellationToken.None);
     }
 
+    public async Task<bool> MarkAlertAsRead(string alertId, bool status)
+    {
+        var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, System.Threading.CancellationToken.None);
+        if (result)
+        {
+            var alert = await GetAlertById(alertId) as FarmerAlert;
+            if (alert != null)
+            {
+                alert.MarkedAsRead = status;
+            }
+        }
+
+        return result;
+    }
+
     public async Task<string> RaiseAlert(
         string message, 
         AlertCode code, 
@@ -59,7 +74,6 @@ public class FarmerAlertHandler : IFarmerAlertHandler
     public async Task<string> RaiseAlert(FarmerAlertRequestData data)
     {
         var alertId = await FarmerRequestHelper.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
-        //FIXME alertId contains \"\". Fails all after this
         var alert = await GetAlertById(alertId);
 
         if (alert == null) return null;

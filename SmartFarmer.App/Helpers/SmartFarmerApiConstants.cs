@@ -27,6 +27,7 @@ public class SmartFarmerApiConstants
     public const string GET_PLAN_STEPS = GROUNDS_BASE + "/steps";
 
     public const string GET_ALERTS = GROUNDS_BASE + "/alerts";
+    public const string SET_ALERT_READ = GROUNDS_BASE + "/markAlert";
     public const string CREATE_ALERT = GROUNDS_BASE + "/createAlert";
 
     #endregion // Ground Management

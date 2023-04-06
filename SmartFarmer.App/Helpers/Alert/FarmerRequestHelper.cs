@@ -87,4 +87,30 @@ public partial class FarmerRequestHelper
 
         return returnContent;
     }
+
+    public static async Task<bool> MarkAlertAsRead(string alertId, bool read, CancellationToken token)
+    {
+        // markAlert
+        var httpReq = new HttpRequest();
+
+        var response = await 
+            httpReq
+                .GetAsync(
+                    SmartFarmerApiConstants.SET_ALERT_READ,
+                    token,
+                    new KeyValuePair<string, string>[] 
+                    { 
+                        new KeyValuePair<string, string>("alertId", alertId),
+                        new KeyValuePair<string, string>("read", "" + read),
+                    });
+        
+        if (response == null || !response.IsSuccessStatusCode)
+        {
+            SmartFarmerLog.Warning(response.ReasonPhrase);
+            return false;
+        }
+
+        var resultStr = await response.Content.ReadAsStringAsync();
+        return bool.Parse(resultStr);
+    }
 }

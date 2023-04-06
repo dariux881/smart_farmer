@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using SmartFarmer.Data;
+﻿using System.Threading.Tasks;
 using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
-using SmartFarmer.Tasks.Generic;
-using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer;
@@ -22,7 +12,10 @@ public class Program
     {
         InitializeServices();
 
-        var groundManager = new GroundActivityManager();
+        var groundManager = new GroundActivityManager()
+        {
+            OperationalMode = OperationalManagement.AppOperationalMode.Console
+        };
         await groundManager.Run();
     }
 

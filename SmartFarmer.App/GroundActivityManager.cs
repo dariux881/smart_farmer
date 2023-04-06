@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
-using SmartFarmer.Tasks.Generic;
+using SmartFarmer.OperationalManagement;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
@@ -17,103 +17,132 @@ namespace SmartFarmer;
 
 public class GroundActivityManager
 {
+    private List<IOperationalModeManager> _operationalManagers;
+
+    public AppOperationalMode OperationalMode { get; set; }
+
     public async Task Run()
     {
+        FillOperationalManagers();
+
         await PrepareEnvironment();
         await InitializeGrounds();
 
-        var plans = GetPlansToRun();
-        await ExecutePlans(plans);
+        //TODO move in auto ground manager
+        // var plans = GetPlansToRun();
+        // await ExecutePlans(plans);
 
-        var menu = 0;
-        do
+        var tasks = new List<Task>();
+        foreach (var opManager in _operationalManagers)
         {
-            menu = Prompt(out var additionalData);
+            tasks.Add(Task.Run(() => opManager.Run()));
 
-            switch(menu)
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    private void FillOperationalManagers()
+    {
+        if (_operationalManagers == null) _operationalManagers = new List<IOperationalModeManager>();
+
+        _operationalManagers.ForEach(opMan => 
             {
-                case -1 : 
-                    break;
-                case 0 : 
-                    foreach (var plan in (LocalConfiguration.Grounds.First().Value as FarmerGround).PlanIds)
-                    {
-                        Console.WriteLine(plan);
-                    }
-
-                    break;
-                case 1 :
-                    var result = await (LocalConfiguration.Grounds.First().Value as FarmerGround).ExecutePlan(additionalData, CancellationToken.None);
-
-                    break;
-                case 2:
-                    
-                    Console.WriteLine("alerts:");
-                    foreach (var alert in (LocalConfiguration.Grounds.First().Value as FarmerGround).Alerts)
-                    {
-                        Console.WriteLine("\t" + alert.ID + " - level: " + alert.Level + " - Severity: " + alert.Severity + "\n\t\t" + alert.Message);
-                    }
-
-                    break;
-
-                case 5: 
-                    ClearLocalData();
-                    await InitializeGrounds();
-                    break;
-                
-                default:
-                    break;
+                opMan.NewOperationRequired -= ExecuteRequiredOperation;
+                opMan.Dispose();
             }
+        );
 
-        } while (menu >= 0);
-    }
+        _operationalManagers.Clear();
 
-    private void ClearLocalData()
-    {
-        LocalConfiguration.Grounds = new Dictionary<string, IFarmerGround>();
-    }
-
-    private int Prompt(out string additionalData) 
-    {
-        string message = 
-            "\n"+
-            "0 - list plans\n" +
-            "1 - execute plan\n" +
-            "2 - list alerts\n"+
-            "5 - update grounds\n"+
-            "-1 - exit\n"+
-            " select: ";
-
-        Console.WriteLine(message);
-
-        int choice;
-        while (!int.TryParse(Console.ReadLine().Trim(), out choice))
+        if (OperationalMode.HasFlag(AppOperationalMode.Console))
         {
-            choice = -1;
-            Console.WriteLine("retry: \n select: ");
+            _operationalManagers.Add(new ConsoleOperationalModeManager());
         }
 
-        if (choice == 1)
+        if (OperationalMode.HasFlag(AppOperationalMode.Auto))
         {
-            Console.WriteLine("insert additional data: ");
-            additionalData = Console.ReadLine().Trim();
-            return choice;
+            //TODO
         }
 
-        additionalData = null;
-        return choice;
+        _operationalManagers.ForEach(opMan =>
+        {
+            opMan.NewOperationRequired += ExecuteRequiredOperation;
+        });
+
     }
 
-    private static async Task ExecutePlans(IDictionary<string, IEnumerable<IFarmerPlan>> plans)
+    private void ExecuteRequiredOperation(object sender, OperationRequestEventArgs e)
+    {
+        SmartFarmerLog.Information($"Operation {e.Operation} requested by {e.Sender.Name}");
+
+        switch(e.Operation)
+        {
+            case AppOperation.RunPlan:
+                {
+                    Task.Run(async () => await ExecutePlan(e.AdditionalData.FirstOrDefault()));
+                }
+
+                break;
+            case AppOperation.UpdateAllGrounds:
+                ClearLocalData();
+                Task.Run(async () => await InitializeGrounds());
+
+                break;            
+            case AppOperation.MarkAlert:
+                Task.Run(async () => await InvertAlertReadStatus(e.AdditionalData.FirstOrDefault()));
+
+                break;                
+        }
+    }
+
+    private static IFarmerGround GetGroundByPlan(string planId)
+    {
+        return LocalConfiguration.Grounds.Values.FirstOrDefault(x => x.PlanIds.Contains(planId));
+    }
+
+    private static IFarmerGround GetGroundByAlert(string alertId)
+    {
+        return LocalConfiguration.Grounds.Values.FirstOrDefault(x => x.AlertIds.Contains(alertId));
+    }
+
+    private static async Task<bool> InvertAlertReadStatus(string alertId)
+    {
+        var ground = GetGroundByAlert(alertId) as FarmerGround;
+        if (ground == null) return false;
+
+        var alert = ground.Alerts.First(x => x.ID == alertId);
+        var newState = !alert.MarkedAsRead;
+        
+        return await MarkAlertAsRead(alertId, newState);
+    }
+
+    private static async Task ExecutePlan(string planId)
+    {
+        var ground = GetGroundByPlan(planId);
+        if (ground == null || ground is not FarmerGround fGround)
+        {
+            SmartFarmerLog.Error("No valid ground found for plan " + planId);
+            return;
+        }
+
+        await fGround.ExecutePlan(planId, CancellationToken.None);
+    }
+
+    private static async Task ExecutePlans(string[] planIds)
     {
         var tasks = new List<Task>();
         var cancellationToken = new CancellationToken();
 
-        foreach (var groundPlans in plans)
+        foreach (var planId in planIds)
         {
-            var localGroundPlans = groundPlans.Value;
-            tasks.Add(Task.Run(async () => {
-                foreach(var plan in localGroundPlans)
-                {
+            var ground = GetGroundByPlan(planId) as FarmerGround;
+
+            if (ground == null) continue;
+            var plan = ground.Plans.First(x => x.ID == planId);
+
+            tasks.Add(
+                Task.Run(async () => {
                     try
                     {
                         await plan.Execute(cancellationToken);
@@ -131,9 +160,7 @@ public class GroundActivityManager
                     {
                         SmartFarmerLog.Information("stopping plan \"" + plan.Name + "\"");
                     }
-                    
-                }
-            }));
+                }));
         }
 
         try {  
@@ -142,9 +169,9 @@ public class GroundActivityManager
         catch {}
     }
 
-    private static IDictionary<string, IEnumerable<IFarmerPlan>> GetPlansToRun()
+    private static IEnumerable<string> GetPlansToRun()
     {
-        var plans = new Dictionary<string, IEnumerable<IFarmerPlan>>();
+        var plans = new List<string>();
 
         foreach (var gGround in LocalConfiguration.Grounds.Values)
         {
@@ -162,15 +189,23 @@ public class GroundActivityManager
                             (x.ValidToDt == null || x.ValidToDt > now)) // valid end
                         .Where(x => x.PlannedDays == null || !x.PlannedDays.Any() || x.PlannedDays.Contains(today)) // valid day of the week
                         .OrderBy(x => x.Priority)
+                        .Select(x => x.ID)
                         .ToList();
             
-            if (plansInGround.Any())
-            {
-                plans.Add(ground.ID, plansInGround);
-            }
+            plans.AddRange(plansInGround);
         }
 
         return plans;
+    }
+
+    private void ClearLocalData()
+    {
+        LocalConfiguration.Grounds = new Dictionary<string, IFarmerGround>();
+    }
+
+    private static async Task<bool> MarkAlertAsRead(string alertId, bool status)
+    {
+        return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true).MarkAlertAsRead(alertId, status);
     }
 
     private static async Task InitializeGrounds()

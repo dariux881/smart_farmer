@@ -16,5 +16,7 @@ public interface IFarmerAlertHandler : IFarmerServiceProvider<IFarmerAlert>
     
     Task<string> RaiseAlert(FarmerAlertRequestData data);
 
+    Task<bool> MarkAlertAsRead(string alertId, bool status);
+
     Task<IFarmerAlert> GetAlertById(string alertId);
 }
