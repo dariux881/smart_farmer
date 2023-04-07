@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
 using SmartFarmer.Helpers;
@@ -13,9 +14,14 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
     public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
     public string Name => "Console Operational Manager";
 
-    public async Task Run()
+    public async Task Prepare()
     {
-        var menu = PromptAndExecute();
+        await Task.CompletedTask;
+    }
+
+    public async Task Run(CancellationToken token)
+    {
+        var menu = PromptAndExecute(token);
 
         if (menu != -1)
         {
@@ -31,7 +37,7 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
 
     }
 
-    private int PromptAndExecute() 
+    private int PromptAndExecute(CancellationToken token) 
     {
         string message = 
             "\n"+
@@ -50,6 +56,7 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
         do
         {
             if (!CanRun) break;
+            if (token.IsCancellationRequested) break;
 
             Console.WriteLine(message);
 

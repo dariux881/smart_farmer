@@ -13,13 +13,9 @@ namespace SmartFarmer.DTOs.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
-    private string _farmerDaysMask;
-    private List<DayOfWeek> _days;
-
     public FarmerPlan()
     {
         Steps = new List<FarmerPlanStep>();
-        _days = new List<DayOfWeek>();
     }
 
     public string Name { get; set; }
@@ -42,34 +38,7 @@ public class FarmerPlan : IFarmerPlan
     public int Priority { get; set; }
     public DateTime? ValidFromDt { get; set; }
     public DateTime? ValidToDt { get; set; }
-
-    [JsonIgnore]
-    public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
-
-    public string FarmerDaysMask 
-    {
-        get => _farmerDaysMask;
-        set {
-            if (value == null) 
-            {
-                _days.Clear();
-                return;
-            }
-
-            _farmerDaysMask = value;
-            var dayCounts = 7;
-            if (_farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
-
-            for(int i=0; i<dayCounts; i++)
-            {
-                var dayAllowed = _farmerDaysMask.ElementAt(i) == '1';
-                if (!dayAllowed) continue;
-
-                var day = (DayOfWeek)i;
-                _days.Add(day);
-            }
-        }
-    }
+    public string CronSchedule { get; set; }
 
     public async Task Execute(CancellationToken token)
     {

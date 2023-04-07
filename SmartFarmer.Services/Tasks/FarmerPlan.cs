@@ -34,7 +34,7 @@ namespace SmartFarmer.Tasks
         public DateTime? ValidFromDt { get; set; }
         public DateTime? ValidToDt { get; set; }
 
-        public IReadOnlyList<DayOfWeek> PlannedDays { get; set; }
+        public string CronSchedule { get; set; }
 
         [JsonIgnore]
         public List<IFarmerPlanStep> EditableSteps { get; protected init; }

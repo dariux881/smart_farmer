@@ -91,15 +91,15 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             GroundId = ground1.ID,
             //ID = "plan1",
             Name = "Monday plan",
-            FarmerDaysMask = "0100000"
+            CronSchedule = "* * * ? * MON *"
         };
 
         var plan2 = new FarmerPlan
         {
             GroundId = ground1.ID,
             //ID = "plan1",
-            Name = "Tuesday plan",
-            FarmerDaysMask = "0010000"
+            Name = "Fridy plan",
+            CronSchedule = "0/10 * * ? * FRI *"
         };
 
         _dbContext.Plans.Add(plan1);

@@ -12,10 +12,7 @@ public class Program
     {
         InitializeServices();
 
-        var groundManager = new GroundActivityManager()
-        {
-            OperationalMode = OperationalManagement.AppOperationalMode.Console
-        };
+        var groundManager = new GroundActivityManager();
         await groundManager.Run();
     }
 

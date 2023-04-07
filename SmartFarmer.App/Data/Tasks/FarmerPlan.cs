@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using SmartFarmer.Exceptions;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
@@ -12,24 +11,11 @@ namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
-    private List<DayOfWeek> _days;
     private IFarmerGround _ground;
 
     public FarmerPlan()
     {
         Steps = new List<FarmerPlanStep>();
-    }
-
-    [JsonConstructor]
-    public FarmerPlan(string farmerDaysMask)
-        : this()
-    {
-        _days = new List<DayOfWeek>();
-
-        if (!string.IsNullOrEmpty(farmerDaysMask))
-        {
-            FillRecurrentTask(farmerDaysMask);
-        }
     }
 
     public string Name { get; set; }
@@ -38,7 +24,7 @@ public class FarmerPlan : IFarmerPlan
     public DateTime? ValidFromDt { get; set; }
     public DateTime? ValidToDt { get; set; }
 
-    public IReadOnlyList<DayOfWeek> PlannedDays => _days.AsReadOnly();
+    public string CronSchedule { get; set; }
 
     public List<FarmerPlanStep> Steps { get; set; }
     
@@ -108,21 +94,6 @@ public class FarmerPlan : IFarmerPlan
         {
             IsInProgress = false;
             SmartFarmerLog.Information("stopping plan \"" + Name + "\"");
-        }
-    }
-    
-    private void FillRecurrentTask(string farmerDaysMask)
-    {
-        var dayCounts = 7;
-        if (farmerDaysMask.Length != dayCounts) throw new ArgumentOutOfRangeException("invalid data");
-
-        for(int i=0; i<dayCounts; i++)
-        {
-            var dayAllowed = farmerDaysMask.ElementAt(i) == '1';
-            if (!dayAllowed) continue;
-
-            var day = (DayOfWeek)i;
-            _days.Add(day);
         }
     }
 }

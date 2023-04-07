@@ -18,24 +18,64 @@ namespace SmartFarmer;
 public class GroundActivityManager
 {
     private List<IOperationalModeManager> _operationalManagers;
-
-    public AppOperationalMode OperationalMode { get; set; }
+    private ApiConfiguration _apiConfiguration;
+    private UserConfiguration _userConfiguration;
+    private AppConfiguration _appConfiguration;
 
     public async Task Run()
     {
+        PrepareEnvironment();
+
         FillOperationalManagers();
 
-        await PrepareEnvironment();
+        var loginResult = await Login();
+        if (!loginResult)
+        {
+            //TODO retry in case of failure
+            SmartFarmerLog.Error($"Login failed for user {_userConfiguration.UserName}. Stopping manager");
+            return;
+        }
+
         await InitializeGrounds();
+
+        var tokenSource = new CancellationTokenSource();
+        var cancellationToken = tokenSource.Token;
 
         var tasks = new List<Task>();
         foreach (var opManager in _operationalManagers)
         {
-            tasks.Add(Task.Run(() => opManager.Run()));
+            tasks.Add(Task.Run(() => opManager.Run(cancellationToken)));
 
         }
 
         await Task.WhenAll(tasks);
+    }
+
+    private async Task<bool> Login()
+    {
+        var cancellationToken = new CancellationTokenSource().Token;
+
+        var user = new Data.Security.LoginRequestData() {
+                UserName = _userConfiguration?.UserName, 
+                Password = _userConfiguration?.Password
+            };
+
+        // login
+        var loginResponse = await FarmerRequestHelper.Login(
+            user, 
+            cancellationToken);
+
+        // save login result
+        if (loginResponse == null || !loginResponse.IsSuccess)
+        {
+            SmartFarmerLog.Error("Invalid login for user " + user.UserName + " error: " + loginResponse?.ErrorMessage);
+            return false;
+        }
+
+        LocalConfiguration.LoggedUserId = loginResponse.UserId;
+        LocalConfiguration.Token = loginResponse.Token;
+
+        return !string.IsNullOrEmpty(LocalConfiguration.Token);
     }
 
     private void FillOperationalManagers()
@@ -51,18 +91,24 @@ public class GroundActivityManager
 
         _operationalManagers.Clear();
 
-        if (OperationalMode.HasFlag(AppOperationalMode.Console))
+        if (_appConfiguration.AppOperationalMode == null)
+        {
+            return;
+        }
+
+        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Console))
         {
             _operationalManagers.Add(new ConsoleOperationalModeManager());
         }
 
-        if (OperationalMode.HasFlag(AppOperationalMode.Auto))
+        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Auto))
         {
-            _operationalManagers.Add(new AutomaticOperationalManager());
+            _operationalManagers.Add(new AutomaticOperationalManager(_appConfiguration));
         }
 
-        _operationalManagers.ForEach(opMan =>
+        _operationalManagers.ForEach(async opMan =>
         {
+            await opMan.Prepare();
             opMan.NewOperationRequired += ExecuteRequiredOperation;
         });
 
@@ -215,9 +261,9 @@ public class GroundActivityManager
 
     }
 
-    private static async Task PrepareEnvironment()
+    private void PrepareEnvironment()
     {
-        SmartFarmerLog.SetShowThreadInfo(true);
+        // SmartFarmerLog.SetShowThreadInfo(true);
         SmartFarmerLog.SetAlertHandler(FarmerServiceLocator.GetService<IFarmerAlertHandler>(true));
 
         var builder = new ConfigurationBuilder()
@@ -227,30 +273,9 @@ public class GroundActivityManager
 
         IConfiguration config = builder.Build();
 
-        var apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
-        var userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
-
-        var cancellationToken = new CancellationToken();
-
-        var user = new Data.Security.LoginRequestData() {
-                UserName = userConfiguration?.UserName, 
-                Password = userConfiguration?.Password
-            };
-
-        // login
-        var loginResponse = await FarmerRequestHelper.Login(
-            user, 
-            cancellationToken);
-
-        // save login result
-        if (loginResponse == null || !loginResponse.IsSuccess)
-        {
-            SmartFarmerLog.Error("Invalid login for user " + user.UserName + " error: " + loginResponse?.ErrorMessage);
-            return;
-        }
-
-        LocalConfiguration.LoggedUserId = loginResponse.UserId;
-        LocalConfiguration.Token = loginResponse.Token;
+        _apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
+        _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
+        _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
     }
     
     private static async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
