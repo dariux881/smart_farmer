@@ -4,6 +4,7 @@ public enum AlertCode
 {
     Unknown,
     InvalidProgramConfiguration,
+    SerialCommunicationException,
     BlockedArm,
     BlockedOnGrid
 }

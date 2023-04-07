@@ -21,6 +21,7 @@ public class GroundActivityManager
     private ApiConfiguration _apiConfiguration;
     private UserConfiguration _userConfiguration;
     private AppConfiguration _appConfiguration;
+    private SerialCommunicationConfiguration _serialConfiguration;
 
     public async Task Run()
     {
@@ -276,13 +277,14 @@ public class GroundActivityManager
         _apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
         _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
         _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
+        _serialConfiguration = config.GetSection("SerialConfiguration").Get<SerialCommunicationConfiguration>();
     }
     
     private static async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
     {
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
-        var deviceHandler = new ExternalDeviceProxy();
+        var deviceHandler = new ExternalDeviceProxy(_serialConfiguration);
 
         var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
