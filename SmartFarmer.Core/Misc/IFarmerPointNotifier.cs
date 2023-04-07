@@ -1,8 +1,8 @@
 using System;
 
+namespace SmartFarmer.Misc;
+
 public interface IFarmerPointNotifier
 {
-    double X { get; }
-    double Y { get; }
     event EventHandler NewPoint;
 }

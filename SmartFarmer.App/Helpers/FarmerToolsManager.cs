@@ -10,7 +10,7 @@ namespace SmartFarmer.Helpers;
 public class FarmerToolsManager : IFarmerToolsManager
 {
     private FarmerTool _currentlyMountedTool;
-    private FarmerPoint _toolsCollectorPosition;
+    private Farmer2dPoint _toolsCollectorPosition;
     private IFarmerGround _ground;
     private SemaphoreSlim _mountingToolSem;
     private IFarmerMoveOnGridTask _moveOnGrid;
@@ -26,7 +26,7 @@ public class FarmerToolsManager : IFarmerToolsManager
         InitializeDependencies();
     }
 
-    public void SetToolCollectorPosition(FarmerPoint toolsCollectorPosition)
+    public void SetToolCollectorPosition(Farmer2dPoint toolsCollectorPosition)
     {
         _toolsCollectorPosition = toolsCollectorPosition;
     }

@@ -13,6 +13,6 @@ public class GlobalSettings
             DateTime.UtcNow.Day,
             2, 0, 0);
     
-    public static readonly FarmerPoint TOOLS_COLLECTOR_POSITION = 
-        new FarmerPoint(0, 0);
+    public static readonly Farmer2dPoint TOOLS_COLLECTOR_POSITION = 
+        new Farmer2dPoint(0, 0);
 }

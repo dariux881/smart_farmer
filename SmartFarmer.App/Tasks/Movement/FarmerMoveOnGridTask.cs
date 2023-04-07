@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
-using SmartFarmer.Data.Alerts;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
 
@@ -12,7 +12,7 @@ namespace SmartFarmer.Tasks.Movement;
 
 public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisposable
 {
-    private FarmerPoint _currentPosition;
+    private Farmer2dPoint _currentPosition;
     private IFarmerMoveOnGridDevice _deviceHandler;
 
 
@@ -29,7 +29,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
 
     public async Task<bool> Initialize(CancellationToken token)
     {
-        return await _deviceHandler.MoveOnGridAsync(new FarmerPoint(0, 0), token);
+        return await _deviceHandler.MoveOnGridAsync(0, 0, token);
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)
@@ -49,7 +49,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
 
         SmartFarmerLog.Debug($"moving to {x}, {y}");
 
-        var result = await _deviceHandler.MoveOnGridAsync(new FarmerPoint(x, y), token);
+        var result = await _deviceHandler.MoveOnGridAsync(x, y, token);
         if (!result)
         {
             var message = "Error in moving device on grid";
@@ -89,7 +89,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
     private void InitCurrentPosition(IFarmerGround ground)
     {
         _currentPosition = 
-            new FarmerPoint(
+            new Farmer2dPoint(
                 0.0, 0.0, // expected 0,0 -> to reset when initializing
                 _deviceHandler,
                 ground?.WidthInMeters,

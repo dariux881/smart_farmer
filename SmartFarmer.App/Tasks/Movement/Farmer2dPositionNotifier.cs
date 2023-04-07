@@ -1,8 +1,9 @@
 using System;
+using SmartFarmer.Misc;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerPositionNotifier : IFarmerPointNotifier
+public class Farmer2dPositionNotifier : IFarmer2dPointNotifier
 {
     private double _x, _y;
 
@@ -13,7 +14,7 @@ public class FarmerPositionNotifier : IFarmerPointNotifier
             if (_x != value)
             {
                 _x = value;
-                NewPoint?.Invoke(this, EventArgs.Empty);
+                SendNewPoint();
             }
         }
     }
@@ -25,10 +26,15 @@ public class FarmerPositionNotifier : IFarmerPointNotifier
             if (_y != value)
             {
                 _y = value;
-                NewPoint?.Invoke(this, EventArgs.Empty);
+                SendNewPoint();
             }
         }
     }
 
     public event EventHandler NewPoint;
+
+    protected void SendNewPoint()
+    {
+        NewPoint?.Invoke(this, EventArgs.Empty);
+    }
 }

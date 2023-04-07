@@ -6,13 +6,13 @@ namespace SmartFarmer.Settings
     {
         private bool? _autoIrrigation_autoStart;
         private DateTime? _autoIrrigation_plannedTime;
-        private FarmerPoint _toolsCollectorPosition;
+        private Farmer2dPoint _toolsCollectorPosition;
 
         public bool AUTOIRRIGATION_AUTOSTART =>
             _autoIrrigation_autoStart ??
             GlobalSettings.DEFAULT_AUTOIRRIGATION_AUTOSTART;
 
-        public FarmerPoint TOOLS_COLLECTOR_POSITION =>
+        public Farmer2dPoint TOOLS_COLLECTOR_POSITION =>
             _toolsCollectorPosition ??
             GlobalSettings.TOOLS_COLLECTOR_POSITION;
 
@@ -30,7 +30,7 @@ namespace SmartFarmer.Settings
             _autoIrrigation_plannedTime = value;
         }
 
-        public void SetToolsCollectorPosition(FarmerPoint position)
+        public void SetToolsCollectorPosition(Farmer2dPoint position)
         {
             _toolsCollectorPosition = position;
         }

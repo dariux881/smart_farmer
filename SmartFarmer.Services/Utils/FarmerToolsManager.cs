@@ -14,7 +14,7 @@ public class FarmerToolsManager
     public static FarmerToolsManager Instance => _instance.Value;
 
     private FarmerTool _currentlyMountedTool;
-    private FarmerPoint _toolsCollectorPosition;
+    private Farmer2dPoint _toolsCollectorPosition;
     private SemaphoreSlim _mountingToolSem;
     private IFarmerMoveOnGridTask _moveOnGrid;
     private IFarmerMoveArmAtHeight _moveHeight;
@@ -24,7 +24,7 @@ public class FarmerToolsManager
 
     }
 
-    public FarmerToolsManager(FarmerPoint toolsCollectorPosition)
+    public FarmerToolsManager(Farmer2dPoint toolsCollectorPosition)
     {
         _currentlyMountedTool = FarmerTool.None;
         _mountingToolSem = new SemaphoreSlim(1);

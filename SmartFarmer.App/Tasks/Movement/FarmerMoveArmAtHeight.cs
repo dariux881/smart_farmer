@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
 

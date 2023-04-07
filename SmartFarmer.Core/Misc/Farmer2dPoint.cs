@@ -1,10 +1,11 @@
 using System;
+using SmartFarmer.Misc;
 
-public class FarmerPoint : IDisposable
+public class Farmer2dPoint : IDisposable
 {
-    private IFarmerPointNotifier _updater;
+    private IFarmer2dPointNotifier _updater;
 
-    public FarmerPoint(double x, double y, IFarmerPointNotifier updater = null, double? maxWidth = null, double? maxLength = null)
+    public Farmer2dPoint(double x, double y, IFarmer2dPointNotifier updater = null, double? maxWidth = null, double? maxLength = null)
     {
         this.X = x;
         this.Y = y;
@@ -47,7 +48,7 @@ public class FarmerPoint : IDisposable
     
     private void UpdatePoint(object sender, EventArgs e)
     {
-        if (sender is not IFarmerPointNotifier notifier)
+        if (sender is not IFarmer2dPointNotifier notifier)
         {
             return;
         }
