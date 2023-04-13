@@ -29,6 +29,7 @@ public class FarmerPlanStep : IFarmerPlanStep
     }
 
     public string TaskClassFullName { get; set; }
+    public string TaskInterfaceFullName { get; set; }
 
     public TimeSpan Delay { get; set; }
 
@@ -51,7 +52,11 @@ public class FarmerPlanStep : IFarmerPlanStep
         _ground = ground;
         return this;
     }
-
+    
+    /// <summary>
+    /// Executes the plan step. Gathers the task, configures it with the parameters, waits the Delay, then runs the task. 
+    /// </summary>
+    /// <throws>Exception if task fails</throws>
     public async Task Execute(object[] parameters, CancellationToken token)
     {
         var task = GetTask();        
@@ -63,7 +68,7 @@ public class FarmerPlanStep : IFarmerPlanStep
             await Task.Delay(Delay, token);
         }
         
-        SmartFarmerLog.Information("preparing task " + TaskClassFullName);
+        SmartFarmerLog.Information("preparing task " + task.GetType().FullName);
 
         try
         {
@@ -90,12 +95,51 @@ public class FarmerPlanStep : IFarmerPlanStep
         }
     }
 
+    /// <summary>
+    /// Returns an instance of desired task type with priority: <class> - <interface>
+    /// </summary>
+    /// <returns>An instance of the desired task</returns>
+    /// <throws>InvalidOperationException if task instance is not found</throws>
     private IFarmerTask GetTask()
     {
-        if (string.IsNullOrEmpty(TaskClassFullName)) throw new InvalidOperationException("task not properly configured");
+        return 
+            GetTaskByClass() ?? // Prio 1 - configured class
+            GetTaskByInterface() ??  // Prio 2 - configured interface
+            throw new InvalidOperationException("task not properly configured"); // no task found, raising exception
+    }
+
+    /// <summary>
+    /// Returns an instance of desired task type by given class
+    /// </summary>
+    /// <returns>An instance of the desired task</returns>
+    /// <throws>Exception if task instance cannot be created</throws>
+    private IFarmerTask GetTaskByClass()
+    {
+        if (string.IsNullOrEmpty(TaskClassFullName)) return null;
 
         try {
+            SmartFarmerLog.Debug($"Getting instance of {TaskClassFullName}");
             return _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName, null, null, _ground);
+        }
+        catch(Exception ex)
+        {
+            LastException = ex;
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Returns an instance of desired task type by given interface
+    /// </summary>
+    /// <returns>An instance of the implementor of the desired task</returns>
+    /// <throws>Exception if task instance cannot be created</throws>
+    private IFarmerTask GetTaskByInterface()
+    {
+        if (string.IsNullOrEmpty(TaskInterfaceFullName)) return null;
+
+        try {
+            SmartFarmerLog.Debug($"Getting implementor of {TaskInterfaceFullName}");
+            return _taskProvider.GetTaskDelegateByInterfaceFullName(TaskInterfaceFullName, null, null, _ground);
         }
         catch(Exception ex)
         {

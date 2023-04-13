@@ -29,6 +29,7 @@ namespace SmartFarmer.Tasks
 
         public string ID { get; private set; }
         public string TaskClassFullName => _task?.GetType().FullName;
+        public string TaskInterfaceFullName => _task?.GetType().FullName;
         public object[] BuildParameters { get; private set; }
         public TimeSpan Delay { get; set; }
         public bool IsInProgress { get; set; }
