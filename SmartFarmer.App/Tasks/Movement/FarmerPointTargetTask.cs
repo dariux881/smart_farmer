@@ -10,12 +10,12 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeTask
+public class FarmerPointTargetTask : FarmerBaseTask, IFarmerPointTargetTask
 {
     private double _currentDegrees;
     private IFarmerTurnToolDevice _deviceHandler;
 
-    public FarmerTurnArmToDegreeTask(IFarmerTurnToolDevice handler)
+    public FarmerPointTargetTask(IFarmerTurnToolDevice handler)
     {
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;
@@ -27,19 +27,19 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
 
         var degrees = (double)parameters[0];
 
-        await TurnArmToDegrees(degrees, token);
+        await TurnDeviceToDegrees(degrees, token);
     }
 
-    public async Task TurnArmToDegrees(double degrees, CancellationToken token)
+    public async Task TurnDeviceToDegrees(double degrees, CancellationToken token)
     {
         PrepareTask();
 
-        SmartFarmerLog.Debug($"turning at {degrees} degrees");
+        SmartFarmerLog.Debug($"pointing target at {degrees} degrees");
 
-        var result = await _deviceHandler.TurnArmToDegreesAsync(degrees, token);
+        var result = await _deviceHandler.PointDeviceAsync(degrees, token);
         if (!result)
         {
-            var message = "Error in turning arm";
+            var message = "Error in pointing target";
 
             EndTask(true);
 
@@ -47,7 +47,7 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
                 this.ID,
                 null,
                 message,
-                null, AlertCode.BlockedTurningArm, AlertLevel.Error, AlertSeverity.High);
+                null, AlertCode.BlockedPointingTarget, AlertLevel.Error, AlertSeverity.High);
         }
         
         _currentDegrees = degrees;

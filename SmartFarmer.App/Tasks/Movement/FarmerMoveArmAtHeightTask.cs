@@ -26,12 +26,12 @@ public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightT
 
     public async Task<bool> Initialize(CancellationToken token)
     {
-        var desiredHeight = 0.0;
-        var result = await _deviceHandler.MoveArmAtMaxHeightAsync(token);
+        //TODO start initialization moving to 0?
+        var desiredHeight = await _deviceHandler.MoveArmAtMaxHeightAsync(token);
 
-        if (result) _currentHeight = desiredHeight;
+        if (desiredHeight >= 0) _currentHeight = desiredHeight;
 
-        return result;
+        return desiredHeight >= 0;
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)

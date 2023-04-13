@@ -54,7 +54,7 @@ public class ExternalDeviceProxy :
         return result;
     }
 
-    public async Task<bool> MoveArmAtMaxHeightAsync(CancellationToken token)
+    public async Task<int> MoveArmAtMaxHeightAsync(CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_TO_MAX_HEIGHT_COMMAND,
@@ -66,7 +66,7 @@ public class ExternalDeviceProxy :
             _positionNotifier.Z = result;
         }
 
-        return outcome;
+        return result;
     }
 
     public async Task<bool> MoveOnGridAsync(double x, double y, CancellationToken token)

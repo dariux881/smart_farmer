@@ -6,5 +6,7 @@ public enum AlertCode
     InvalidProgramConfiguration,
     SerialCommunicationException,
     BlockedArm,
-    BlockedOnGrid
+    BlockedOnGrid,
+    BlockedTurningArm,
+    BlockedPointingTarget
 }
