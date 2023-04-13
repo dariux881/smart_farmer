@@ -188,10 +188,7 @@ public class ExternalDeviceProxy :
                 if (!_serialPort.IsOpen)
                 {
                     SmartFarmerLog.Error($"Serial port {_serialPort.PortName} is closed");
-                    // return -1;
-
-                    await Task.Delay(1000);
-                    return 0;
+                    return -1;
                 }
 
                 SmartFarmerLog.Debug("writing bytes to serial port");
