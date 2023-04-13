@@ -134,7 +134,7 @@ public class ExternalDeviceProxy :
         _serialPort.WriteTimeout = _serialConfiguration?.WriteTimeout ?? 1000;
         _serialPort.ReadTimeout = _serialConfiguration?.ReadTimeout ?? 1000;
 
-        // _serialPort.Open();
+        _serialPort.Open();
     }
 
     private async Task<int> SendCommandToExternalDevice(
