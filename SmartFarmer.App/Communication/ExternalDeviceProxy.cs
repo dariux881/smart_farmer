@@ -203,6 +203,7 @@ public class ExternalDeviceProxy :
 
                 if (!int.TryParse(receivedValue, out result))
                 {
+                    result = -1;
                     SmartFarmerLog.Error($"invalid integer received: \"{receivedValue}\" from serial");
                 }
                 

@@ -83,7 +83,7 @@ public class FarmerPlanStep : IFarmerPlanStep
             LastException = ex;
             throw new FarmerTaskExecutionException(
                 task.ID, 
-                null, //TODO check if the task can provide plantId
+                null,
                 ex.Message ?? ex.InnerException?.Message,
                 ex);
         }
