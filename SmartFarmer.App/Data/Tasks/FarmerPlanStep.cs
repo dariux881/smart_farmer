@@ -68,8 +68,6 @@ public class FarmerPlanStep : IFarmerPlanStep
             await Task.Delay(Delay, token);
         }
         
-        SmartFarmerLog.Information("preparing task " + task.GetType().FullName);
-
         try
         {
             IsInProgress = true;

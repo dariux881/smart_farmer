@@ -23,6 +23,8 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
         _deviceHandler = handler;
     }
 
+    public override string TaskName => "Move at Max Height task";
+
     public async Task<bool> Initialize(CancellationToken token)
     {
         await Task.CompletedTask;

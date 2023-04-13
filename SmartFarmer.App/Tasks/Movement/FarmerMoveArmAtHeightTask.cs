@@ -24,6 +24,8 @@ public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightT
         _deviceHandler = handler;
     }
 
+    public override string TaskName => "Move at Height task";
+
     public async Task<bool> Initialize(CancellationToken token)
     {
         //TODO start initialization moving to 0?

@@ -28,6 +28,8 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         InitCurrentPosition(ground);
     }
 
+    public override string TaskName => "Move on Grid task";
+
     public async Task<bool> Initialize(CancellationToken token)
     {
         return await _deviceHandler.MoveOnGridAsync(0, 0, token);

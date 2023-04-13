@@ -11,8 +11,9 @@ namespace SmartFarmer.Tasks.Base
     {
         public string ID { get; set; }
         public FarmerTool RequiredTool { get; protected set; }
+        public string TaskName => this.GetType().FullName;
+        
         public bool IsInProgress { get; protected set; }
-
         public Exception LastException { get; protected set; }
 
         public abstract Task Execute(object[] parameters, CancellationToken token);

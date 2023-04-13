@@ -11,10 +11,12 @@ public class MockedCumulativeTask : IFarmerLeavesStatusChecker, IFarmerParasiteC
 {
     public MockedCumulativeTask() 
     {
-        ID = StringUtils.RandomString(15);
+        ID = Extensions.RandomString(15);
     }
 
     public FarmerTool RequiredTool => FarmerTool.None;
+
+    public string TaskName => this.GetType().FullName;
 
     public string ID { get; private set; }
 

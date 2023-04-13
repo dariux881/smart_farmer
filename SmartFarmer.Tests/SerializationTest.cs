@@ -26,6 +26,7 @@ namespace SmartFarmer.Tests
         private class TestableFarmerTask : IFarmerTask
         {
             public FarmerTool RequiredTool { get; set; }
+            public string TaskName { get; }
 
             public bool IsInProgress { get; set; }
 

@@ -21,6 +21,8 @@ public class FarmerPointTargetTask : FarmerBaseTask, IFarmerPointTargetTask
         _deviceHandler = handler;
     }
 
+    public override string TaskName => "Point target task";
+
     public override async Task Execute(object[] parameters, CancellationToken token)
     {
         if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));

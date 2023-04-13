@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
 using Newtonsoft.Json;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Misc;
 
-public static class StringUtils
+public static class Extensions
 {
     private static Random random = new Random();
 
@@ -34,5 +35,11 @@ public static class StringUtils
         }
 
         return text;
+    }
+
+    public static string GetTaskName(this IFarmerTask task)
+    {
+        if (task == null) return null;
+        return task.TaskName ?? task.GetType().FullName;
     }
 }

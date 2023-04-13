@@ -7,7 +7,7 @@ namespace SmartFarmer.Plants
     public class FarmerPlant : IFarmerPlant
     {
         public FarmerPlant(string code, string friendlyName, IFarmerIrrigationTaskInfo irrigationInfo)
-            : this("Plant_" + StringUtils.RandomString(5), code, friendlyName, irrigationInfo)
+            : this("Plant_" + Extensions.RandomString(5), code, friendlyName, irrigationInfo)
         {
         }
 

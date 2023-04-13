@@ -21,6 +21,8 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
         _deviceHandler = handler;
     }
 
+    public override string TaskName => "Turn arm task";
+
     public override async Task Execute(object[] parameters, CancellationToken token)
     {
         if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
