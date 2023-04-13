@@ -286,7 +286,7 @@ public class GroundActivityManager
         FarmerServiceLocator.RemoveService<IFarmerToolsManager>();
         FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>();
         FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>();
-        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeight>();
+        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>();
         FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>();
 
         // preparing new services
@@ -299,7 +299,7 @@ public class GroundActivityManager
         FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
 
         var moveAtHeight = new FarmerMoveArmAtHeightTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight, ground);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
         FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
 
         await moveOnGrid.Initialize(cancellationToken);

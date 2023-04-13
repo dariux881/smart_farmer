@@ -10,7 +10,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegree
+public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeTask
 {
     private double _currentDegrees;
     private IFarmerTurnToolDevice _deviceHandler;

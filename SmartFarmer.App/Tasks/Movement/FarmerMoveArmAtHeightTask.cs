@@ -11,7 +11,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeight
+public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightTask
 {
     private double _currentHeight = double.NaN;
     private IFarmerMoveAtHeightDevice _deviceHandler;

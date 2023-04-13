@@ -7,7 +7,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement
 {
-    public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
+    public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegreeTask
     {
         private double _currentDegrees;
         
