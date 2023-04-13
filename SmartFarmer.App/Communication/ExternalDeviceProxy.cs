@@ -2,8 +2,10 @@
 using System;
 using System.IO.Ports;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -42,7 +44,7 @@ public class ExternalDeviceProxy :
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_TO_HEIGHT_COMMAND,
-            new object[] { heightInCm }) == 1;
+            new object[] { heightInCm }) >= 0;
         
         if (result)
         {
@@ -58,7 +60,7 @@ public class ExternalDeviceProxy :
             ExternalDeviceProtocolConstants.MOVE_TO_MAX_HEIGHT_COMMAND,
             null);
         
-        var outcome = result > 0;
+        var outcome = result >= 0;
         if (outcome)
         {
             _positionNotifier.Z = result;
@@ -71,7 +73,7 @@ public class ExternalDeviceProxy :
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_XY_COMMAND,
-            new object[] { x, y }) == 1;
+            new object[] { x, y }) >= 0;
         
         if (result)
         {
@@ -86,7 +88,7 @@ public class ExternalDeviceProxy :
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
-            new object[] { degrees }) == 1;
+            new object[] { degrees }) >= 0;
         
         if (result)
         {
@@ -100,7 +102,7 @@ public class ExternalDeviceProxy :
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
-            new object[] { degrees }) == 1;
+            new object[] { degrees }) >= 0;
         
         if (result)
         {
@@ -132,13 +134,23 @@ public class ExternalDeviceProxy :
         _serialPort.WriteTimeout = _serialConfiguration?.WriteTimeout ?? 1000;
         _serialPort.ReadTimeout = _serialConfiguration?.ReadTimeout ?? 1000;
 
-        _serialPort.Open();
+        // _serialPort.Open();
     }
 
     private async Task<int> SendCommandToExternalDevice(
         string command,
-        object[] parameters,
-        CancellationToken token)
+        object[] parameters)
+    {
+        var buffer = new BufferBlock<byte[]>();
+        var consumerTask = ConsumeCommandAsync(buffer);
+        ProduceCommand(buffer, command, parameters);
+
+        return await consumerTask;
+    }
+
+    private byte[] PrepareCommand(
+        string command,
+        object[] parameters)
     {
         const string separator = "#";
         var paramsToSend = 
@@ -148,28 +160,64 @@ public class ExternalDeviceProxy :
                     parameters.Aggregate((p1, p2) => p1 + separator + p2) :
                     "";
 
-        var task = await Task.Run(() => {
-            try
-            {
-                _serialPort.WriteLine(command + separator + paramsToSend);
+        var toSend = command + separator + paramsToSend;
 
-                while (!token.IsCancellationRequested)
+        return Encoding.ASCII.GetBytes(toSend);
+    }
+
+    private void ProduceCommand(
+        ITargetBlock<byte[]> target,
+        string command,
+        object[] parameters)
+    {
+        var data = PrepareCommand(command, parameters);
+
+        target.Post(data);
+        target.Complete();
+    }
+
+    private async Task<int> ConsumeCommandAsync(ISourceBlock<byte[]> source)
+    {
+        try
+        {            
+            while (await source.OutputAvailableAsync())
+            {
+                byte[] data = await source.ReceiveAsync();
+                var length = data.Length;
+
+                if (!_serialPort.IsOpen)
                 {
-                    string a = _serialPort.ReadExisting();
-                    Console.WriteLine(a);
-                    Thread.Sleep(200);
+                    SmartFarmerLog.Error($"Serial port {_serialPort.PortName} is closed");
+                    // return -1;
+
+                    await Task.Delay(1000);
+                    return 0;
                 }
 
-                string a = _serialPort.ReadExisting();
-                Console.WriteLine(a);
-                Thread.Sleep(200);
-            }
-            catch(Exception ex)
-            {
-                SmartFarmerLog.Exception(ex);
-                throw;
-            }
-        });
+                SmartFarmerLog.Debug("writing bytes to serial port");
+                _serialPort.Write(data, 0, length);
 
+                Thread.Sleep(200);
+
+                int result = -1;
+                // read outcome
+                string receivedValue = _serialPort.ReadExisting();
+                SmartFarmerLog.Debug($"received message from serial port:\n\"{receivedValue}\"");
+
+                if (!int.TryParse(receivedValue, out result))
+                {
+                    SmartFarmerLog.Error($"invalid integer received: \"{receivedValue}\" from serial");
+                }
+                
+                return result;
+            }
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return -1;
+        }
+
+        return 0;
     }
 }

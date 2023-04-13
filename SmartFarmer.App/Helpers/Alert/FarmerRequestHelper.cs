@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -43,6 +44,13 @@ public partial class FarmerRequestHelper
 
     public static async Task<IEnumerable<IFarmerAlert>> GetAlerts(string[] ids, CancellationToken token)
     {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        if (!ids.Any())
+        {
+            await Task.CompletedTask;
+            return new List<IFarmerAlert>();
+        }
+
         var httpReq = new HttpRequest();
 
         var response = await 

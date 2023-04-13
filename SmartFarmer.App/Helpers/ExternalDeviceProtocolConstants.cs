@@ -2,6 +2,7 @@ namespace SmartFarmer.Helpers;
 
 public class ExternalDeviceProtocolConstants
 {
+    public const string STOP = "STP";
     public const string MOVE_XY_COMMAND = "MXY";
     public const string MOVE_TO_HEIGHT_COMMAND = "MHT";
     public const string MOVE_TO_MAX_HEIGHT_COMMAND = "MMH";

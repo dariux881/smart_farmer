@@ -54,22 +54,14 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public async Task Execute(object[] parameters, CancellationToken token)
     {
-        if (string.IsNullOrEmpty(TaskClassFullName)) throw new InvalidOperationException("task not properly configured");
-
-        IFarmerTask task;
-        try {
-            task = _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName, null, null, _ground);
-        }
-        catch(Exception ex)
-        {
-            LastException = ex;
-            await Task.CompletedTask;
-            throw;
-        }
-
+        var task = GetTask();        
         if (task == null) throw new InvalidOperationException("task implementor not found");
-        
-        await Task.Delay(Delay, token);
+
+        if (Delay.TotalSeconds > 0)
+        {
+            SmartFarmerLog.Debug($"waiting {Delay.TotalSeconds} seconds for next task");
+            await Task.Delay(Delay, token);
+        }
         
         SmartFarmerLog.Information("preparing task " + TaskClassFullName);
 
@@ -78,11 +70,15 @@ public class FarmerPlanStep : IFarmerPlanStep
             IsInProgress = true;
             await task.Execute(parameters ?? BuildParameters, token);
         }
+        catch(FarmerTaskExecutionException taskEx)
+        {
+            LastException = taskEx;
+            throw;
+        }
         catch(Exception ex)
         {
             LastException = ex;
-            throw 
-            new FarmerTaskExecutionException(
+            throw new FarmerTaskExecutionException(
                 task.ID, 
                 null, //TODO check if the task can provide plantId
                 ex.Message ?? ex.InnerException?.Message,
@@ -91,6 +87,20 @@ public class FarmerPlanStep : IFarmerPlanStep
         finally
         {
             IsInProgress = false;
+        }
+    }
+
+    private IFarmerTask GetTask()
+    {
+        if (string.IsNullOrEmpty(TaskClassFullName)) throw new InvalidOperationException("task not properly configured");
+
+        try {
+            return _taskProvider.GetTaskDelegateByClassFullName(TaskClassFullName, null, null, _ground);
+        }
+        catch(Exception ex)
+        {
+            LastException = ex;
+            throw;
         }
     }
 }

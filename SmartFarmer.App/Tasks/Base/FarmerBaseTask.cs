@@ -23,9 +23,10 @@ namespace SmartFarmer.Tasks.Base
             SmartFarmerLog.Debug("starting task \"" + this.GetType().FullName + "\"");
         }
 
-        protected void EndTask()
+        protected void EndTask(bool error = false)
         {
-            SmartFarmerLog.Debug(" task \"" + this.GetType().FullName + "\" completed");
+            var withError = error ? " with error" : "";
+            SmartFarmerLog.Debug($" task \"{this.GetType().FullName}\" completed{withError}");
             IsInProgress = false;
         }
 

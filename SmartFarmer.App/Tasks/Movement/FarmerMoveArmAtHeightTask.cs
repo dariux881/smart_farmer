@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -10,12 +11,12 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
+public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeight
 {
     private double _currentHeight = double.NaN;
     private IFarmerMoveAtHeightDevice _deviceHandler;
 
-    public FarmerMoveArmAtHeight(IFarmerMoveAtHeightDevice handler)
+    public FarmerMoveArmAtHeightTask(IFarmerMoveAtHeightDevice handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -53,20 +54,13 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         {
             var message = "Error in changing height";
 
-            await SmartFarmerLog
-                .Error(
-                    message, 
-                    new FarmerAlertRequestData()
-                    {
-                        Message = message,
-                        RaisedByTaskId = this.ID,
-                        Level = AlertLevel.Error,
-                        Severity = AlertSeverity.High,
-                        Code = AlertCode.BlockedArm
-                    });
-
-            EndTask();
-            return;
+            EndTask(true);
+            
+            throw new FarmerTaskExecutionException(
+                this.ID,
+                null,
+                message,
+                null, AlertCode.BlockedArm, AlertLevel.Error, AlertSeverity.High);
         }
 
         _currentHeight = heightInCm;

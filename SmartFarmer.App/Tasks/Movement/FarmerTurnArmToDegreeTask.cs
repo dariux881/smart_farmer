@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
@@ -9,12 +10,12 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
+public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegree
 {
     private double _currentDegrees;
     private IFarmerTurnToolDevice _deviceHandler;
 
-    public FarmerTurnArmToDegree(IFarmerTurnToolDevice handler)
+    public FarmerTurnArmToDegreeTask(IFarmerTurnToolDevice handler)
     {
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;
@@ -40,20 +41,13 @@ public class FarmerTurnArmToDegree : FarmerBaseTask, IFarmerTurnArmToDegree
         {
             var message = "Error in turning arm";
 
-            await SmartFarmerLog
-                .Error(
-                    message, 
-                    new FarmerAlertRequestData()
-                    {
-                        Message = message,
-                        RaisedByTaskId = this.ID,
-                        Level = AlertLevel.Error,
-                        Severity = AlertSeverity.High,
-                        Code = AlertCode.BlockedArm
-                    });
-                    
-            EndTask();
-            return;
+            EndTask(true);
+
+            throw new FarmerTaskExecutionException(
+                this.ID,
+                null,
+                message,
+                null, AlertCode.BlockedArm, AlertLevel.Error, AlertSeverity.High);
         }
         
         _currentDegrees = degrees;

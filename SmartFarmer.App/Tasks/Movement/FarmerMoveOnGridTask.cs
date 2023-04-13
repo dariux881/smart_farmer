@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -54,20 +55,13 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         {
             var message = "Error in moving device on grid";
 
-            await SmartFarmerLog
-                .Error(
-                    message, 
-                    new FarmerAlertRequestData()
-                    {
-                        Message = message,
-                        RaisedByTaskId = this.ID,
-                        Level = AlertLevel.Error,
-                        Severity = AlertSeverity.High,
-                        Code = AlertCode.BlockedOnGrid
-                    });
-                    
-            EndTask();
-            return;
+            EndTask(true);
+
+            throw new FarmerTaskExecutionException(
+                this.ID,
+                null,
+                message,
+                null, AlertCode.BlockedOnGrid, AlertLevel.Error, AlertSeverity.High);
         }
 
         SmartFarmerLog.Debug($"now on {x}, {y}");
