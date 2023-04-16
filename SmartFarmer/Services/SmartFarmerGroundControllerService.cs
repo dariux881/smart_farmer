@@ -1,10 +1,17 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data;
+using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.DTOs.Tasks;
+using SmartFarmer.Misc;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
+using SmartFarmer.Tasks.Irrigation;
+using SmartFarmer.Tasks.Movement;
 
 namespace SmartFarmer.Services;
 
@@ -101,5 +108,98 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
     {
         return await _repository.AddFarmerPlantInstance(userId, data);
+    }
+
+    public async Task<string> BuildIrrigationPlan(string userId, string groundId)
+    {
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, groundId) as FarmerGround;
+        if (ground == null) return null; // no valid ground
+
+        var plan = CreateIrrigationPlan(ground);
+
+        if (plan == null)
+        {
+            SmartFarmerLog.Error($"No valid irrigation plan created for ground {ground.ID}");
+            return null;
+        }
+
+        // return plan ID
+        var planId = await _repository.SaveFarmerPlan(plan);
+
+        // save plan to irrigationPlan on ground
+        ground.GroundIrrigationPlanId = planId;
+
+        var settings = await _repository.GetUserSettings(userId);
+        if (settings != null)
+        {
+            plan.CronSchedule = settings.AUTOIRRIGATION_PLANNED_CRONSCHEDULE;
+            ground.CanIrrigationPlanStart = settings.AUTOIRRIGATION_AUTOSTART;
+        }
+
+        if (!await _repository.SaveGroundUpdates())
+        {
+            SmartFarmerLog.Error($"Failing in saving {planId} as irrigation plan for ground {ground.ID}");
+            return null;
+        }
+
+        return planId;
+    }
+
+    private FarmerPlan CreateIrrigationPlan(FarmerGround ground)
+    {
+        // Steps:
+        // - list all plants, minimizing movements
+        var orderedPlants = 
+            OrderPlantsToMinimizeMovements(ground.Plants);
+        
+        var steps = CreateSteps(orderedPlants);
+
+        return new FarmerPlan()
+        {
+            GroundId = ground.ID,
+            Name = $"AutoIrrigationPlan_ground{ground.ID}_{DateTime.UtcNow}",
+            Steps = steps
+        };
+    }
+
+    private List<FarmerPlanStep> CreateSteps(List<FarmerPlantInstance> orderedPlants)
+    {
+        var steps = new List<FarmerPlanStep>();
+
+        orderedPlants.ForEach(plant => {
+            var singlePlantSteps = new List<FarmerPlanStep>() {
+                // move to plant
+                new FarmerPlanStep()
+                {
+                    BuildParameters = new object[] { plant.PlantX, plant.PlantY },
+                    TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName
+                },
+                // check water
+                new FarmerPlanStep()
+                {
+                    BuildParameters = new object[] { plant.ID },
+                    TaskInterfaceFullName = typeof(IFarmerCheckIfWaterIsNeeded).FullName
+                },
+                // provide water, if needed
+                new FarmerPlanStep()
+                {
+                    BuildParameters = new object[] { plant.ID },
+                    TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName
+                }
+            };
+
+            steps.AddRange(singlePlantSteps);
+        });
+
+        return steps;
+    }
+
+    private List<FarmerPlantInstance> OrderPlantsToMinimizeMovements(List<FarmerPlantInstance> plants)
+    {
+        return 
+            plants
+                .OrderBy(p => p.PlantX)
+                .ThenBy(p => p.PlantY)
+                .ToList();
     }
 }

@@ -5,7 +5,7 @@ namespace SmartFarmer.Settings
     public class UserDefinedSettings : IFarmerSettings
     {
         private bool? _autoIrrigation_autoStart;
-        private DateTime? _autoIrrigation_plannedTime;
+        private string _autoIrrigation_cronSchedule;
         private Farmer2dPoint _toolsCollectorPosition;
 
         public bool AUTOIRRIGATION_AUTOSTART =>
@@ -16,18 +16,18 @@ namespace SmartFarmer.Settings
             _toolsCollectorPosition ??
             GlobalSettings.TOOLS_COLLECTOR_POSITION;
 
-        public DateTime AUTOIRRIGATION_PLANNED_TIME =>
-            _autoIrrigation_plannedTime ??
-            GlobalSettings.DEFAULT_AUTOIRRIGATION_PLANNED_TIME;
+        public string AUTOIRRIGATION_PLANNED_CRONSCHEDULE =>
+            _autoIrrigation_cronSchedule ??
+            GlobalSettings.AUTOIRRIGATION_PLANNED_CRONSCHEDULE;
 
         public void SetAutoIrrigationAutoStart(bool value)
         {
             _autoIrrigation_autoStart = value;
         }
 
-        public void SetAutoIrrigationPlannedTime(DateTime value)
+        public void SetAutoIrrigationCronSchedule(string value)
         {
-            _autoIrrigation_plannedTime = value;
+            _autoIrrigation_cronSchedule = value;
         }
 
         public void SetToolsCollectorPosition(Farmer2dPoint position)

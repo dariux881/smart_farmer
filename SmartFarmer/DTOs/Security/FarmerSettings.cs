@@ -9,5 +9,5 @@ public class FarmerSettings : IFarmerSettings
 
     public Farmer2dPoint TOOLS_COLLECTOR_POSITION { get; set; }
 
-    public DateTime AUTOIRRIGATION_PLANNED_TIME { get; set; }
+    public string AUTOIRRIGATION_PLANNED_CRONSCHEDULE { get; set; }
 }

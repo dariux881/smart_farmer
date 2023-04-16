@@ -175,6 +175,8 @@ public class FarmerGround : IFarmerGround, IDisposable
     [JsonIgnore]
     public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
 
+    public bool CanIrrigationPlanStart { get; set; }
+
 #endregion
 
     public double WidthInMeters { get; set; }

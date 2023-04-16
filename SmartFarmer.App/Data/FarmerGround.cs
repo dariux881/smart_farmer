@@ -58,6 +58,8 @@ public class FarmerGround : IFarmerGround
     public IReadOnlyList<string> AlertIds => _alerts.Select(x => x.ID).ToList().AsReadOnly();
 
     public string GroundIrrigationPlanId { get; set; }
+    public bool CanIrrigationPlanStart { get; set; }
+    
     public double WidthInMeters { get; set; }
     public double LengthInMeters { get; set; }
 
