@@ -21,6 +21,8 @@ public class ExternalDeviceProxy :
     private Farmer5dPositionNotifier _positionNotifier;
     private SerialCommunicationConfiguration _serialConfiguration;
     private SerialPort _serialPort;
+    private SemaphoreSlim _commandInProgressSem;
+    private bool _commandInProgress;
 
     public ExternalDeviceProxy(SerialCommunicationConfiguration appConfiguration)
     {
@@ -28,6 +30,8 @@ public class ExternalDeviceProxy :
         _positionNotifier.NewPoint += NewPointReceived;
 
         _serialConfiguration = appConfiguration;
+
+        _commandInProgressSem = new SemaphoreSlim(1);
 
         ConfigureSerialPort();
     }
@@ -131,6 +135,8 @@ public class ExternalDeviceProxy :
 
         _serialPort.PortName = _serialConfiguration?.SerialPortName ?? "COM4";
         _serialPort.BaudRate = _serialConfiguration?.BaudRate ?? 9600;
+        _serialPort.DtrEnable = true;
+        _serialPort.RtsEnable = true;
         _serialPort.WriteTimeout = _serialConfiguration?.WriteTimeout ?? 1000;
         _serialPort.ReadTimeout = _serialConfiguration?.ReadTimeout ?? 1000;
 
@@ -143,6 +149,7 @@ public class ExternalDeviceProxy :
     {
         var buffer = new BufferBlock<byte[]>();
         var consumerTask = ConsumeCommandAsync(buffer);
+
         ProduceCommand(buffer, command, parameters);
 
         return await consumerTask;
@@ -153,6 +160,7 @@ public class ExternalDeviceProxy :
         object[] parameters)
     {
         const string separator = "#";
+        const string commmandEnd = "!";
         var paramsToSend = 
             parameters == null ? 
                 "" :
@@ -160,7 +168,7 @@ public class ExternalDeviceProxy :
                     parameters.Aggregate((p1, p2) => p1 + separator + p2) :
                     "";
 
-        var toSend = command + separator + paramsToSend;
+        var toSend = command + separator + paramsToSend + commmandEnd;
 
         return Encoding.ASCII.GetBytes(toSend);
     }
@@ -179,7 +187,18 @@ public class ExternalDeviceProxy :
     private async Task<int> ConsumeCommandAsync(ISourceBlock<byte[]> source)
     {
         try
-        {            
+        {
+            await _commandInProgressSem.WaitAsync();
+            if (_commandInProgress)
+            {
+                _commandInProgressSem.Release();
+                SmartFarmerLog.Warning("Another operation in progress");
+                return -1;
+            }
+
+            _commandInProgress = true;
+            _commandInProgressSem.Release();
+
             while (await source.OutputAvailableAsync())
             {
                 byte[] data = await source.ReceiveAsync();
@@ -191,8 +210,9 @@ public class ExternalDeviceProxy :
                     return -1;
                 }
 
-                SmartFarmerLog.Debug("writing bytes to serial port");
-                _serialPort.Write(data, 0, length);
+                var command = Encoding.ASCII.GetString(data, 0, length);
+                SmartFarmerLog.Debug($"writing command to serial port: {command}");
+                _serialPort.Write(command);
 
                 Thread.Sleep(200);
 
@@ -214,6 +234,12 @@ public class ExternalDeviceProxy :
         {
             SmartFarmerLog.Exception(ex);
             return -1;
+        }
+        finally
+        {
+            await _commandInProgressSem.WaitAsync();
+            _commandInProgress = false;
+            _commandInProgressSem.Release();
         }
 
         return 0;
