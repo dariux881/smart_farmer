@@ -11,4 +11,5 @@ public interface ISmartFarmerEditGroundControllerService
 
     Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
     Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
+    Task<string> BuildIrrigationPlan(string userId, string groundId);
 }

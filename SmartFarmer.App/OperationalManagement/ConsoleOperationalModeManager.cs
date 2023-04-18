@@ -132,7 +132,8 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
                     Console.WriteLine($"ALERTS OF GROUND {ground.GroundName}:");
                     foreach (var alert in fGround.Alerts)
                     {
-                        Console.WriteLine($"\t{alert.ID} - ({alert.Level}/{alert.Severity}) - read {alert.MarkedAsRead}\n\t\t{alert.Message}");
+                        var readStatus = (alert.MarkedAsRead ? "" : "not ") + "read"; 
+                        Console.WriteLine($"\t{alert.ID} - {alert.Code} ({alert.Level}/{alert.Severity}) - {readStatus}\n\t\t{alert.Message}");
                     }
                 }
 

@@ -17,7 +17,7 @@ public class FarmerToolsManager
     private Farmer2dPoint _toolsCollectorPosition;
     private SemaphoreSlim _mountingToolSem;
     private IFarmerMoveOnGridTask _moveOnGrid;
-    private IFarmerMoveArmAtHeight _moveHeight;
+    private IFarmerMoveArmAtHeightTask _moveHeight;
 
     private FarmerToolsManager()
     {
@@ -95,7 +95,7 @@ public class FarmerToolsManager
         _moveHeight =
             FarmerTaskProvider
                 .GetTaskDelegateByInterfaceFullName(
-                    typeof(IFarmerMoveArmAtHeight).FullName)
-                    as IFarmerMoveArmAtHeight;
+                    typeof(IFarmerMoveArmAtHeightTask).FullName)
+                    as IFarmerMoveArmAtHeightTask;
     }
 }

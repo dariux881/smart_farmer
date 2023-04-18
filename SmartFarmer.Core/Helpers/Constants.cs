@@ -13,4 +13,8 @@ public static class Constants
     public const string AUTH_READ_USERS = "readUsers";
     public const string AUTH_EDIT_USERS = "editUsers";
 
+    /*** SERIAL COMM CONSTANTS ***/
+    public const string COMMAND_PARAM_SEPARATOR = "#";
+    public const string COMMAND_REQUEST_SEPARATOR = "!";
+
 }

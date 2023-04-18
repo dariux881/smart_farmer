@@ -7,7 +7,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement
 {
-    public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
+    public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeightTask
     {
         private double _currentHeight;
         

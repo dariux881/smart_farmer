@@ -15,6 +15,7 @@ public class FarmerPlanStep : IFarmerPlanStep
     private object[] _buildParameters;
 
     public string TaskClassFullName { get; set; }
+    public string TaskInterfaceFullName { get; set; }
 
     public TimeSpan Delay { get; set; }
 

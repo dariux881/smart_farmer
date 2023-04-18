@@ -44,7 +44,7 @@ public abstract class FarmerServiceLocalProviderBase<T>
 
         do
         {
-            id = _servicePrefix + StringUtils.RandomString(10);
+            id = _servicePrefix + Extensions.RandomString(10);
         } while (_serviceInstances.ContainsKey(id));
 
         return id;

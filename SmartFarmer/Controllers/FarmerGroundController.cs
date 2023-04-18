@@ -341,6 +341,29 @@ public class FarmerGroundController : ControllerBase
         return BadRequest(result);
     }
 
+    [HttpGet("createIrrigationPlan")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult<string>> CreateIrrigationPlan(string groundId)
+    {
+        if (string.IsNullOrEmpty(groundId))
+        {
+            throw new ArgumentNullException(nameof(groundId));
+        }
+
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .BuildIrrigationPlan(userId, groundId);
+
+        if (!string.IsNullOrEmpty(result))
+            return Ok(result);
+
+        return BadRequest(result);
+    }
+
     private async Task<string> GetUserIdByContext()
     {
         var token = (string)HttpContext.Items[Constants.HEADER_AUTHENTICATION_TOKEN];

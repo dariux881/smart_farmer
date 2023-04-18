@@ -15,8 +15,8 @@ namespace SmartFarmer.Tasks
     {
         protected FarmerPlan()
         {
-            ID = StringUtils.RandomString(10);
-            Name = StringUtils.RandomString(10);
+            ID = Misc.Extensions.RandomString(10);
+            Name = Misc.Extensions.RandomString(10);
             EditableSteps = new List<IFarmerPlanStep>();
         }
 

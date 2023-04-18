@@ -51,7 +51,7 @@ public class FarmerPlan : IFarmerPlan
         IsInProgress = true;
 
         // starting new plan execution
-        SmartFarmerLog.Information("starting plan \"" + Name + "\"");
+        SmartFarmerLog.Information($"starting plan \"{Name}\"");
         
         try
         {
@@ -93,7 +93,15 @@ public class FarmerPlan : IFarmerPlan
         finally
         {
             IsInProgress = false;
-            SmartFarmerLog.Information("stopping plan \"" + Name + "\"");
+        }
+
+        if (LastException != null)
+        {
+            SmartFarmerLog.Error($"Plan \"{Name}\" stopped with errors");
+        }
+        else
+        {
+            SmartFarmerLog.Information($"Plan \"{Name}\" completed");
         }
     }
 }

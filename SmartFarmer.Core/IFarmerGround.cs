@@ -14,6 +14,7 @@ public interface IFarmerGround : IFarmerService
     IReadOnlyList<string> PlanIds { get; }
     IReadOnlyList<string> AlertIds { get; }
 
+    bool CanIrrigationPlanStart { get; }
     string GroundIrrigationPlanId { get; }
     double WidthInMeters { get; }
     double LengthInMeters { get; }

@@ -9,6 +9,7 @@ using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
+using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
@@ -103,6 +104,15 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .Include(g => g.Alerts)
                 .FirstOrDefaultAsync(
                     x => x.ID == groundId && x.UserID == userId);
+    }
+
+    /// <summary>
+    /// Saves update on the repository.
+    /// </summary>
+    /// <returns><c>true</c> if some entry changes, <c>false</c> otherwise.</returns>
+    public async Task<bool> SaveGroundUpdates()
+    {
+        return await _dbContext.SaveChangesAsync() > 0;
     }
 
 #endregion
@@ -245,6 +255,17 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             .PlanSteps
                 .Where(p => ids.Contains(p.ID))
                 .ToArrayAsync();
+    }
+
+    public async Task<string> SaveFarmerPlan(FarmerPlan plan)
+    {
+        _dbContext.Plans.Add(plan);
+        await _dbContext.SaveChangesAsync();
+
+        _dbContext.PlanSteps.AddRange(plan.Steps);
+        await _dbContext.SaveChangesAsync();
+
+        return plan.ID;
     }
 
     public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdsAsync(string userId, string[] ids = null)

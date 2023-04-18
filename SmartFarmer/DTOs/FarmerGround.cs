@@ -49,6 +49,7 @@ public class FarmerGround : IFarmerGround
     public List<FarmerAlert> Alerts { get; set; }
     public IReadOnlyList<string> AlertIds => Alerts.Select(x => x.ID).ToList().AsReadOnly();
 
+    public bool CanIrrigationPlanStart { get; set; }
     public string GroundIrrigationPlanId { get; set; }
     public double WidthInMeters { get; set; }
     public double LengthInMeters { get; set; }

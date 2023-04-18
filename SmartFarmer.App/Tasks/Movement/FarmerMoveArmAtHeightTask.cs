@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -10,12 +11,12 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
+public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightTask
 {
     private double _currentHeight = double.NaN;
     private IFarmerMoveAtHeightDevice _deviceHandler;
 
-    public FarmerMoveArmAtHeight(IFarmerMoveAtHeightDevice handler)
+    public FarmerMoveArmAtHeightTask(IFarmerMoveAtHeightDevice handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -23,14 +24,16 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         _deviceHandler = handler;
     }
 
+    public override string TaskName => "Move at Height task";
+
     public async Task<bool> Initialize(CancellationToken token)
     {
-        var desiredHeight = 0.0;
-        var result = await _deviceHandler.MoveArmAtMaxHeightAsync(token);
+        //TODO start initialization moving to 0?
+        var desiredHeight = await _deviceHandler.MoveArmAtMaxHeightAsync(token);
 
-        if (result) _currentHeight = desiredHeight;
+        if (desiredHeight >= 0) _currentHeight = desiredHeight;
 
-        return result;
+        return desiredHeight >= 0;
     }
 
     public override async Task Execute(object[] parameters, CancellationToken token)
@@ -53,20 +56,13 @@ public class FarmerMoveArmAtHeight : FarmerBaseTask, IFarmerMoveArmAtHeight
         {
             var message = "Error in changing height";
 
-            await SmartFarmerLog
-                .Error(
-                    message, 
-                    new FarmerAlertRequestData()
-                    {
-                        Message = message,
-                        RaisedByTaskId = this.ID,
-                        Level = AlertLevel.Error,
-                        Severity = AlertSeverity.High,
-                        Code = AlertCode.BlockedArm
-                    });
-
-            EndTask();
-            return;
+            EndTask(true);
+            
+            throw new FarmerTaskExecutionException(
+                this.ID,
+                null,
+                message,
+                null, AlertCode.BlockedArm, AlertLevel.Error, AlertSeverity.High);
         }
 
         _currentHeight = heightInCm;

@@ -8,6 +8,8 @@ namespace SmartFarmer.Tasks.Generic
     public interface IFarmerPlanStep : IHasProgressCheckInfo, IFarmerService 
     {
         string TaskClassFullName { get; }
+        string TaskInterfaceFullName { get; }
+
         TimeSpan Delay { get; }
         object[] BuildParameters { get; }
 

@@ -14,7 +14,8 @@ public abstract class MockTaskBase : IFarmerTask
     public bool ExpectFail { get; set; } 
 
     public FarmerTool RequiredTool => FarmerTool.None;
-    
+    public string TaskName => this.GetType().FullName;
+
     public bool IsInProgress { get; protected set; }
 
     public Exception LastException { get; protected set; }

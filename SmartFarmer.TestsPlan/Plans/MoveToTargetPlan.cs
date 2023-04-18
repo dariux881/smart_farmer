@@ -31,12 +31,12 @@ public class MoveToTargetPlan : BasePlan
                 // moving to target height
                 new FarmerPlanStep(
                     ID + "_4",
-                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveArmAtHeight)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerMoveArmAtHeightTask)),
                     new object[] {(int)60}),
                 // moving to target degree
                 new FarmerPlanStep(
                     ID + "_5",
-                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerTurnArmToDegree)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerTurnArmToDegreeTask)),
                     new object[] {(double)45.0}),
             };
     }

@@ -86,56 +86,95 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             FarmerGroundId = ground1.ID 
         };
 
-        var plan1 = new FarmerPlan
+        var plan0 = new FarmerPlan
         {
             GroundId = ground1.ID,
             //ID = "plan1",
-            Name = "Monday plan",
-            CronSchedule = "* * * ? * MON *"
+            Name = "Test plan"
         };
 
-        var plan2 = new FarmerPlan
-        {
-            GroundId = ground1.ID,
-            //ID = "plan1",
-            Name = "Fridy plan",
-            CronSchedule = "0/10 * * ? * FRI *"
-        };
+        // var plan1 = new FarmerPlan
+        // {
+        //     GroundId = ground1.ID,
+        //     //ID = "plan1",
+        //     Name = "Monday plan",
+        //     CronSchedule = "* * * ? * MON *"
+        // };
 
-        _dbContext.Plans.Add(plan1);
-        _dbContext.Plans.Add(plan2);
+        // var plan2 = new FarmerPlan
+        // {
+        //     GroundId = ground1.ID,
+        //     //ID = "plan1",
+        //     Name = "Fridy plan",
+        //     CronSchedule = "0/10 * * ? * FRI *"
+        // };
+
+        _dbContext.Plans.Add(plan0);
+        // _dbContext.Plans.Add(plan1);
+        // _dbContext.Plans.Add(plan2);
         _dbContext.SaveChanges();
 
-        var p1Step1 = new FarmerPlanStep
-        {
-            //ID = "p1s1",
-            PlanId = plan1.ID,
-            BuildParameters = new object[] { 5.0 },
-            TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeight"
-        };
-        var p2Step1 = new FarmerPlanStep
-        {
-            //ID = "p1s2",
-            PlanId = plan2.ID,
-            BuildParameters = new object[] { 15.0, 2.0 },
-            TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGrid",
-            Delay = new System.TimeSpan(0, 0, 5)
-        };
-        var p2Step2 = new FarmerPlanStep
-        {
-            //ID = "p1s2",
-            PlanId = plan2.ID,
-            BuildParameters = new object[] { 3.0 },
-            TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeight",
-        };
+        var p0Steps = new [] {
+            new FarmerPlanStep
+            {
+                PlanId = plan0.ID, 
+                BuildParameters = new object[] { 10.0 }, 
+                TaskInterfaceFullName = "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+            },
+            new FarmerPlanStep
+            {
+                PlanId = plan0.ID, 
+                BuildParameters = new object[] { 5.0, 5.0 },
+                Delay = new System.TimeSpan(0, 0, 10),
+                TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+            },
+            new FarmerPlanStep
+            {
+                PlanId = plan0.ID, 
+                BuildParameters = new object[] { 15.0, 5.0 },
+                Delay = new System.TimeSpan(0, 0, 10),
+                TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+            },
+            new FarmerPlanStep
+            {
+                PlanId = plan0.ID, 
+                BuildParameters = new object[] { 0.0 },
+                Delay = new System.TimeSpan(0, 0, 10),
+                TaskInterfaceFullName = "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+            },
+        };            
 
-        var alert = new FarmerAlert
-        {
-            //ID = "alertId",
-            FarmerGroundId = ground1.ID,
-            Level = Alerts.AlertLevel.Warning,
-            Severity = Alerts.AlertSeverity.Low
-        };
+
+        // var p1Step1 = new FarmerPlanStep
+        // {
+        //     //ID = "p1s1",
+        //     PlanId = plan1.ID,
+        //     BuildParameters = new object[] { 5.0 },
+        //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeightTask"
+        // };
+        // var p2Step1 = new FarmerPlanStep
+        // {
+        //     //ID = "p1s2",
+        //     PlanId = plan2.ID,
+        //     BuildParameters = new object[] { 15.0, 2.0 },
+        //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask",
+        //     Delay = new System.TimeSpan(0, 0, 5)
+        // };
+        // var p2Step2 = new FarmerPlanStep
+        // {
+        //     //ID = "p1s2",
+        //     PlanId = plan2.ID,
+        //     BuildParameters = new object[] { 3.0 },
+        //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeightTask",
+        // };
+
+        // var alert = new FarmerAlert
+        // {
+        //     //ID = "alertId",
+        //     FarmerGroundId = ground1.ID,
+        //     Level = Alerts.AlertLevel.Warning,
+        //     Severity = Alerts.AlertSeverity.Low
+        // };
 
         _dbContext.Users.Add(user);
         _dbContext.Authorizations.Add(readGroundAuth);
@@ -144,11 +183,12 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.Authorizations.Add(editUsersAuth);
 
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
-        _dbContext.PlanSteps.Add(p1Step1);
-        _dbContext.PlanSteps.Add(p2Step1);
-        _dbContext.PlanSteps.Add(p2Step2);
+        _dbContext.PlanSteps.AddRange(p0Steps);
+        // _dbContext.PlanSteps.Add(p1Step1);
+        // _dbContext.PlanSteps.Add(p2Step1);
+        // _dbContext.PlanSteps.Add(p2Step2);
 
-        _dbContext.Alerts.Add(alert);
+        // _dbContext.Alerts.Add(alert);
 
         _dbContext.SaveChanges();
     }

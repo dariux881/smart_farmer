@@ -21,6 +21,7 @@ public class GroundActivityManager
     private ApiConfiguration _apiConfiguration;
     private UserConfiguration _userConfiguration;
     private AppConfiguration _appConfiguration;
+    private SerialCommunicationConfiguration _serialConfiguration;
 
     public async Task Run()
     {
@@ -211,7 +212,7 @@ public class GroundActivityManager
         return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true).MarkAlertAsRead(alertId, status);
     }
 
-    private static async Task InitializeGrounds()
+    private async Task InitializeGrounds()
     {
         var cancellationToken = new CancellationToken();
 
@@ -276,21 +277,30 @@ public class GroundActivityManager
         _apiConfiguration = config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
         _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
         _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
+        _serialConfiguration = config.GetSection("SerialConfiguration").Get<SerialCommunicationConfiguration>();
     }
     
-    private static async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
+    private async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
     {
+        // clearing possibly old mapped services
+        FarmerServiceLocator.RemoveService<IFarmerToolsManager>();
+        FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>();
+        FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>();
+        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>();
+        FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>();
+
+        // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
-        var deviceHandler = new ExternalDeviceProxy();
+        var deviceHandler = new ExternalDeviceProxy(_serialConfiguration);
 
         var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
         FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
 
-        var moveAtHeight = new FarmerMoveArmAtHeight(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeight>(() => moveAtHeight, ground);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeight>(() => moveAtHeight, ground);
+        var moveAtHeight = new FarmerMoveArmAtHeightTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
 
         await moveOnGrid.Initialize(cancellationToken);
         await moveAtHeight.Initialize(cancellationToken);

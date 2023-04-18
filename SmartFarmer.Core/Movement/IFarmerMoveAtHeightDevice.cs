@@ -7,5 +7,5 @@ namespace SmartFarmer.Movement;
 public interface IFarmerMoveAtHeightDevice
 {
     Task<bool> MoveArmAtHeightAsync(double heightInCm, CancellationToken token);
-    Task<bool> MoveArmAtMaxHeightAsync(CancellationToken token);
+    Task<int> MoveArmAtMaxHeightAsync(CancellationToken token);
 }

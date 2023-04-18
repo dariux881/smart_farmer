@@ -14,7 +14,7 @@ public class FarmerToolsManager : IFarmerToolsManager
     private IFarmerGround _ground;
     private SemaphoreSlim _mountingToolSem;
     private IFarmerMoveOnGridTask _moveOnGrid;
-    private IFarmerMoveArmAtHeight _moveHeight;
+    private IFarmerMoveArmAtHeightTask _moveHeight;
 
     public FarmerToolsManager(IFarmerGround ground)
     {
@@ -87,6 +87,6 @@ public class FarmerToolsManager : IFarmerToolsManager
 
         _moveHeight =
             FarmerServiceLocator
-                .GetService<IFarmerMoveArmAtHeight>(true, _ground);
+                .GetService<IFarmerMoveArmAtHeightTask>(true, _ground);
     }
 }
