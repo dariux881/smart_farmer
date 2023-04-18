@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using SmartFarmer.Tasks.Generic;
 
@@ -14,6 +15,16 @@ public static class Extensions
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Repeat(chars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    public static string Encode(this string obj)
+    {
+        return Convert.ToBase64String(Encoding.ASCII.GetBytes(obj));
+    }
+
+    public static byte[] Decode(this string obj)
+    {
+        return Convert.FromBase64String(obj);
     }
 
     public static string Serialize(this object obj)

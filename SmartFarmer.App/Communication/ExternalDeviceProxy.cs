@@ -1,8 +1,7 @@
 
 using System;
+using System.Diagnostics;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -24,12 +23,17 @@ public class ExternalDeviceProxy :
     private SemaphoreSlim _commandInProgressSem;
     private bool _commandInProgress;
 
-    public ExternalDeviceProxy(SerialCommunicationConfiguration appConfiguration)
+    private int _delayBetweenReadAttempts;
+    private int _maxReadAttempts;
+
+    public ExternalDeviceProxy(SerialCommunicationConfiguration serialConfiguration)
     {
         _positionNotifier = new Farmer5dPositionNotifier();
         _positionNotifier.NewPoint += NewPointReceived;
 
-        _serialConfiguration = appConfiguration;
+        _serialConfiguration = serialConfiguration;
+        _delayBetweenReadAttempts = _serialConfiguration?.DelayBetweenReadAttempts ?? 2000;
+        _maxReadAttempts = _serialConfiguration?.MaxReadAttempts ?? 10;
 
         _commandInProgressSem = new SemaphoreSlim(1);
 
@@ -119,6 +123,18 @@ public class ExternalDeviceProxy :
     public void Dispose()
     {
         _positionNotifier.NewPoint -= NewPointReceived;
+
+        try
+        {
+            if (_serialPort != null && _serialPort.IsOpen)
+            {
+                _serialPort.Close();
+            }
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
     }
 
     private void NewPointReceived(object sender, EventArgs args)
@@ -159,18 +175,7 @@ public class ExternalDeviceProxy :
         string command,
         object[] parameters)
     {
-        const string separator = "#";
-        const string commmandEnd = "!";
-        var paramsToSend = 
-            parameters == null ? 
-                "" :
-                parameters.Any() ? 
-                    parameters.Aggregate((p1, p2) => p1 + separator + p2) :
-                    "";
-
-        var toSend = command + separator + paramsToSend + commmandEnd;
-
-        return Encoding.ASCII.GetBytes(toSend);
+        return SerialCommandUtils.ComposeRequest(command, parameters);
     }
 
     private void ProduceCommand(
@@ -210,23 +215,66 @@ public class ExternalDeviceProxy :
                     return -1;
                 }
 
-                var command = Encoding.ASCII.GetString(data, 0, length);
-                SmartFarmerLog.Debug($"writing command to serial port: {command}");
-                _serialPort.Write(command);
+                SerialCommandUtils.ParseRequest(
+                    data, 
+                    out var requestId, 
+                    out var command, 
+                    out var parameters);
 
-                Thread.Sleep(200);
+                SmartFarmerLog.Debug($"sending request {command}\tID: {requestId}");
+
+                _serialPort.Write(data, 0, length);
+
+                await Task.Delay(200);
 
                 int result = -1;
                 // read outcome
-                string receivedValue = _serialPort.ReadExisting();
-                SmartFarmerLog.Debug($"received message from serial port:\n\"{receivedValue}\"");
-
-                if (!int.TryParse(receivedValue, out result))
-                {
-                    result = -1;
-                    SmartFarmerLog.Error($"invalid integer received: \"{receivedValue}\" from serial");
-                }
+                string receivedValue = null;
                 
+                var attempts = _maxReadAttempts;
+                Stopwatch sw = new Stopwatch();
+
+                sw.Start();
+                while (attempts > 0) 
+                {
+                    try
+                    {
+                        receivedValue = _serialPort.ReadLine();
+                    }
+                    catch(TimeoutException)
+                    {
+                    }
+                    catch(Exception ex)
+                    {
+                        SmartFarmerLog.Exception(ex);
+                        throw;
+                    }
+
+                    if (!string.IsNullOrEmpty(receivedValue))
+                    {
+                        break;
+                    }
+
+                    await Task.Delay(_delayBetweenReadAttempts);
+                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts-attempts+1}/{_maxReadAttempts}");
+                    attempts--;
+                };
+                sw.Stop();
+
+                if (attempts <= 0)
+                {
+                    SmartFarmerLog.Error($"No valid data received for {sw.Elapsed.TotalSeconds} seconds");
+                    return result;
+                }
+
+                SmartFarmerLog.Debug($"received message from serial port:\n\t->{receivedValue.Replace("\r\n", "").Replace("\n", "")}");
+                result = GetReceivedValueOutcome(requestId, receivedValue);
+
+                if (result == -1)
+                {
+                    SmartFarmerLog.Error($"invalid response for command: \"{command}\". Received {receivedValue}");
+                }
+
                 return result;
             }
         }
@@ -243,5 +291,23 @@ public class ExternalDeviceProxy :
         }
 
         return 0;
+    }
+
+    private int GetReceivedValueOutcome(string expectedRequestId, string receivedValue)
+    {
+        SerialCommandUtils.ParseResponse(
+            receivedValue, 
+            out var requestId, 
+            out var resultStr);
+
+        // SmartFarmerLog.Debug($"expected {expectedRequestId}, found {requestId}. Outcome {resultStr}");
+
+        if (requestId == expectedRequestId && 
+            int.TryParse(resultStr, out var result))
+        {
+            return result;
+        }
+
+        return -1;
     }
 }
