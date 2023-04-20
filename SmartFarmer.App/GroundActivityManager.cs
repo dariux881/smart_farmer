@@ -292,7 +292,7 @@ public class GroundActivityManager
         // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
-        var deviceHandler = new ExternalDeviceProxy(_serialConfiguration);
+        var deviceHandler = new ExternalDeviceProxy(ground, _serialConfiguration);
 
         var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);

@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using SmartFarmer;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -17,6 +18,7 @@ public class ExternalDeviceProxy :
     IFarmerDeviceManager,
     IDisposable
 {
+    private IFarmerGround _ground;
     private Farmer5dPositionNotifier _positionNotifier;
     private SerialCommunicationConfiguration _serialConfiguration;
     private SerialPort _serialPort;
@@ -26,8 +28,10 @@ public class ExternalDeviceProxy :
     private int _delayBetweenReadAttempts;
     private int _maxReadAttempts;
 
-    public ExternalDeviceProxy(SerialCommunicationConfiguration serialConfiguration)
+    public ExternalDeviceProxy(IFarmerGround ground, SerialCommunicationConfiguration serialConfiguration)
     {
+        _ground = ground;
+        
         _positionNotifier = new Farmer5dPositionNotifier();
         _positionNotifier.NewPoint += NewPointReceived;
 
