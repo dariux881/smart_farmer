@@ -178,7 +178,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
                 new FarmerPlanStep()
                 {
                     BuildParameters = new object[] { plant.ID },
-                    TaskInterfaceFullName = typeof(IFarmerCheckIfWaterIsNeeded).FullName
+                    TaskInterfaceFullName = typeof(IFarmerCheckIfWaterIsNeededTask).FullName
                 },
                 // provide water, if needed
                 new FarmerPlanStep()

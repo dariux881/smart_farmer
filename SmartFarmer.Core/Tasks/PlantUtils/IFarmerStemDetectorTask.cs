@@ -2,7 +2,8 @@
 
 namespace SmartFarmer.Tasks.PlantUtils
 {
-    public interface IFarmerLeafDetector : IFarmerTask
+    public interface IFarmerStemDetectorTask : IFarmerTask
     {
+
     }
 }
