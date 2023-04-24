@@ -6,6 +6,7 @@ public interface IFarmerDeviceManager :
     IFarmerMoveOnGridDevice,
     IFarmerMoveAtHeightDevice,
     IFarmerTurnToolDevice,
+    IFarmerWaterProviderDevice,
     IFarmer5dPointNotifier
 {
 
