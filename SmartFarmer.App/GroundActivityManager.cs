@@ -10,6 +10,7 @@ using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement;
+using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
@@ -294,15 +295,19 @@ public class GroundActivityManager
 
         var deviceHandler = new ExternalDeviceProxy(ground, _serialConfiguration);
 
-        var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
-        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
+        var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
+        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, ground);
 
-        var moveAtHeight = new FarmerMoveArmAtHeightTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
+        var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
 
-        await moveOnGrid.Initialize(cancellationToken);
-        await moveAtHeight.Initialize(cancellationToken);
+        var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
+        FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
+
+        await moveOnGridTask.Initialize(cancellationToken);
+        await moveAtHeightTask.Initialize(cancellationToken);
     }
 }
