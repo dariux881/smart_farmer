@@ -280,6 +280,7 @@ public class ExternalDeviceProxy :
                     if (SerialCommandUtils.IsRequestUpdateResult(receivedValue))
                     {
                         ProcessRequestUpdateResult(requestId, command, receivedValue);
+                        continue;
                     }
 
                     await Task.Delay(_delayBetweenReadAttempts);
@@ -338,6 +339,8 @@ public class ExternalDeviceProxy :
 
     private void NotifyPartialResultByCommand(string command, string resultStr)
     {
+        SmartFarmerLog.Debug($"Partial update for command {command}: received {resultStr}");
+
         switch (command)
         {
             case ExternalDeviceProtocolConstants.MOVE_XY_COMMAND:
