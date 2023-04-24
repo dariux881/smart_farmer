@@ -32,5 +32,5 @@ public abstract class MockTaskBase : IFarmerTask
 }
 
 public class MockFarmerLeafDetector : MockTaskBase, IFarmerLeafDetectorTask { }
-public class MockFarmerLeavesStatusChecker : MockTaskBase, IFarmerLeavesStatusChecker { }
+public class MockFarmerLeavesStatusChecker : MockTaskBase, IFarmerLeavesStatusCheckerTask { }
 public class MockFarmerStemDetector : MockTaskBase, IFarmerStemDetectorTask { }

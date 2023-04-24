@@ -1,8 +1,7 @@
 ﻿using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks.PlantUtils
+namespace SmartFarmer.Tasks.PlantUtils;
+
+public interface IFarmerLeafDetectorTask : IFarmerTask
 {
-    public interface IFarmerLeafDetectorTask : IFarmerTask
-    {
-    }
 }

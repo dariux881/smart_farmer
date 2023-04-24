@@ -124,6 +124,24 @@ public class ExternalDeviceProxy :
         return result;
     }
 
+    public async Task<double> GetCurrentHumidityLevel(CancellationToken token)
+    {
+        var result = await SendCommandToExternalDevice(
+            ExternalDeviceProtocolConstants.GET_HUMIDITY_LEVEL, null);
+        
+        return result;
+    }
+
+    public async Task<bool> ProvideWaterAsync(double amountInLiters, CancellationToken token)
+    {
+        var result = await SendCommandToExternalDevice(
+            ExternalDeviceProtocolConstants.HANDLE_PUMP_COMMAND, 
+            new object[] { amountInLiters }) >= 0;
+        
+        return result;
+    }
+
+
     public void Dispose()
     {
         _positionNotifier.NewPoint -= NewPointReceived;
@@ -239,28 +257,33 @@ public class ExternalDeviceProxy :
                 Stopwatch sw = new Stopwatch();
 
                 sw.Start();
-                while (attempts > 0) 
+                while (attempts > 0)
                 {
                     try
                     {
                         receivedValue = _serialPort.ReadLine();
                     }
-                    catch(TimeoutException)
+                    catch (TimeoutException)
                     {
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         SmartFarmerLog.Exception(ex);
                         throw;
                     }
 
-                    if (!string.IsNullOrEmpty(receivedValue))
+                    if (SerialCommandUtils.IsRequestFinalResult(receivedValue))
                     {
                         break;
                     }
 
+                    if (SerialCommandUtils.IsRequestUpdateResult(receivedValue))
+                    {
+                        ProcessRequestUpdateResult(requestId, command, receivedValue);
+                    }
+
                     await Task.Delay(_delayBetweenReadAttempts);
-                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts-attempts+1}/{_maxReadAttempts}");
+                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts - attempts + 1}/{_maxReadAttempts}");
                     attempts--;
                 };
                 sw.Stop();
@@ -295,6 +318,57 @@ public class ExternalDeviceProxy :
         }
 
         return 0;
+    }
+
+    private void ProcessRequestUpdateResult(string expectedRequestId, string command, string receivedValue)
+    {
+        SerialCommandUtils.ParsePartialResponse(
+            receivedValue, 
+            out var requestId, 
+            out var resultStr);
+        
+        
+        if (requestId != expectedRequestId)
+        {
+            return;
+        }
+
+        NotifyPartialResultByCommand(command, resultStr);
+    }
+
+    private void NotifyPartialResultByCommand(string command, string resultStr)
+    {
+        switch (command)
+        {
+            case ExternalDeviceProtocolConstants.MOVE_XY_COMMAND:
+                {
+                    var parameters = SerialCommandUtils.DeserializeParameters(resultStr);
+                    if (parameters != null && parameters.Length >= 2)
+                    {
+                        if (double.TryParse(parameters[0], out var currentX))
+                        {
+                            _positionNotifier.X = currentX;
+                        }
+
+                        if (double.TryParse(parameters[1], out var currentY))
+                        {
+                            _positionNotifier.Y = currentY;
+                        }
+                    }
+                }
+                break;
+
+            case ExternalDeviceProtocolConstants.MOVE_TO_HEIGHT_COMMAND:
+            case ExternalDeviceProtocolConstants.MOVE_TO_MAX_HEIGHT_COMMAND:
+                {
+                    if (double.TryParse(resultStr, out var currentZ))
+                    {
+                        _positionNotifier.Z = currentZ;
+                    }
+                }
+                
+                break;
+        }
     }
 
     private int GetReceivedValueOutcome(string expectedRequestId, string receivedValue)

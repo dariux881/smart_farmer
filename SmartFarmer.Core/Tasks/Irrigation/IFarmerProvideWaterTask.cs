@@ -3,10 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks.Irrigation
+namespace SmartFarmer.Tasks.Irrigation;
+
+public interface IFarmerProvideWaterTask : IFarmerTask
 {
-    public interface IFarmerProvideWaterTask : IFarmerTask
-    {
-        Task ProvideWater(double amountInLiters, CancellationToken token);
-    }
+    Task ProvideWater(double amountInLiters, CancellationToken token);
 }

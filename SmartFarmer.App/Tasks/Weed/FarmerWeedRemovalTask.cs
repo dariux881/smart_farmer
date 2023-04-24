@@ -15,18 +15,16 @@ public class FarmerWeedRemovalTask : FarmerBaseTask, IFarmerWeedRemovalTask
 
     public override async Task Execute(object[] parameters, CancellationToken token)
     {
-        DetectWeed();
-        RemoveWeed();
+        await DetectWeed();
+        await RemoveWeed();
+    }
 
+    private async Task DetectWeed() {
         await Task.CompletedTask;
     }
 
-    private void DetectWeed() {
-
-    }
-
-    private void RemoveWeed() {
-
+    private async Task RemoveWeed() {
+        await Task.CompletedTask;
     }
 }
 

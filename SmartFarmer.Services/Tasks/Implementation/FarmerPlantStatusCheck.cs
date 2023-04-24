@@ -16,10 +16,10 @@ namespace SmartFarmer.Tasks.Implementation
             EditableSteps = new List<IFarmerPlanStep>()
             {
                 new FarmerPlanStep(ID + "_1", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeafDetectorTask))),
-                new FarmerPlanStep(ID + "_2", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeavesStatusChecker))),
+                new FarmerPlanStep(ID + "_2", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerLeavesStatusCheckerTask))),
                 new FarmerPlanStep(ID + "_3", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerStemDetectorTask))),
-                new FarmerPlanStep(ID + "_4", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerParasiteChecker))),
-                new FarmerPlanStep(ID + "_5", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerHydrationLevelChecker)))
+                new FarmerPlanStep(ID + "_4", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerParasiteCheckerTask))),
+                new FarmerPlanStep(ID + "_5", FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerHydrationLevelCheckerTask)))
             };
         }
 
