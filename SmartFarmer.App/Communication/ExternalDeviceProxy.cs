@@ -132,11 +132,11 @@ public class ExternalDeviceProxy :
         return result;
     }
 
-    public async Task<bool> ProvideWaterAsync(double amountInLiters, CancellationToken token)
+    public async Task<bool> ProvideWaterAsync(int pumpNumber, double amountInLiters, CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.HANDLE_PUMP_COMMAND, 
-            new object[] { amountInLiters }) >= 0;
+            new object[] { pumpNumber, amountInLiters }) >= 0;
         
         return result;
     }

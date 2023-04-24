@@ -7,5 +7,5 @@ namespace SmartFarmer.Tasks.Irrigation;
 
 public interface IFarmerProvideWaterTask : IFarmerTask
 {
-    Task ProvideWater(double amountInLiters, CancellationToken token);
+    Task ProvideWater(int pumpNumber, double amountInLiters, CancellationToken token);
 }

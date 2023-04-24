@@ -131,7 +131,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 0.5 },
+                BuildParameters = new object[] { 1, 0.5 },
                 Delay = new System.TimeSpan(0, 0, 1),
                 TaskInterfaceFullName = "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
             },

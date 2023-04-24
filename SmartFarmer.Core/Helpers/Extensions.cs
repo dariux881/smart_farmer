@@ -18,6 +18,30 @@ public static class Extensions
                 || value is decimal;
     }
 
+    public static int GetInt(this object number)
+    {
+        int x;
+        switch (number)
+        {
+            case string yStr:
+                x = int.Parse(yStr, CultureInfo.InvariantCulture);
+                break;
+            default:
+                if (number.IsNumber())
+                {
+                    x = (int)number;
+                }
+                else
+                {
+                    throw new InvalidCastException(number + " is not a valid number");
+                }
+
+                break;
+        }
+
+        return x;
+    }
+
     public static double GetDouble(this object number)
     {
         double x;

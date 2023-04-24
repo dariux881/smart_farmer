@@ -31,9 +31,10 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
 
     public override async Task Execute(object[] parameters, CancellationToken token)
     {
-        if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
+        if (parameters == null || parameters.Length < 2) throw new ArgumentException(nameof(parameters));
 
-        var amountOfWater = parameters[0].GetDouble();
+        var pumpNumber = parameters[0].GetInt();
+        var amountOfWater = parameters[1].GetDouble();
 
         var waterNeeded = await _waterCheckerTask.IsWaterNeeded(amountOfWater, token);
         if (!waterNeeded)
@@ -42,10 +43,10 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
             return;
         }
 
-        await ProvideWater(amountOfWater, token);
+        await ProvideWater(pumpNumber, amountOfWater, token);
     }
 
-    public async Task ProvideWater(double amountInLiters, CancellationToken token)
+    public async Task ProvideWater(int pumpNumber, double amountInLiters, CancellationToken token)
     {
         bool success = true;
 
@@ -53,7 +54,7 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
         {
             PrepareTask();
 
-            var result = await _handler.ProvideWaterAsync(amountInLiters, token);
+            var result = await _handler.ProvideWaterAsync(pumpNumber, amountInLiters, token);
 
             if (!result)
             {

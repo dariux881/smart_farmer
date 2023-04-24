@@ -7,5 +7,5 @@ namespace SmartFarmer.Movement;
 public interface IFarmerWaterProviderDevice
 {
     Task<double> GetCurrentHumidityLevel(CancellationToken token);
-    Task<bool> ProvideWaterAsync(double amountInLiters, CancellationToken token);
+    Task<bool> ProvideWaterAsync(int pumpNumber, double amountInLiters, CancellationToken token);
 }
