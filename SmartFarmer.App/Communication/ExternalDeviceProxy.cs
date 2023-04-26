@@ -141,7 +141,6 @@ public class ExternalDeviceProxy :
         return result;
     }
 
-
     public void Dispose()
     {
         _positionNotifier.NewPoint -= NewPointReceived;
