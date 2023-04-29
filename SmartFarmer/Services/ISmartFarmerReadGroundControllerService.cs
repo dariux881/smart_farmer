@@ -11,6 +11,10 @@ namespace SmartFarmer.Services;
 public interface ISmartFarmerReadGroundControllerService
 {
     event EventHandler<DevicePositionEventArgs> NewDevicePosition;
+    event EventHandler<NewPlantEventArgs> NewPlantInGround;
+    event EventHandler<NewPlanEventArgs> NewPlan;
+    event EventHandler<NewAlertEventArgs> NewAlert;
+    event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
     Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
     Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);

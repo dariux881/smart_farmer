@@ -463,7 +463,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return ground;
     }
 
-    public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
+    public async Task<string> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
     {
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -509,7 +509,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         await _dbContext.PlantsInstance.AddAsync(plant);
         await _dbContext.SaveChangesAsync();
 
-        return true;
+        return plant.ID;
     }
 
     public async Task<IFarmerSettings> GetUserSettings(string userId)

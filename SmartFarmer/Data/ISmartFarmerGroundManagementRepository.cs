@@ -21,7 +21,7 @@ public interface ISmartFarmerGroundManagementRepository
     Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids);
 
     Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
-    Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
+    Task<string> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
 
     Task<FarmerDevicePosition> SaveDevicePosition(string userId, FarmerDevicePositionRequestData position);
     Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(string userId, string groundId, string runId);
