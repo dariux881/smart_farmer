@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SmartFarmer.DTOs.Movements;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 
 namespace SmartFarmer.Data;
@@ -20,4 +22,7 @@ public interface ISmartFarmerGroundManagementRepository
 
     Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
     Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
+
+    Task<FarmerDevicePosition> SaveDevicePosition(string userId, FarmerDevicePositionRequestData position);
+    Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(string userId, string groundId, string runId);
 }

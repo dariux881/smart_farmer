@@ -26,7 +26,22 @@ public class FarmerCheckIfWaterIsNeededTask : FarmerBaseTask, IFarmerCheckIfWate
 
         var expectedAmountInLiters = parameters[0].GetDouble();
 
-        await IsWaterNeeded(expectedAmountInLiters, token);
+        Exception _ex = null;
+        PrepareTask();
+
+        try
+        {
+            await IsWaterNeeded(expectedAmountInLiters, token);
+        }
+        catch(Exception ex)
+        {
+            _ex = ex;
+            throw;
+        }
+        finally
+        {
+            EndTask(_ex != null);
+        }
     }
 
     public async Task<bool> IsWaterNeeded(double expectedAmountInLiters, CancellationToken token)

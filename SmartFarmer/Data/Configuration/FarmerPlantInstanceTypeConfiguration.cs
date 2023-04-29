@@ -35,7 +35,7 @@ public class FarmerPlantInstanceTypeConfiguration : IEntityTypeConfiguration<Far
         builder
             .HasOne(p => p.Plant)
             .WithMany()
-            .HasForeignKey("PlantKindID");
+            .HasForeignKey(nameof(FarmerPlantInstance.PlantKindID));
             
         builder
             .HasOne(p => p.Ground)

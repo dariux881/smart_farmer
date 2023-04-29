@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -9,6 +10,8 @@ namespace SmartFarmer.Services;
 
 public interface ISmartFarmerReadGroundControllerService
 {
+    event EventHandler<DevicePositionEventArgs> NewDevicePosition;
+
     Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
     Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
 

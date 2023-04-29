@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs;
+using SmartFarmer.DTOs.Movements;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
@@ -23,6 +25,8 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         _repository = repository;
     }
+
+    public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
 
     public async Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId)
     {
@@ -143,6 +147,34 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         }
 
         return planId;
+    }
+
+    public async Task<bool> NotifyDevicePosition(string userId, FarmerDevicePositionRequestData position)
+    {
+        if (position == null) throw new ArgumentNullException(nameof(position));
+
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, position.GroundId) as FarmerGround;
+        if (ground == null) return false; // no valid ground
+
+        var storedPosition = await _repository.SaveDevicePosition(userId, position);
+
+        if (storedPosition != null)
+        {
+            NewDevicePosition?.Invoke(this, new DevicePositionEventArgs(storedPosition));
+        }
+
+        return storedPosition != null;
+    }
+
+    public async Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string groundId, string runId)
+    {
+        if (userId == null) throw new ArgumentNullException(nameof(userId));
+        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, groundId) as FarmerGround;
+        if (ground == null) return null; // no valid ground
+
+        return await _repository.GetDevicePositionHistory(userId, groundId, runId);
     }
 
     private FarmerPlan CreateIrrigationPlan(FarmerGround ground)

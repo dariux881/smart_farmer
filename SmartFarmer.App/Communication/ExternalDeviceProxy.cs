@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SmartFarmer;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -164,6 +165,22 @@ public class ExternalDeviceProxy :
         {
             NewPoint.Invoke(this, args);
         }
+
+        Task.Run(async () => 
+            {
+                await FarmerRequestHelper.NotifyDevicePosition(
+                new FarmerDevicePositionRequestData()
+                {
+                    GroundId = _ground.ID,
+                    X = this.X,
+                    Y = this.Y,
+                    Z = this.Z,
+                    Alpha = this.Alpha,
+                    Beta = this.Beta,
+                },
+                CancellationToken.None);
+            }
+        );
     }
 
     private void ConfigureSerialPort()
@@ -268,7 +285,15 @@ public class ExternalDeviceProxy :
                     catch (Exception ex)
                     {
                         SmartFarmerLog.Exception(ex);
-                        throw;
+                        
+                        throw new FarmerTaskExecutionException(
+                            null,
+                            null,
+                            "serial port communication error",
+                            ex,
+                            SmartFarmer.Alerts.AlertCode.SerialCommunicationException,
+                            SmartFarmer.Alerts.AlertLevel.Error,
+                            SmartFarmer.Alerts.AlertSeverity.Medium);
                     }
 
                     if (SerialCommandUtils.IsRequestFinalResult(receivedValue))

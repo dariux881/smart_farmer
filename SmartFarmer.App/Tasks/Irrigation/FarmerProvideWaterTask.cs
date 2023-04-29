@@ -36,14 +36,29 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
         var pumpNumber = parameters[0].GetInt();
         var amountOfWater = parameters[1].GetDouble();
 
-        var waterNeeded = await _waterCheckerTask.IsWaterNeeded(amountOfWater, token);
-        if (!waterNeeded)
-        {
-            SmartFarmerLog.Information("irrigation skipped since water is not needed");
-            return;
-        }
+        Exception _ex = null;
+        PrepareTask();
 
-        await ProvideWater(pumpNumber, amountOfWater, token);
+        try
+        {
+            var waterNeeded = await _waterCheckerTask.IsWaterNeeded(amountOfWater, token);
+            if (!waterNeeded)
+            {
+                SmartFarmerLog.Information("irrigation skipped since water is not needed");
+                return;
+            }
+
+            await ProvideWater(pumpNumber, amountOfWater, token);
+        }
+        catch(Exception ex)
+        {
+            _ex = ex;
+            throw;
+        }
+        finally
+        {
+            EndTask(_ex != null);
+        }
     }
 
     public async Task ProvideWater(int pumpNumber, double amountInLiters, CancellationToken token)

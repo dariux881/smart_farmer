@@ -9,6 +9,7 @@ using SmartFarmer.Data.Alerts;
 using SmartFarmer.Data.Plants;
 using SmartFarmer.Data.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
@@ -251,6 +252,29 @@ public partial class FarmerRequestHelper
             SmartFarmerLog.Exception(ex);
 
             return null;
+        }
+    }
+
+    public static async Task<bool> NotifyDevicePosition(FarmerDevicePositionRequestData position, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .PostAsync(
+                        SmartFarmerApiConstants.UPDATE_DEVICE_POSITION,
+                        position,
+                        token,
+                        null);
+            
+            return response != null && response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
         }
     }
 
