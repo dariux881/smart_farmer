@@ -21,4 +21,9 @@ public class FarmerDevicePosition
     public double Z { get; set; }
     public double Alpha { get; set; }
     public double Beta { get; set; }
+
+    public override string ToString()
+    {
+        return $"{X}, {Y}, {Z}, {Alpha}, {Beta}";
+    }
 }

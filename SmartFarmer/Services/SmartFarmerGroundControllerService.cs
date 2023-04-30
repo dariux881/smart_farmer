@@ -30,6 +30,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     public event EventHandler<NewPlantEventArgs> NewPlantInGround;
     public event EventHandler<NewPlanEventArgs> NewPlan;
+    public event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
     public event EventHandler<NewAlertEventArgs> NewAlert;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
@@ -178,6 +179,8 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
             SmartFarmerLog.Error($"Failing in saving {planId} as irrigation plan for ground {ground.ID}");
             return null;
         }
+
+        NewAutoIrrigationPlan?.Invoke(this, new NewPlanEventArgs(groundId, planId));
 
         return planId;
     }

@@ -13,6 +13,7 @@ public interface ISmartFarmerReadGroundControllerService
     event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     event EventHandler<NewPlantEventArgs> NewPlantInGround;
     event EventHandler<NewPlanEventArgs> NewPlan;
+    event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
     event EventHandler<NewAlertEventArgs> NewAlert;
     event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
