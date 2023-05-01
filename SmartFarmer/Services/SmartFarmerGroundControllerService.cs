@@ -148,6 +148,27 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return newPlantId != null;
     }
 
+    public async Task<string> AddPlan(string userId, FarmerPlan plan, FarmerPlanStep[] steps)
+    {
+        if (plan == null) throw new ArgumentNullException(nameof(plan));
+        if (steps == null) throw new ArgumentNullException(nameof(steps));
+
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, plan.GroundId) as FarmerGround;
+        if (ground == null) return null; // no valid ground
+
+        plan.Steps.Clear();
+        plan.Steps.AddRange(steps);
+
+        var planId = await _repository.SaveFarmerPlan(plan);
+
+        if (!string.IsNullOrEmpty(planId))
+        {
+            NewPlan?.Invoke(this, new NewPlanEventArgs(plan.GroundId, planId));
+        }
+
+        return planId;
+    }
+
     public async Task<string> BuildIrrigationPlan(string userId, string groundId)
     {
         var ground = await GetFarmerGroundByIdForUserAsync(userId, groundId) as FarmerGround;
