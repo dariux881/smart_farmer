@@ -168,15 +168,16 @@ public class ExternalDeviceProxy :
 
         Task.Run(async () => 
             {
+                //TODO store locallly, then send a bundle periodically
+                
+                SmartFarmerLog.Debug("Sending new position");
+
                 await FarmerRequestHelper.NotifyDevicePosition(
                 new FarmerDevicePositionRequestData()
                 {
                     GroundId = _ground.ID,
-                    X = this.X,
-                    Y = this.Y,
-                    Z = this.Z,
-                    Alpha = this.Alpha,
-                    Beta = this.Beta,
+                    PositionDt = DateTime.UtcNow,
+                    Position = new Farmer5dPoint(X, Y, Z, Alpha, Beta)
                 },
                 CancellationToken.None);
             }

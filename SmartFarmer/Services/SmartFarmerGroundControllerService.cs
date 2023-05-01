@@ -28,6 +28,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     }
 
     public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
+    public event EventHandler<DevicePositionsEventArgs> NewDevicePositions;
     public event EventHandler<NewPlantEventArgs> NewPlantInGround;
     public event EventHandler<NewPlanEventArgs> NewPlan;
     public event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
@@ -221,6 +222,23 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         }
 
         return storedPosition != null;
+    }
+
+    public async Task<bool> NotifyDevicePositions(string userId, FarmerDevicePositionsRequestData positions)
+    {
+        if (positions == null) throw new ArgumentNullException(nameof(positions));
+
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, positions.GroundId) as FarmerGround;
+        if (ground == null) return false; // no valid ground
+
+        var ids = await _repository.SaveDevicePositions(userId, positions);
+
+        if (ids != null)
+        {
+            NewDevicePositions?.Invoke(this, new DevicePositionsEventArgs(ids));
+        }
+
+        return ids != null && ids.Any();
     }
 
     public async Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string groundId, string runId)

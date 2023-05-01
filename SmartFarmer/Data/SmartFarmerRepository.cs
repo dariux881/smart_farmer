@@ -115,12 +115,12 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         {
             GroundId = position.GroundId,
             UserId = userId,
-            X = position.X,
-            Y = position.Y,
-            Z = position.Z,
-            Alpha = position.Alpha,
-            Beta = position.Beta,
-            PositionDt = DateTime.UtcNow
+            X = position.Position.X,
+            Y = position.Position.Y,
+            Z = position.Position.Z,
+            Alpha = position.Position.Alpha,
+            Beta = position.Position.Beta,
+            PositionDt = position.PositionDt ?? DateTime.UtcNow
         };
 
         _dbContext.DevicePositions.Add(positionToStore);
@@ -128,6 +128,34 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         await _dbContext.SaveChangesAsync();
 
         return positionToStore;
+    }
+
+    public async Task<string[]> SaveDevicePositions(string userId, FarmerDevicePositionsRequestData positions)
+    {
+        var groundId = positions.GroundId;
+
+        var posToStore = 
+            positions
+                .Positions
+                    .Select(pos => 
+                        new FarmerDevicePosition()
+                        {
+                            GroundId = groundId,
+                            UserId = userId,
+                            X = pos.X,
+                            Y = pos.Y,
+                            Z = pos.Z,
+                            Alpha = pos.Alpha,
+                            Beta = pos.Beta,
+                            PositionDt = pos.PositionDt
+                        })
+                    .ToList();
+
+        _dbContext.DevicePositions.AddRange(posToStore);
+
+        await _dbContext.SaveChangesAsync();
+
+        return posToStore.Select(x => x.ID).ToArray();
     }
 
     public async Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(
