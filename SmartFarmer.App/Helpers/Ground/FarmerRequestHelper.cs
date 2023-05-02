@@ -278,6 +278,29 @@ public partial class FarmerRequestHelper
         }
     }
 
+    public static async Task<bool> NotifyDevicePositions(FarmerDevicePositionsRequestData positions, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .PostAsync(
+                        SmartFarmerApiConstants.UPDATE_DEVICE_POSITIONS,
+                        positions,
+                        token,
+                        null);
+            
+            return response != null && response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
+        }
+    }
+
     private static async Task ResolvePlans(FarmerGround ground, string[] ids, CancellationToken token)
     {
         var plans = await GetPlans(ids, token);

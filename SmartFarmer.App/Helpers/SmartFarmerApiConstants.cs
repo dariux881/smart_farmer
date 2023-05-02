@@ -31,6 +31,7 @@ public class SmartFarmerApiConstants
     public const string CREATE_ALERT = GROUNDS_BASE + "/createAlert";
 
     public const string UPDATE_DEVICE_POSITION = GROUNDS_BASE + "/notifyPosition";
+    public const string UPDATE_DEVICE_POSITIONS = GROUNDS_BASE + "/notifyPositions";
 
     #endregion // Ground Management
 }
