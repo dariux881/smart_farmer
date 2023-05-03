@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Movement;
@@ -8,5 +10,5 @@ public interface IFarmerDevicePositionManager :
     IFarmerTurnToolDevice,
     IFarmer5dPointNotifier
 {
-
+    Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token);
 }

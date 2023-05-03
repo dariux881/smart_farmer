@@ -132,6 +132,43 @@ public class ExternalDeviceProxy :
         return result;
     }
 
+    public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
+    {
+        var moveResult = await MoveOnGridAsync(position.X, position.Y, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in moving on grid to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await MoveArmAtHeightAsync(position.Z, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in moving at height to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await TurnArmToDegreesAsync(position.Alpha, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in turning arm to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await PointDeviceAsync(position.Beta, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in pointing to {position.ToString()}");
+            return false;
+        }
+
+        return true;
+    }
+
     public async Task<double> GetCurrentHumidityLevel(CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
@@ -322,9 +359,7 @@ public class ExternalDeviceProxy :
                     return result;
                 }
 
-                result = ProcessRequestFinalResult(requestId, command, receivedValue);
-
-                return result;
+                return ProcessRequestFinalResult(requestId, command, receivedValue);
             }
         }
         catch(Exception ex)
