@@ -41,11 +41,11 @@ public class RemoteCommandLineInterfaceOperationalManager : IOperationalModeMana
     public async Task Run(CancellationToken token)
     {
         // Start connection and subscribe to commands
-        _connection.On<string, string>("ReceiveCliCommand", (user, command) =>
+        _connection.On<string, string, string>("ReceiveCliCommand", (user, groundId, command) =>
         {
-            SmartFarmerLog.Debug($"{user}: {command}");
+            SmartFarmerLog.Debug($"{user}: {command} for ground {groundId}");
 
-            ParseAndExecuteCommand(user, command);
+            ParseAndExecuteCommand(user, groundId, command);
         });
 
         try
@@ -58,12 +58,29 @@ public class RemoteCommandLineInterfaceOperationalManager : IOperationalModeMana
         }
     }
 
-    private void ParseAndExecuteCommand(string user, string command)
+    private void ParseAndExecuteCommand(string user, string groundId, string command)
     {
         var parts = command.Split(' ');
 
         //TODO Check parts
         //TODO send action
+
+        // notify result
+        Task.Run(async () => await NotifyResult(user, groundId, command, "command result"));
+    }
+
+    private async Task NotifyResult(string user, string groundId, string command, string result)
+    {
+        try
+        {
+            await _connection.InvokeAsync(
+                "ReceiveCLICommandResult", 
+                result);
+        }
+        catch (Exception ex)
+        {                
+            SmartFarmerLog.Exception(ex);
+        }
     }
 
     public void Dispose()

@@ -74,6 +74,39 @@ public class FarmerGroundHub : Hub, IDisposable
                 .Group(groundId)
                 .SendAsync(HubConstants.AlertStatusChanged, alertId, alertRead);
 
+    public async Task ReceiveCliCommand(string groundId, string command)
+    {
+        var userId = GetUserIdByConnectionId(Context.ConnectionId);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            //TODO return error message
+            return;
+        }
+
+        await 
+            Clients
+                .User(userId)
+                .SendAsync(HubConstants.ReceiveCliCommand, userId, groundId, command);
+
+    }
+
+    public async Task ReceiveCliCommandResult(string groundId, string commandResult)
+    {
+        var userId = GetUserIdByConnectionId(Context.ConnectionId);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            //TODO return error message
+            return;
+        }
+
+        await 
+            Clients
+                .User(GetUserIdByConnectionId(Context.ConnectionId))
+                .SendAsync(HubConstants.ReceiveCliCommandResult, userId, groundId, commandResult);
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (_groundProvider != null)
@@ -85,6 +118,11 @@ public class FarmerGroundHub : Hub, IDisposable
             _groundProvider.NewAlert -= NewAlertReceived;
             _groundProvider.NewAlertStatus -= NewAlertStatusReceived;
         }
+    }
+
+    private string GetUserIdByConnectionId(string connectionId)
+    {
+        return null;
     }
 
     private void NewDevicePositionReceived(object sender, DevicePositionEventArgs e)
