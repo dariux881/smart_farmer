@@ -23,6 +23,7 @@ public class GroundActivityManager
     private UserConfiguration _userConfiguration;
     private AppConfiguration _appConfiguration;
     private SerialCommunicationConfiguration _serialConfiguration;
+    private HubConnectionConfiguration _hubConfiguration;
 
     public async Task Run()
     {
@@ -47,7 +48,6 @@ public class GroundActivityManager
         foreach (var opManager in _operationalManagers)
         {
             tasks.Add(Task.Run(() => opManager.Run(cancellationToken)));
-
         }
 
         await Task.WhenAll(tasks);
@@ -106,6 +106,11 @@ public class GroundActivityManager
         if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Auto))
         {
             _operationalManagers.Add(new AutomaticOperationalManager(_appConfiguration));
+        }
+
+        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.RemoteCLI))
+        {
+            _operationalManagers.Add(new RemoteCommandLineInterfaceOperationalManager(_hubConfiguration));
         }
 
         _operationalManagers.ForEach(async opMan =>
@@ -279,6 +284,7 @@ public class GroundActivityManager
         _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
         _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
         _serialConfiguration = config.GetSection("SerialConfiguration").Get<SerialCommunicationConfiguration>();
+        _hubConfiguration = config.GetSection("HubConnectionConfiguration").Get<HubConnectionConfiguration>();
     }
     
     private async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)

@@ -28,6 +28,8 @@ public class AutomaticOperationalManager : IOperationalModeManager
         PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule ?? "0 0/30 * ? * * *";
     }
 
+    public AppOperationalMode Mode => AppOperationalMode.Auto;
+
     public string PlanCheckSchedule { get; set; }
 
     public string Name => "Automatic Operational Manager";

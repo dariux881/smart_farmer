@@ -5,5 +5,6 @@ namespace SmartFarmer.OperationalManagement;
 [Flags]
 public enum AppOperationalMode {
     Console,
-    Auto
+    Auto,
+    RemoteCLI
 }
