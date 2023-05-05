@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 
@@ -44,18 +45,23 @@ public class RemoteCommandLineInterfaceOperationalManager : IOperationalModeMana
         _connection.On<string, string, string>("ReceiveCliCommand", (user, groundId, command) =>
         {
             SmartFarmerLog.Debug($"{user}: {command} for ground {groundId}");
-
             ParseAndExecuteCommand(user, groundId, command);
         });
 
         try
         {
             await _connection.StartAsync();
+            await Handshake();
         }
         catch (Exception ex)
         {
             SmartFarmerLog.Exception(ex);
         }
+    }
+
+    private async Task Handshake()
+    {
+        throw new NotImplementedException();
     }
 
     private void ParseAndExecuteCommand(string user, string groundId, string command)
