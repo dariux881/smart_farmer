@@ -2,9 +2,12 @@
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using SmartFarmer;
+using SmartFarmer.Exceptions;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -17,6 +20,7 @@ public class ExternalDeviceProxy :
     IFarmerDeviceManager,
     IDisposable
 {
+    private IFarmerGround _ground;
     private Farmer5dPositionNotifier _positionNotifier;
     private SerialCommunicationConfiguration _serialConfiguration;
     private SerialPort _serialPort;
@@ -25,9 +29,12 @@ public class ExternalDeviceProxy :
 
     private int _delayBetweenReadAttempts;
     private int _maxReadAttempts;
+    private FarmerDevicePositionsRequestData _positionsToSend;
 
-    public ExternalDeviceProxy(SerialCommunicationConfiguration serialConfiguration)
+    public ExternalDeviceProxy(IFarmerGround ground, SerialCommunicationConfiguration serialConfiguration)
     {
+        _ground = ground;
+        
         _positionNotifier = new Farmer5dPositionNotifier();
         _positionNotifier.NewPoint += NewPointReceived;
 
@@ -36,6 +43,11 @@ public class ExternalDeviceProxy :
         _maxReadAttempts = _serialConfiguration?.MaxReadAttempts ?? 10;
 
         _commandInProgressSem = new SemaphoreSlim(1);
+
+        _positionsToSend = new FarmerDevicePositionsRequestData()
+        {
+            GroundId = ground.ID
+        };
 
         ConfigureSerialPort();
     }
@@ -120,6 +132,60 @@ public class ExternalDeviceProxy :
         return result;
     }
 
+    public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
+    {
+        var moveResult = await MoveOnGridAsync(position.X, position.Y, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in moving on grid to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await MoveArmAtHeightAsync(position.Z, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in moving at height to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await TurnArmToDegreesAsync(position.Alpha, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in turning arm to {position.ToString()}");
+            return false;
+        }
+
+        moveResult = await PointDeviceAsync(position.Beta, token);
+
+        if (!moveResult)
+        {
+            SmartFarmerLog.Error($"Failing in pointing to {position.ToString()}");
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task<double> GetCurrentHumidityLevel(CancellationToken token)
+    {
+        var result = await SendCommandToExternalDevice(
+            ExternalDeviceProtocolConstants.GET_HUMIDITY_LEVEL, null);
+        
+        return result;
+    }
+
+    public async Task<bool> ProvideWaterAsync(int pumpNumber, double amountInLiters, CancellationToken token)
+    {
+        var result = await SendCommandToExternalDevice(
+            ExternalDeviceProtocolConstants.HANDLE_PUMP_COMMAND, 
+            new object[] { pumpNumber, amountInLiters }) >= 0;
+        
+        return result;
+    }
+
     public void Dispose()
     {
         _positionNotifier.NewPoint -= NewPointReceived;
@@ -139,6 +205,18 @@ public class ExternalDeviceProxy :
 
     private void NewPointReceived(object sender, EventArgs args)
     {
+        SmartFarmerLog.Information($"new position received: {this._positionNotifier.ToString()}");
+        
+        _positionsToSend.Positions.Add(new FarmerDevicePositionInTime()
+        {
+            X = this.X,
+            Y = this.Y,
+            Z = this.Z,
+            Alpha = this.Alpha,
+            Beta = this.Beta,
+            PositionDt = DateTime.UtcNow
+        });
+
         if (sender is IFarmerPointNotifier notifier)
         {
             NewPoint.Invoke(this, args);
@@ -216,9 +294,9 @@ public class ExternalDeviceProxy :
                 }
 
                 SerialCommandUtils.ParseRequest(
-                    data, 
-                    out var requestId, 
-                    out var command, 
+                    data,
+                    out var requestId,
+                    out var command,
                     out var parameters);
 
                 SmartFarmerLog.Debug($"sending request {command}\tID: {requestId}");
@@ -230,33 +308,47 @@ public class ExternalDeviceProxy :
                 int result = -1;
                 // read outcome
                 string receivedValue = null;
-                
+
                 var attempts = _maxReadAttempts;
                 Stopwatch sw = new Stopwatch();
 
                 sw.Start();
-                while (attempts > 0) 
+                while (attempts > 0)
                 {
                     try
                     {
                         receivedValue = _serialPort.ReadLine();
                     }
-                    catch(TimeoutException)
+                    catch (TimeoutException)
                     {
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         SmartFarmerLog.Exception(ex);
-                        throw;
+
+                        throw new FarmerTaskExecutionException(
+                            null,
+                            null,
+                            "serial port communication error",
+                            ex,
+                            SmartFarmer.Alerts.AlertCode.SerialCommunicationException,
+                            SmartFarmer.Alerts.AlertLevel.Error,
+                            SmartFarmer.Alerts.AlertSeverity.Medium);
                     }
 
-                    if (!string.IsNullOrEmpty(receivedValue))
+                    if (SerialCommandUtils.IsRequestFinalResult(receivedValue))
                     {
                         break;
                     }
 
+                    if (SerialCommandUtils.IsRequestUpdateResult(receivedValue))
+                    {
+                        ProcessRequestUpdateResult(requestId, command, receivedValue);
+                        continue;
+                    }
+
                     await Task.Delay(_delayBetweenReadAttempts);
-                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts-attempts+1}/{_maxReadAttempts}");
+                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts - attempts + 1}/{_maxReadAttempts}");
                     attempts--;
                 };
                 sw.Stop();
@@ -267,15 +359,7 @@ public class ExternalDeviceProxy :
                     return result;
                 }
 
-                SmartFarmerLog.Debug($"received message from serial port:\n\t->{receivedValue.Replace("\r\n", "").Replace("\n", "")}");
-                result = GetReceivedValueOutcome(requestId, receivedValue);
-
-                if (result == -1)
-                {
-                    SmartFarmerLog.Error($"invalid response for command: \"{command}\". Received {receivedValue}");
-                }
-
-                return result;
+                return ProcessRequestFinalResult(requestId, command, receivedValue);
             }
         }
         catch(Exception ex)
@@ -291,6 +375,93 @@ public class ExternalDeviceProxy :
         }
 
         return 0;
+    }
+
+    private int ProcessRequestFinalResult(string requestId, string command, string receivedValue)
+    {
+        int result;
+        SmartFarmerLog.Debug($"received message from serial port:\n\t->{receivedValue.Replace("\r\n", "").Replace("\n", "")}");
+        result = GetReceivedValueOutcome(requestId, receivedValue);
+
+        if (result == -1)
+        {
+            SmartFarmerLog.Error($"invalid response for command: \"{command}\". Received {receivedValue}");
+            SendDeviceError(requestId, command, receivedValue);
+        }
+        else
+        {
+            SendDevicePositionHistory();
+        }
+
+        return result;
+    }
+
+    private void SendDevicePositionHistory()
+    {
+        if (_positionsToSend?.Positions == null || !_positionsToSend.Positions.Any())
+        {
+            return;
+        }
+
+        Task.Run(async () => await FarmerRequestHelper.NotifyDevicePositions(_positionsToSend, CancellationToken.None));
+    }
+
+    private void SendDeviceError(string requestId, string command, string receivedValue)
+    {
+        //TODO notify device error
+    }
+
+    private void ProcessRequestUpdateResult(string expectedRequestId, string command, string receivedValue)
+    {
+        SerialCommandUtils.ParsePartialResponse(
+            receivedValue, 
+            out var requestId, 
+            out var resultStr);
+        
+        
+        if (requestId != expectedRequestId)
+        {
+            return;
+        }
+
+        NotifyPartialResultByCommand(command, resultStr);
+    }
+
+    private void NotifyPartialResultByCommand(string command, string resultStr)
+    {
+        SmartFarmerLog.Debug($"Partial update for command {command}: received {resultStr}");
+
+        switch (command)
+        {
+            case ExternalDeviceProtocolConstants.MOVE_XY_COMMAND:
+                {
+                    var parameters = SerialCommandUtils.DeserializeParameters(resultStr);
+                    if (parameters != null && parameters.Length >= 2)
+                    {
+                        if (double.TryParse(parameters[0], out var currentX))
+                        {
+                            _positionNotifier.X = currentX;
+                        }
+
+                        if (double.TryParse(parameters[1], out var currentY))
+                        {
+                            _positionNotifier.Y = currentY;
+                        }
+                    }
+                }
+                break;
+
+            case ExternalDeviceProtocolConstants.MOVE_TO_HEIGHT_COMMAND:
+            case ExternalDeviceProtocolConstants.MOVE_TO_MAX_HEIGHT_COMMAND:
+                {
+                    if (double.TryParse(resultStr, out var currentZ))
+                    {
+                        _positionNotifier.Z = currentZ;
+                    }
+                }
+                
+                break;
+        }
     }
 
     private int GetReceivedValueOutcome(string expectedRequestId, string receivedValue)

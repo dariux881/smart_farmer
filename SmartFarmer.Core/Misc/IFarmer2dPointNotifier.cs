@@ -2,8 +2,6 @@ using System;
 
 namespace SmartFarmer.Misc;
 
-public interface IFarmer2dPointNotifier : IFarmerPointNotifier
+public interface IFarmer2dPointNotifier : IFarmer2dPoint, IFarmerPointNotifier
 {
-    double X { get; }
-    double Y { get; }
 }

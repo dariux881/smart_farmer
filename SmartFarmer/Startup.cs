@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SmartFarmer.Data;
 using SmartFarmer.Helpers;
+using SmartFarmer.Hubs;
 using SmartFarmer.Security;
 using SmartFarmer.Services;
 
@@ -60,6 +61,7 @@ namespace SmartFarmer
             services.AddAuthorization();
 
             services.AddControllers();
+            services.AddSignalR();
 
             services.AddSwaggerGen(c =>
             {
@@ -86,6 +88,7 @@ namespace SmartFarmer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<FarmerGroundHub>("FarmerGround");
             });
         }
     }

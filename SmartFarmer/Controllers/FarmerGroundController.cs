@@ -10,6 +10,8 @@ using SmartFarmer.Helpers;
 using SmartFarmer.Services;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.Movement;
+using SmartFarmer.DTOs.Movements;
 
 namespace SmartFarmer.Controllers;
 
@@ -362,6 +364,86 @@ public class FarmerGroundController : ControllerBase
             return Ok(result);
 
         return BadRequest(result);
+    }
+
+    [HttpPost("notifyPosition")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult> NotifyPosition([FromBody] FarmerDevicePositionRequestData position)
+    {
+        if (position == null)
+        {
+            throw new ArgumentNullException(nameof(position));
+        }
+
+        if (string.IsNullOrEmpty(position.GroundId))
+        {
+            return BadRequest();
+        }
+
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .NotifyDevicePosition(userId, position);
+
+        if (result)
+        {
+            return BadRequest();
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("notifyPositions")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult> NotifyPositions([FromBody] FarmerDevicePositionsRequestData positions)
+    {
+        if (positions == null)
+        {
+            throw new ArgumentNullException(nameof(positions));
+        }
+
+        if (string.IsNullOrEmpty(positions.GroundId))
+        {
+            return BadRequest();
+        }
+
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .NotifyDevicePositions(userId, positions);
+
+        if (result)
+        {
+            return BadRequest();
+        }
+
+        return Ok();
+    }
+
+    [HttpGet("devicePositionHistory")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    public async Task<ActionResult<IEnumerable<FarmerDevicePosition>>> GetDevicePositionHistory(string groundId, string runId = null)
+    {
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .GetDeviceDevicePositionHistory(userId, groundId, runId);
+
+        if (result == null)
+        {
+            return BadRequest(null);
+        }
+
+        return Ok(result);
     }
 
     private async Task<string> GetUserIdByContext()

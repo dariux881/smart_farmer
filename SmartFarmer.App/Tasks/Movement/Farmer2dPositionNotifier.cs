@@ -6,28 +6,37 @@ namespace SmartFarmer.Tasks.Movement;
 public class Farmer2dPositionNotifier : IFarmer2dPointNotifier
 {
     private double _x, _y;
+    private object _setValueLock = new object();
 
     public double X 
     { 
-        get => _x;
+        get { lock (_setValueLock) { return _x; } }
         set {
-            if (_x != value)
+            lock (_setValueLock)
             {
-                _x = value;
-                SendNewPoint();
+                if (_x != value)
+                {
+                    _x = value;
+                }
             }
+
+            SendNewPoint();
         }
     }
 
     public double Y 
     { 
-        get => _y;
+        get { lock (_setValueLock) { return _y; } }
         set {
-            if (_y != value)
+            lock (_setValueLock)
             {
-                _y = value;
-                SendNewPoint();
+                if (_y != value)
+                {
+                    _y = value;
+                }
             }
+
+            SendNewPoint();
         }
     }
 

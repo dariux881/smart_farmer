@@ -10,6 +10,7 @@ using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement;
+using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
@@ -22,6 +23,7 @@ public class GroundActivityManager
     private UserConfiguration _userConfiguration;
     private AppConfiguration _appConfiguration;
     private SerialCommunicationConfiguration _serialConfiguration;
+    private HubConnectionConfiguration _hubConfiguration;
 
     public async Task Run()
     {
@@ -46,7 +48,6 @@ public class GroundActivityManager
         foreach (var opManager in _operationalManagers)
         {
             tasks.Add(Task.Run(() => opManager.Run(cancellationToken)));
-
         }
 
         await Task.WhenAll(tasks);
@@ -105,6 +106,11 @@ public class GroundActivityManager
         if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Auto))
         {
             _operationalManagers.Add(new AutomaticOperationalManager(_appConfiguration));
+        }
+
+        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.RemoteCLI))
+        {
+            _operationalManagers.Add(new RemoteCommandLineInterfaceOperationalManager(_hubConfiguration));
         }
 
         _operationalManagers.ForEach(async opMan =>
@@ -278,6 +284,7 @@ public class GroundActivityManager
         _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
         _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
         _serialConfiguration = config.GetSection("SerialConfiguration").Get<SerialCommunicationConfiguration>();
+        _hubConfiguration = config.GetSection("HubConnectionConfiguration").Get<HubConnectionConfiguration>();
     }
     
     private async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
@@ -292,17 +299,21 @@ public class GroundActivityManager
         // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
 
-        var deviceHandler = new ExternalDeviceProxy(_serialConfiguration);
+        var deviceHandler = new ExternalDeviceProxy(ground, _serialConfiguration);
 
-        var moveOnGrid = new FarmerMoveOnGridTask(ground, deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGrid, ground);
-        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGrid, ground);
+        var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
+        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, ground);
 
-        var moveAtHeight = new FarmerMoveArmAtHeightTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeight, ground);
+        var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
 
-        await moveOnGrid.Initialize(cancellationToken);
-        await moveAtHeight.Initialize(cancellationToken);
+        var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
+        FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
+
+        await moveOnGridTask.Initialize(cancellationToken);
+        await moveAtHeightTask.Initialize(cancellationToken);
     }
 }

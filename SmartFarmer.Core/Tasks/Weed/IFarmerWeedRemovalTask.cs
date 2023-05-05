@@ -1,8 +1,7 @@
 ﻿using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Tasks.Weed
+namespace SmartFarmer.Tasks.Weed;
+
+public interface IFarmerWeedRemovalTask : IFarmerTask
 {
-    public interface IFarmerWeedRemovalTask : IFarmerTask
-    {
-    }
 }

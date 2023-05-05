@@ -13,6 +13,7 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
     private bool CanRun = true;
     public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
     public string Name => "Console Operational Manager";
+    public AppOperationalMode Mode => AppOperationalMode.Console;
 
     public async Task Prepare()
     {

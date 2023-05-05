@@ -5,16 +5,21 @@ namespace SmartFarmer.Tasks.Movement;
 public class Farmer3dPositionNotifier : Farmer2dPositionNotifier, IFarmer3dPointNotifier
 {
     private double _z;
+    private object _setValueLock = new object();
 
     public double Z
     { 
-        get => _z;
+        get { lock (_setValueLock) { return _z; } }
         set {
-            if (_z != value)
+            lock (_setValueLock)
             {
-                _z = value;
-                SendNewPoint();
+                if (_z != value)
+                {
+                    _z = value;
+                }
             }
+
+            SendNewPoint();
         }
     }
 }

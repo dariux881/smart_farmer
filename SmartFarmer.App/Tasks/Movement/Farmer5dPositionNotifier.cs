@@ -5,28 +5,37 @@ namespace SmartFarmer.Tasks.Movement;
 public class Farmer5dPositionNotifier : Farmer3dPositionNotifier, IFarmer5dPointNotifier
 {
     private double _alpha, _beta;
+    private object _setValueLock = new object();
 
     public double Alpha
     { 
-        get => _alpha;
+        get { lock (_setValueLock) { return _alpha; } }
         set {
-            if (_alpha != value)
+            lock (_setValueLock)
             {
-                _alpha = value;
-                SendNewPoint();
+                if (_alpha != value)
+                {
+                    _alpha = value;
+                }
             }
+
+            SendNewPoint();
         }
     }
 
     public double Beta
     { 
-        get => _beta;
+        get { lock (_setValueLock) { return _beta; } }
         set {
-            if (_beta != value)
+            lock (_setValueLock)
             {
-                _beta = value;
-                SendNewPoint();
+                if (_beta != value)
+                {
+                    _beta = value;
+                }
             }
+
+            SendNewPoint();
         }
     }
 }

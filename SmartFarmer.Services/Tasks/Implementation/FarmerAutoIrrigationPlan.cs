@@ -30,7 +30,7 @@ namespace SmartFarmer.Tasks.Implementation
             this.EditableSteps.Add(
                 new FarmerPlanStep(
                     ID + "_2",
-                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerCheckIfWaterIsNeeded)),
+                    FarmerTaskProvider.GetTaskDelegateByType(typeof(IFarmerCheckIfWaterIsNeededTask)),
                     new object[] {plant.ID}));
 
             this.EditableSteps.Add(

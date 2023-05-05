@@ -7,10 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Alerts;
 using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Alerts;
+using SmartFarmer.DTOs.Movements;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
@@ -90,6 +92,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 #endregion
 
 #region Ground Management
+
     public async Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId)
     {
         return await _dbContext.Grounds.Where(x => x.UserID == userId).ToListAsync();
@@ -106,6 +109,70 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                     x => x.ID == groundId && x.UserID == userId);
     }
 
+    public async Task<FarmerDevicePosition> SaveDevicePosition(string userId, FarmerDevicePositionRequestData position)
+    {
+        var positionToStore = new FarmerDevicePosition()
+        {
+            GroundId = position.GroundId,
+            UserId = userId,
+            X = position.Position.X,
+            Y = position.Position.Y,
+            Z = position.Position.Z,
+            Alpha = position.Position.Alpha,
+            Beta = position.Position.Beta,
+            PositionDt = position.PositionDt ?? DateTime.UtcNow
+        };
+
+        _dbContext.DevicePositions.Add(positionToStore);
+
+        await _dbContext.SaveChangesAsync();
+
+        return positionToStore;
+    }
+
+    public async Task<string[]> SaveDevicePositions(string userId, FarmerDevicePositionsRequestData positions)
+    {
+        var groundId = positions.GroundId;
+
+        var posToStore = 
+            positions
+                .Positions
+                    .Select(pos => 
+                        new FarmerDevicePosition()
+                        {
+                            GroundId = groundId,
+                            UserId = userId,
+                            X = pos.X,
+                            Y = pos.Y,
+                            Z = pos.Z,
+                            Alpha = pos.Alpha,
+                            Beta = pos.Beta,
+                            PositionDt = pos.PositionDt
+                        })
+                    .ToList();
+
+        _dbContext.DevicePositions.AddRange(posToStore);
+
+        await _dbContext.SaveChangesAsync();
+
+        return posToStore.Select(x => x.ID).ToArray();
+    }
+
+    public async Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(
+        string userId, 
+        string groundId, 
+        string runId)
+    {
+        return await _dbContext
+            .DevicePositions
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.GroundId == groundId && 
+                    string.IsNullOrEmpty(runId) || x.RunId == runId)
+                .OrderByDescending(x => x.PositionDt)
+                .ToListAsync();
+    }
+    
     /// <summary>
     /// Saves update on the repository.
     /// </summary>
@@ -424,7 +491,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return ground;
     }
 
-    public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
+    public async Task<string> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
     {
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -470,7 +537,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         await _dbContext.PlantsInstance.AddAsync(plant);
         await _dbContext.SaveChangesAsync();
 
-        return true;
+        return plant.ID;
     }
 
     public async Task<IFarmerSettings> GetUserSettings(string userId)

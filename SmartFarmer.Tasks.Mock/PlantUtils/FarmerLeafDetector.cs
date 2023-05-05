@@ -6,7 +6,7 @@ using SmartFarmer.Tasks.Base;
 
 namespace SmartFarmer.Tasks.PlantUtils
 {
-    public class FarmerLeafDetector : FarmerBaseTask, IFarmerLeafDetector
+    public class FarmerLeafDetector : FarmerBaseTask, IFarmerLeafDetectorTask
     {
         public FarmerLeafDetector()
         {

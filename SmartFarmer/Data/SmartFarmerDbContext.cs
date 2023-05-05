@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartFarmer.Data.Configuration;
 using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Alerts;
+using SmartFarmer.DTOs.Movements;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
@@ -19,8 +20,9 @@ public class SmartFarmerDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configurations
+        // Configurations 
         new FarmerGroundTypeConfiguration().Configure(modelBuilder.Entity<FarmerGround>());
+        new FarmerDevicePositionTypeConfiguration().Configure(modelBuilder.Entity<FarmerDevicePosition>());
         new FarmerPlantTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlant>());
         new FarmerPlantInstanceTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlantInstance>());
         new FarmerPlanTypeConfiguration().Configure(modelBuilder.Entity<FarmerPlan>());
@@ -44,5 +46,5 @@ public class SmartFarmerDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserLogin> Logins { get; set; }
     public DbSet<Authorization> Authorizations { get; set; }
-
+    public DbSet<FarmerDevicePosition> DevicePositions { get; set; }
 }

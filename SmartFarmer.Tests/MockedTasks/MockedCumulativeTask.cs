@@ -7,7 +7,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer.MockedTasks.GenericCollection;
 
-public class MockedCumulativeTask : IFarmerLeavesStatusChecker, IFarmerParasiteChecker
+public class MockedCumulativeTask : IFarmerLeavesStatusCheckerTask, IFarmerParasiteCheckerTask
 {
     public MockedCumulativeTask() 
     {

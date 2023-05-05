@@ -125,21 +125,28 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 5.0, 5.0 },
-                Delay = new System.TimeSpan(0, 0, 10),
+                Delay = new System.TimeSpan(0, 0, 2),
                 TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
+                BuildParameters = new object[] { 1, 0.5 },
+                Delay = new System.TimeSpan(0, 0, 1),
+                TaskInterfaceFullName = "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
+            },
+            new FarmerPlanStep
+            {
+                PlanId = plan0.ID, 
                 BuildParameters = new object[] { 15.0, 5.0 },
-                Delay = new System.TimeSpan(0, 0, 10),
+                Delay = new System.TimeSpan(0, 0, 2),
                 TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 0.0 },
-                Delay = new System.TimeSpan(0, 0, 10),
+                Delay = new System.TimeSpan(0, 0, 2),
                 TaskInterfaceFullName = "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
             },
         };            
