@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,8 @@ public class FarmerGroundHub : Hub, IDisposable
     private readonly ILogger<FarmerGroundController> _logger;
     private readonly ISmartFarmerGroundControllerService _groundProvider;
     private readonly ISmartFarmerUserAuthenticationService _userManager;
+    private ConcurrentDictionary<string, string> _usersConnection;
+    private ConcurrentDictionary<string, string> _groundConnection;
 
     public FarmerGroundHub(
         ILogger<FarmerGroundController> logger,
@@ -25,12 +28,36 @@ public class FarmerGroundHub : Hub, IDisposable
         _groundProvider = groundProvider;
         _userManager = userManager;
 
+        _groundConnection = new ConcurrentDictionary<string, string>();
+        _usersConnection = new ConcurrentDictionary<string, string>();
+
         _groundProvider.NewDevicePosition += NewDevicePositionReceived;
         _groundProvider.NewPlantInGround += NewPlantInGroundReceived;
         _groundProvider.NewPlan += NewPlanReceived;
         _groundProvider.NewAutoIrrigationPlan += NewAutoIrrigationPlanReceived;
         _groundProvider.NewAlert += NewAlertReceived;
         _groundProvider.NewAlertStatus += NewAlertStatusReceived;
+    }
+
+    public async Task SubscribeToGroups(string userId, string groundId)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (string.IsNullOrEmpty(groundId)) throw new ArgumentNullException(nameof(groundId));
+
+        var connectionId = Context.ConnectionId;
+
+        // locally storing user and ground
+        _usersConnection.TryAdd(connectionId, userId);
+        _groundConnection.TryAdd(connectionId, groundId);
+
+        // subscribing to groups
+        await Groups.AddToGroupAsync(Context.ConnectionId, groundId);
+    }
+
+    public async Task RemoveFromGroup(string groupName)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
     }
 
     public async Task NotifyPosition(string userId, FarmerDevicePositionRequestData position)
