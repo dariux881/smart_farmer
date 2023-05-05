@@ -54,10 +54,9 @@ public class FarmerGroundHub : Hub, IDisposable
         await Groups.AddToGroupAsync(Context.ConnectionId, groundId);
     }
 
-    public async Task RemoveFromGroup(string groupName)
+    public async Task RemoveFromGroup(string groundId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-        await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groundId);
     }
 
     public async Task NotifyPosition(string userId, FarmerDevicePositionRequestData position)
@@ -115,7 +114,6 @@ public class FarmerGroundHub : Hub, IDisposable
             Clients
                 .User(userId)
                 .SendAsync(HubConstants.ReceiveCliCommand, userId, groundId, command);
-
     }
 
     public async Task ReceiveCliCommandResult(string groundId, string commandResult)
@@ -149,7 +147,8 @@ public class FarmerGroundHub : Hub, IDisposable
 
     private string GetUserIdByConnectionId(string connectionId)
     {
-        return null;
+        _usersConnection.TryGetValue(connectionId, out var userId);
+        return userId;
     }
 
     private void NewDevicePositionReceived(object sender, DevicePositionEventArgs e)
