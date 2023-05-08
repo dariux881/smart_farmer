@@ -5,6 +5,7 @@ namespace SmartFarmer.Movement;
 
 public class FarmerDevicePositionInTime : IFarmer5dPoint
 {
+    public string RunId { get; set; }
     public DateTime PositionDt { get; set; }
 
     public double X { get; set; }
