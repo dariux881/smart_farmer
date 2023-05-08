@@ -1,13 +1,10 @@
 
 using System;
-using System.Diagnostics;
-using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using SmartFarmer;
-using SmartFarmer.Exceptions;
+using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -22,34 +19,27 @@ public class ExternalDeviceProxy :
 {
     private IFarmerGround _ground;
     private Farmer5dPositionNotifier _positionNotifier;
-    private SerialCommunicationConfiguration _serialConfiguration;
-    private SerialPort _serialPort;
-    private SemaphoreSlim _commandInProgressSem;
-    private bool _commandInProgress;
-
-    private int _delayBetweenReadAttempts;
-    private int _maxReadAttempts;
     private FarmerDevicePositionsRequestData _positionsToSend;
+    private FarmerGroundHubHandler _hub;
+    private FarmerGroundSerialHandler _serial;
 
-    public ExternalDeviceProxy(IFarmerGround ground, SerialCommunicationConfiguration serialConfiguration)
+    public ExternalDeviceProxy(
+        IFarmerGround ground, 
+        SerialCommunicationConfiguration serialConfiguration,
+        HubConnectionConfiguration hubConfiguration)
     {
         _ground = ground;
         
         _positionNotifier = new Farmer5dPositionNotifier();
         _positionNotifier.NewPoint += NewPointReceived;
 
-        _serialConfiguration = serialConfiguration;
-        _delayBetweenReadAttempts = _serialConfiguration?.DelayBetweenReadAttempts ?? 2000;
-        _maxReadAttempts = _serialConfiguration?.MaxReadAttempts ?? 10;
-
-        _commandInProgressSem = new SemaphoreSlim(1);
-
         _positionsToSend = new FarmerDevicePositionsRequestData()
         {
             GroundId = ground.ID
         };
 
-        ConfigureSerialPort();
+        ConfigureHub(hubConfiguration);
+        ConfigureSerialComm(serialConfiguration);
     }
 
     public double X => _positionNotifier.X;
@@ -64,72 +54,79 @@ public class ExternalDeviceProxy :
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_TO_HEIGHT_COMMAND,
-            new object[] { heightInCm }) >= 0;
+            new object[] { heightInCm });
         
-        if (result)
+        if (!result.IsSuccess ||
+            !double.TryParse(result.Result, out var receivedHeight))
         {
-            _positionNotifier.Z = heightInCm;
+            return false;
         }
 
-        return result;
+        _positionNotifier.Z = heightInCm;
+        return true;
     }
 
-    public async Task<int> MoveArmAtMaxHeightAsync(CancellationToken token)
+    public async Task<double> MoveArmAtMaxHeightAsync(CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_TO_MAX_HEIGHT_COMMAND,
             null);
         
-        var outcome = result >= 0;
-        if (outcome)
+        if (!result.IsSuccess ||
+            !double.TryParse(result.Result, out var receivedHeight))
         {
-            _positionNotifier.Z = result;
+            return -1;
         }
 
-        return result;
+        _positionNotifier.Z = receivedHeight;
+        return receivedHeight;
     }
 
     public async Task<bool> MoveOnGridAsync(double x, double y, CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_XY_COMMAND,
-            new object[] { x, y }) >= 0;
+            new object[] { x, y });
         
-        if (result)
+        if (!result.IsSuccess ||
+            !int.TryParse(result.Result, out var receivedResultCode))
         {
-            _positionNotifier.X = x;
-            _positionNotifier.Y = y;
+            return false;
         }
 
-        return result;
+        return receivedResultCode > 0;
     }
 
     public async Task<bool> PointDeviceAsync(double degrees, CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
-            new object[] { degrees }) >= 0;
-        
-        if (result)
+            new object[] { degrees });
+           
+        if (!result.IsSuccess ||
+            !double.TryParse(result.Result, out var receivedDegrees))
         {
-            _positionNotifier.Beta = degrees;
+            return false;
         }
 
-        return result;
+        _positionNotifier.Beta = receivedDegrees;
+        return true;
     }
 
     public async Task<bool> TurnArmToDegreesAsync(double degrees, CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
-            new object[] { degrees }) >= 0;
-        
-        if (result)
+            new object[] { degrees });
+                
+        if (!result.IsSuccess ||
+            !double.TryParse(result.Result, out var receivedDegrees))
         {
-            _positionNotifier.Alpha = degrees;
+            return false;
         }
 
-        return result;
+        _positionNotifier.Alpha = receivedDegrees;
+        return true;
     }
 
     public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
@@ -174,16 +171,28 @@ public class ExternalDeviceProxy :
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.GET_HUMIDITY_LEVEL, null);
         
-        return result;
+        if (!result.IsSuccess ||
+            !double.TryParse(result.Result, out var amount))
+        {
+            return -1;
+        }
+
+        return amount;
     }
 
     public async Task<bool> ProvideWaterAsync(int pumpNumber, double amountInLiters, CancellationToken token)
     {
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.HANDLE_PUMP_COMMAND, 
-            new object[] { pumpNumber, amountInLiters }) >= 0;
+            new object[] { pumpNumber, amountInLiters });
         
-        return result;
+        if (!result.IsSuccess ||
+            !int.TryParse(result.Result, out var amount))
+        {
+            return false;
+        }
+
+        return amount >= 0;
     }
 
     public void Dispose()
@@ -192,9 +201,10 @@ public class ExternalDeviceProxy :
 
         try
         {
-            if (_serialPort != null && _serialPort.IsOpen)
+            if (_serial != null)
             {
-                _serialPort.Close();
+                _serial.PartialResultReceived += ProcessRequestUpdateResult;
+                _serial.Dispose();
             }
         }
         catch(Exception ex)
@@ -207,7 +217,7 @@ public class ExternalDeviceProxy :
     {
         SmartFarmerLog.Information($"new position received: {this._positionNotifier.ToString()}");
         
-        _positionsToSend.Positions.Add(new FarmerDevicePositionInTime()
+        var newPosition = new FarmerDevicePositionInTime()
         {
             X = this.X,
             Y = this.Y,
@@ -215,178 +225,70 @@ public class ExternalDeviceProxy :
             Alpha = this.Alpha,
             Beta = this.Beta,
             PositionDt = DateTime.UtcNow
-        });
+        };
 
+        Task.Run(async () => await NotifyNewReceivedPosition(newPosition, sender, args));
+    }
+
+    private async Task NotifyNewReceivedPosition(FarmerDevicePositionInTime position, object sender, EventArgs args)
+    {
         if (sender is IFarmerPointNotifier notifier)
         {
             NewPoint.Invoke(this, args);
         }
-    }
 
-    private void ConfigureSerialPort()
-    {
-        _serialPort = new SerialPort();
-
-        _serialPort.PortName = _serialConfiguration?.SerialPortName ?? "COM4";
-        _serialPort.BaudRate = _serialConfiguration?.BaudRate ?? 9600;
-        _serialPort.DtrEnable = true;
-        _serialPort.RtsEnable = true;
-        _serialPort.WriteTimeout = _serialConfiguration?.WriteTimeout ?? 1000;
-        _serialPort.ReadTimeout = _serialConfiguration?.ReadTimeout ?? 1000;
-
-        _serialPort.Open();
-    }
-
-    private async Task<int> SendCommandToExternalDevice(
-        string command,
-        object[] parameters)
-    {
-        var buffer = new BufferBlock<byte[]>();
-        var consumerTask = ConsumeCommandAsync(buffer);
-
-        ProduceCommand(buffer, command, parameters);
-
-        return await consumerTask;
-    }
-
-    private byte[] PrepareCommand(
-        string command,
-        object[] parameters)
-    {
-        return SerialCommandUtils.ComposeRequest(command, parameters);
-    }
-
-    private void ProduceCommand(
-        ITargetBlock<byte[]> target,
-        string command,
-        object[] parameters)
-    {
-        var data = PrepareCommand(command, parameters);
-
-        target.Post(data);
-        target.Complete();
-    }
-
-    private async Task<int> ConsumeCommandAsync(ISourceBlock<byte[]> source)
-    {
         try
         {
-            await _commandInProgressSem.WaitAsync();
-            if (_commandInProgress)
-            {
-                _commandInProgressSem.Release();
-                SmartFarmerLog.Warning("Another operation in progress");
-                return -1;
-            }
-
-            _commandInProgress = true;
-            _commandInProgressSem.Release();
-
-            while (await source.OutputAvailableAsync())
-            {
-                byte[] data = await source.ReceiveAsync();
-                var length = data.Length;
-
-                if (!_serialPort.IsOpen)
+            // send on hub immediately
+            await _hub.SendDevicePosition(
+                new FarmerDevicePositionRequestData()
                 {
-                    SmartFarmerLog.Error($"Serial port {_serialPort.PortName} is closed");
-                    return -1;
+                    GroundId = _ground.ID,
+                    RunId = position.RunId,
+                    PositionDt = position.PositionDt,
+                    Position = new Farmer5dPoint(position)
                 }
-
-                SerialCommandUtils.ParseRequest(
-                    data,
-                    out var requestId,
-                    out var command,
-                    out var parameters);
-
-                SmartFarmerLog.Debug($"sending request {command}\tID: {requestId}");
-
-                _serialPort.Write(data, 0, length);
-
-                await Task.Delay(200);
-
-                int result = -1;
-                // read outcome
-                string receivedValue = null;
-
-                var attempts = _maxReadAttempts;
-                Stopwatch sw = new Stopwatch();
-
-                sw.Start();
-                while (attempts > 0)
-                {
-                    try
-                    {
-                        receivedValue = _serialPort.ReadLine();
-                    }
-                    catch (TimeoutException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        SmartFarmerLog.Exception(ex);
-
-                        throw new FarmerTaskExecutionException(
-                            null,
-                            null,
-                            "serial port communication error",
-                            ex,
-                            SmartFarmer.Alerts.AlertCode.SerialCommunicationException,
-                            SmartFarmer.Alerts.AlertLevel.Error,
-                            SmartFarmer.Alerts.AlertSeverity.Medium);
-                    }
-
-                    if (SerialCommandUtils.IsRequestFinalResult(receivedValue))
-                    {
-                        break;
-                    }
-
-                    if (SerialCommandUtils.IsRequestUpdateResult(receivedValue))
-                    {
-                        ProcessRequestUpdateResult(requestId, command, receivedValue);
-                        continue;
-                    }
-
-                    await Task.Delay(_delayBetweenReadAttempts);
-                    SmartFarmerLog.Debug($"attempt {_maxReadAttempts - attempts + 1}/{_maxReadAttempts}");
-                    attempts--;
-                };
-                sw.Stop();
-
-                if (attempts <= 0)
-                {
-                    SmartFarmerLog.Error($"No valid data received for {sw.Elapsed.TotalSeconds} seconds");
-                    return result;
-                }
-
-                return ProcessRequestFinalResult(requestId, command, receivedValue);
-            }
+                );
+            SmartFarmerLog.Debug($"position sent through hub");
         }
         catch(Exception ex)
         {
             SmartFarmerLog.Exception(ex);
-            return -1;
-        }
-        finally
-        {
-            await _commandInProgressSem.WaitAsync();
-            _commandInProgress = false;
-            _commandInProgressSem.Release();
-        }
 
-        return 0;
+            // if sending fails, collect to future tries
+            _positionsToSend.Positions.Add(position);
+        }
     }
 
-    private int ProcessRequestFinalResult(string requestId, string command, string receivedValue)
+    private void ConfigureHub(HubConnectionConfiguration hubConfiguration)
+    {
+        _hub = new FarmerGroundHubHandler(_ground, hubConfiguration);
+    }
+    
+    private void ConfigureSerialComm(SerialCommunicationConfiguration serialConfiguration)
+    {
+        _serial = new FarmerGroundSerialHandler(serialConfiguration);
+
+        _serial.PartialResultReceived += ProcessRequestUpdateResult;
+    }
+
+    private async Task<SerialCommandFinalResult> SendCommandToExternalDevice(
+        string command,
+        object[] parameters)
+    {
+        return await _serial.SendCommandToExternalDevice(command, parameters);
+    }
+
+    private int ProcessRequestFinalResult(SerialCommandFinalResult args)
     {
         int result;
-        SmartFarmerLog.Debug($"received message from serial port:\n\t->{receivedValue.Replace("\r\n", "").Replace("\n", "")}");
-        result = GetReceivedValueOutcome(requestId, receivedValue);
+        SmartFarmerLog.Debug($"received message from serial port:\n\t->{args.Result.Replace("\r\n", "").Replace("\n", "")}");
+        result = GetReceivedValueOutcome(args.ExpectedRequestId, args.Result);
 
         if (result == -1)
         {
-            SmartFarmerLog.Error($"invalid response for command: \"{command}\". Received {receivedValue}");
-            SendDeviceError(requestId, command, receivedValue);
+            SmartFarmerLog.Error($"invalid response for command: \"{args.Command}\". Received {args.Result}");
+            SendDeviceError(args.ExpectedRequestId, args.Command, args.Result);
         }
         else
         {
@@ -400,9 +302,11 @@ public class ExternalDeviceProxy :
     {
         if (_positionsToSend?.Positions == null || !_positionsToSend.Positions.Any())
         {
+            SmartFarmerLog.Debug($"position history is empty");
             return;
         }
 
+        SmartFarmerLog.Debug($"position history contains {_positionsToSend.Positions.Count} positions");
         Task.Run(async () => await FarmerRequestHelper.NotifyDevicePositions(_positionsToSend, CancellationToken.None));
     }
 
@@ -411,20 +315,14 @@ public class ExternalDeviceProxy :
         //TODO notify device error
     }
 
-    private void ProcessRequestUpdateResult(string expectedRequestId, string command, string receivedValue)
+    private void ProcessRequestUpdateResult(object sender, SerialCommandPartialResultEventArgs args)
     {
-        SerialCommandUtils.ParsePartialResponse(
-            receivedValue, 
-            out var requestId, 
-            out var resultStr);
-        
-        
-        if (requestId != expectedRequestId)
+        if (args.RequestId != args.ExpectedRequestId)
         {
             return;
         }
 
-        NotifyPartialResultByCommand(command, resultStr);
+        NotifyPartialResultByCommand(args.Command, args.Result);
     }
 
     private void NotifyPartialResultByCommand(string command, string resultStr)
