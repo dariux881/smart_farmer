@@ -11,6 +11,15 @@ public class Farmer5dPoint : IFarmer5dPoint
         Beta = beta;
     }
 
+    public Farmer5dPoint(IFarmer5dPoint position)
+    {
+        X = position.X;
+        Y = position.Y;
+        Z = position.Z;
+        Alpha = position.Alpha;
+        Beta = position.Beta;
+    }
+
     public double X { get; private set; }
     public double Y { get; private set; }
     public double Z { get; private set; }
