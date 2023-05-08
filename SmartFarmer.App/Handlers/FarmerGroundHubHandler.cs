@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
-using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Movement;
 
 namespace SmartFarmer.Handlers;
 
@@ -12,9 +12,9 @@ public class FarmerGroundHubHandler
 {
     private HubConnection _connection;
     private HubConnectionConfiguration _hubConfiguration;
-    private FarmerGround _ground;
+    private IFarmerGround _ground;
 
-    public FarmerGroundHubHandler(FarmerGround ground, HubConnectionConfiguration hubConfiguration)
+    public FarmerGroundHubHandler(IFarmerGround ground, HubConnectionConfiguration hubConfiguration)
     {
         _hubConfiguration = hubConfiguration;
         _ground = ground;
@@ -57,9 +57,21 @@ public class FarmerGroundHubHandler
         }
     }
     
-    private async Task Handshake(CancellationToken token)
+    public async Task SendDevicePosition(FarmerDevicePositionRequestData position)
     {
-        await _connection.InvokeAsync("SubscribeToGroups", LocalConfiguration.LoggedUserId, _ground.ID);
+        await _connection.InvokeAsync(
+            FarmerHubConstants.NOTIFY_POSITION,
+            position);
     }
 
+    private async Task Handshake(CancellationToken token)
+    {
+        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, LocalConfiguration.LoggedUserId, _ground.ID);
+    }
+}
+
+public class FarmerHubConstants
+{
+    public const string SUBSCRIBE = "SubscribeToGroups";
+    public const string NOTIFY_POSITION = "NotifyPosition";
 }
