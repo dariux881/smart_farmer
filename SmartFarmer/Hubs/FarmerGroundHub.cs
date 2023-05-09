@@ -59,8 +59,11 @@ public class FarmerGroundHub : Hub, IDisposable
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groundId);
     }
 
-    public async Task NotifyPosition(string userId, FarmerDevicePositionRequestData position)
+    public async Task NotifyPosition(string positionStr)
     {
+        var userId = GetUserIdByConnectionId(Context.ConnectionId);
+        var position = positionStr.Deserialize<FarmerDevicePositionRequestData>();
+
         await _groundProvider.NotifyDevicePosition(userId, position);
     }
 
