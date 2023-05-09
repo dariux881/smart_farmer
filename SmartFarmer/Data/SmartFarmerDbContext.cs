@@ -32,6 +32,7 @@ public class SmartFarmerDbContext : DbContext
         new FarmerIrrigationTaskInfoConfiguration().Configure(modelBuilder.Entity<FarmerIrrigationTaskInfo>());
 
         new FarmerUserTypeConfiguration().Configure(modelBuilder.Entity<User>());
+        new FarmerUserLoginTypeConfiguration().Configure(modelBuilder.Entity<UserLogin>());
     }
 
     public DbSet<FarmerGround> Grounds { get; set; }

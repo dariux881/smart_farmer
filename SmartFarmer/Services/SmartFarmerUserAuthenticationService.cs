@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
+using SmartFarmer.Data.Security;
 using SmartFarmer.DTOs.Security;
 
 namespace SmartFarmer.Services;
@@ -33,8 +34,8 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
     {
         return await _repository.IsUserAuthorizedToAnyOf(userId, authorizationIds);
     }
-
-    public async Task<string> LogInUser(string userName, string password, object[] parameters)
+    
+    public async Task<LoginResponseData> LogInUser(string userName, string password, object[] parameters)
     {
         // check if user exists
         var checkedUser = await _repository.GetUser(userName, password);
@@ -46,7 +47,9 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
         var checkLoggedUser = await GetLoggedUserById(checkedUser.ID);
 
         if (checkLoggedUser != null)
-            return checkLoggedUser.Token;
+        {
+            return new LoginResponseData(checkedUser.ID, checkLoggedUser.Token, null);
+        }
 
         // generate new token. Insert logged user
         var newToken = GenerateToken(checkedUser);
@@ -58,14 +61,13 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
                 .LogInUser(
                     new UserLogin 
                     { 
-                        ID = checkedUser.ID + "_" + now.ToString("G"),
                         LoginDt = now, 
                         Token = newToken, 
                         UserId = checkedUser.ID, 
                         LogoutDt = null 
                     });
 
-        return newToken;
+        return new LoginResponseData(newToken, checkedUser.ID, null);
     }
 
     public async Task LogOutUser(string token)
