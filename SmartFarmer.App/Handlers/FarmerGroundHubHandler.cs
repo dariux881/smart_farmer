@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -24,7 +25,14 @@ public class FarmerGroundHubHandler
     {
         // Opening SignalR connection
         _connection = new HubConnectionBuilder()
-            .WithUrl(_hubConfiguration.Url)
+            .WithUrl(_hubConfiguration.Url, options => {
+                options.AccessTokenProvider = () => Task.FromResult(LocalConfiguration.Token);
+            })
+            // .ConfigureLogging(logging => 
+            // {
+            //     logging.AddConsole();
+            //     logging.SetMinimumLevel(LogLevel.Debug);
+            // })
             .WithAutomaticReconnect()
             .Build();
 
@@ -33,23 +41,11 @@ public class FarmerGroundHubHandler
             await Task.Delay(new Random().Next(0,5) * 1000);
             await _connection.StartAsync();
         };
-
-        await Task.CompletedTask;
-    }
-    
-    public async Task Run(CancellationToken token)
-    {
-        // Start connection and subscribe to commands
-        // _connection.On<string, string, string>("ReceiveCliCommand", (user, groundId, command) =>
-        // {
-        //     SmartFarmerLog.Debug($"{user}: {command} for ground {groundId}");
-        //     ParseAndExecuteCommand(user, groundId, command);
-        // });
-
+        
         try
         {
             await _connection.StartAsync();
-            await Handshake(token);
+            await Handshake(CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -61,12 +57,12 @@ public class FarmerGroundHubHandler
     {
         await _connection.InvokeAsync(
             FarmerHubConstants.NOTIFY_POSITION,
-            position);
+            position.Serialize());
     }
 
     private async Task Handshake(CancellationToken token)
     {
-        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, LocalConfiguration.LoggedUserId, _ground.ID);
+        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, LocalConfiguration.LoggedUserId ?? "Test", _ground.ID);
     }
 }
 
