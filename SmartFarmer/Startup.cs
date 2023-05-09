@@ -88,7 +88,7 @@ namespace SmartFarmer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<FarmerGroundHub>("FarmerGround");
+                endpoints.MapHub<FarmerGroundHub>("farmerGroundHub");
             });
         }
     }

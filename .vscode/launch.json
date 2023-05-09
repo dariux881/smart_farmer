@@ -21,6 +21,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
+            "console": "integratedTerminal",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/SmartFarmer/bin/Debug/net6.0/SmartFarmer.dll",
             "args": [],

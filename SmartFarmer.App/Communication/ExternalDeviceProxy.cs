@@ -263,6 +263,17 @@ public class ExternalDeviceProxy :
     private void ConfigureHub(HubConnectionConfiguration hubConfiguration)
     {
         _hub = new FarmerGroundHubHandler(_ground, hubConfiguration);
+
+        Task.Run(async () => {
+            try
+            {
+                await _hub.Prepare();
+            }
+            catch (AggregateException ec)
+            {
+                SmartFarmerLog.Exception(ec);
+            }
+        });
     }
     
     private void ConfigureSerialComm(SerialCommunicationConfiguration serialConfiguration)
