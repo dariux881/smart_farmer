@@ -319,6 +319,14 @@ public class ExternalDeviceProxy :
 
         SmartFarmerLog.Debug($"position history contains {_positionsToSend.Positions.Count} positions");
         Task.Run(async () => await FarmerRequestHelper.NotifyDevicePositions(_positionsToSend, CancellationToken.None));
+
+        var lastPos = 
+            _positionsToSend
+                .Positions
+                    .OrderByDescending(x => x.PositionDt)
+                    .First();
+
+        Task.Run(async () => await _hub.NotifyDevicePosition(_positionsToSend.GroundId, lastPos));
     }
 
     private void SendDeviceError(string requestId, string command, string receivedValue)
