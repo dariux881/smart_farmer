@@ -47,7 +47,8 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
             "2 - execute plan\n" +
             "3 - list alerts\n"+
             "4 - invert alert read flag\n"+
-            "5 - update grounds\n"+
+            "5 - update ground\n"+
+            "6 - update grounds\n"+
             "-1 - exit\n"+
             " select: ";
 

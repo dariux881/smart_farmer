@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using SmartFarmer.Data;
+using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement;
@@ -133,15 +134,18 @@ public class GroundActivityManager
                 }
 
                 break;
+
             case AppOperation.UpdateAllGrounds:
                 ClearLocalData();
                 Task.Run(async () => await InitializeGrounds());
+                break;
 
-                break;            
             case AppOperation.MarkAlert:
                 Task.Run(async () => await InvertAlertReadStatus(e.AdditionalData.FirstOrDefault()));
-
-                break;                
+                break;
+            
+            default: 
+                throw new NotSupportedException();
         }
     }
 
@@ -210,7 +214,7 @@ public class GroundActivityManager
 
     private void ClearLocalData()
     {
-        LocalConfiguration.Grounds = new Dictionary<string, IFarmerGround>();
+        LocalConfiguration.ClearLocalData(true, false, false);
     }
 
     private static async Task<bool> MarkAlertAsRead(string alertId, bool status)
@@ -248,11 +252,11 @@ public class GroundActivityManager
 
         var tasks = new List<Task>();
 
-        foreach (var value in locallyInterestedGrounds)
+        foreach (var ground in locallyInterestedGrounds)
         {
-            await InitializeServicesForTasks(value, cancellationToken);
+            await InitializeServicesForSingleGround(ground, cancellationToken);
 
-            var groundId = value.ID;
+            var groundId = ground.ID;
             tasks.Add(Task.Run(async () => {
                 var ground = await FarmerRequestHelper
                     .GetGround(groundId, cancellationToken);
@@ -264,8 +268,14 @@ public class GroundActivityManager
         try {  
            await Task.WhenAll(tasks);
         }  
-        catch {}
-
+        catch(AggregateException ae) 
+        {
+            SmartFarmerLog.Exception(ae);
+        }
+        catch(Exception ex) 
+        {
+            SmartFarmerLog.Exception(ex);
+        }
     }
 
     private void PrepareEnvironment()
@@ -287,7 +297,7 @@ public class GroundActivityManager
         _hubConfiguration = config.GetSection("HubConnectionConfiguration").Get<HubConnectionConfiguration>();
     }
     
-    private async Task InitializeServicesForTasks(IFarmerGround ground, CancellationToken cancellationToken)
+    private async Task InitializeServicesForSingleGround(IFarmerGround ground, CancellationToken cancellationToken)
     {
         // clearing possibly old mapped services
         FarmerServiceLocator.RemoveService<IFarmerToolsManager>();
