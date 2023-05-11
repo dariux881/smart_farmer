@@ -17,6 +17,9 @@ public class FarmerGroundHubHandler
 
     public FarmerGroundHubHandler(IFarmerGround ground, HubConnectionConfiguration hubConfiguration)
     {
+        if (hubConfiguration == null) throw new ArgumentNullException(nameof(hubConfiguration));
+        if (string.IsNullOrEmpty(hubConfiguration.Url)) throw new InvalidProgramException("invalid specified URL");
+
         _hubConfiguration = hubConfiguration;
         _ground = ground;
     }
@@ -25,13 +28,19 @@ public class FarmerGroundHubHandler
     {
         // Opening SignalR connection
         _connection = new HubConnectionBuilder()
-            .WithUrl(_hubConfiguration.Url, options => {
-                options.AccessTokenProvider = () => Task.FromResult(LocalConfiguration.Token);
-            })
+            .WithUrl(
+                _hubConfiguration.Url, 
+                options => {
+                    options.AccessTokenProvider = () => Task.FromResult(LocalConfiguration.Token);
+                    options.Headers.Add(
+                        SmartFarmerApiConstants.USER_AUTHENTICATION_HEADER_KEY, 
+                        LocalConfiguration.Token);
+                }
+            )
             // .ConfigureLogging(logging => 
             // {
             //     logging.AddConsole();
-            //     logging.SetMinimumLevel(LogLevel.Debug);
+            //     logging.SetMinimumLevel(LogLevel.Warning);
             // })
             .WithAutomaticReconnect()
             .Build();
@@ -41,6 +50,10 @@ public class FarmerGroundHubHandler
             await Task.Delay(new Random().Next(0,5) * 1000);
             await _connection.StartAsync();
         };
+
+        _connection.On<string>(
+            FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
+            (positionStr) => SmartFarmerLog.Debug(positionStr));
         
         try
         {
@@ -55,6 +68,8 @@ public class FarmerGroundHubHandler
     
     public async Task SendDevicePosition(FarmerDevicePositionRequestData position)
     {
+        if (position == null) throw new ArgumentNullException(nameof(position));
+
         await _connection.InvokeAsync(
             FarmerHubConstants.NOTIFY_POSITION,
             position.Serialize());
@@ -62,12 +77,6 @@ public class FarmerGroundHubHandler
 
     private async Task Handshake(CancellationToken token)
     {
-        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, LocalConfiguration.LoggedUserId ?? "Test", _ground.ID);
+        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, _ground.ID);
     }
-}
-
-public class FarmerHubConstants
-{
-    public const string SUBSCRIBE = "SubscribeToGroups";
-    public const string NOTIFY_POSITION = "NotifyPosition";
 }

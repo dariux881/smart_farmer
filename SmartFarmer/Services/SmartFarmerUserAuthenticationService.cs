@@ -48,7 +48,7 @@ public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAut
 
         if (checkLoggedUser != null)
         {
-            return new LoginResponseData(checkedUser.ID, checkLoggedUser.Token, null);
+            return new LoginResponseData(checkLoggedUser.Token, checkedUser.ID, null);
         }
 
         // generate new token. Insert logged user

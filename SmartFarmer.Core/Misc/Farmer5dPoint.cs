@@ -2,6 +2,11 @@ using SmartFarmer.Misc;
 
 public class Farmer5dPoint : IFarmer5dPoint
 {
+    public Farmer5dPoint()
+    {
+
+    }
+    
     public Farmer5dPoint(double x, double y, double z, double alpha, double beta)
     {
         X = x;
@@ -20,9 +25,9 @@ public class Farmer5dPoint : IFarmer5dPoint
         Beta = position.Beta;
     }
 
-    public double X { get; private set; }
-    public double Y { get; private set; }
-    public double Z { get; private set; }
-    public double Alpha { get; private set; }
-    public double Beta { get; private set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double Alpha { get; set; }
+    public double Beta { get; set; }
 }
