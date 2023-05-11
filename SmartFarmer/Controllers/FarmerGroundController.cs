@@ -366,36 +366,6 @@ public class FarmerGroundController : ControllerBase
         return BadRequest(result);
     }
 
-    [HttpPost("notifyPosition")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
-    public async Task<ActionResult> NotifyPosition([FromBody] FarmerDevicePositionRequestData position)
-    {
-        if (position == null)
-        {
-            throw new ArgumentNullException(nameof(position));
-        }
-
-        if (string.IsNullOrEmpty(position.GroundId))
-        {
-            return BadRequest();
-        }
-
-        var userId = await GetUserIdByContext();
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        var result = await _groundProvider
-            .NotifyDevicePosition(userId, position);
-
-        if (result)
-        {
-            return BadRequest();
-        }
-
-        return Ok();
-    }
-
     [HttpPost("notifyPositions")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
     public async Task<ActionResult> NotifyPositions([FromBody] FarmerDevicePositionsRequestData positions)

@@ -207,12 +207,12 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return planId;
     }
 
-    public async Task<bool> NotifyDevicePosition(string userId, FarmerDevicePositionRequestData position)
+    public async Task<FarmerDevicePosition> NotifyDevicePosition(string userId, FarmerDevicePositionRequestData position)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         var ground = await GetFarmerGroundByIdForUserAsync(userId, position.GroundId) as FarmerGround;
-        if (ground == null) return false; // no valid ground
+        if (ground == null) return null; // no valid ground
 
         var storedPosition = await _repository.SaveDevicePosition(userId, position);
 
@@ -221,7 +221,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
             NewDevicePosition?.Invoke(this, new DevicePositionEventArgs(storedPosition));
         }
 
-        return storedPosition != null;
+        return storedPosition;
     }
 
     public async Task<bool> NotifyDevicePositions(string userId, FarmerDevicePositionsRequestData positions)

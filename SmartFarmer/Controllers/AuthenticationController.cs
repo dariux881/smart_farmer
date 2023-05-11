@@ -27,15 +27,16 @@ public class AuthenticationController : ControllerBase
     public async Task<ActionResult<LoginResponseData>> LogIn([FromBody] LoginRequestData userLoginData)
     {
         //TODO encrypt
-        var token = await _userManager.LogInUser(userLoginData.UserName, userLoginData.Password, userLoginData.Parameters);
+        var result = await _userManager.LogInUser(
+            userLoginData.UserName, 
+            userLoginData.Password, 
+            userLoginData.Parameters);
 
-        if (string.IsNullOrEmpty(token)) {
+        if (result == null || string.IsNullOrEmpty(result.Token)) {
             return Unauthorized();
         }
 
-        var response = new LoginResponseData(token, await GetUserIdByContext(), null);
-
-        return Ok(response);
+        return Ok(result);
     }
     
     [HttpGet("LogOut")]

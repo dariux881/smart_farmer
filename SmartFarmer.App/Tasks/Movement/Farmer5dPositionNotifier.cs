@@ -38,4 +38,9 @@ public class Farmer5dPositionNotifier : Farmer3dPositionNotifier, IFarmer5dPoint
             SendNewPoint();
         }
     }
+
+    public override string ToString()
+    {
+        return $"{X} - {Y} - {Z} - {Alpha} - {Beta}";
+    }
 }

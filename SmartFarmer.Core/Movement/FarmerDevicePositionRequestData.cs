@@ -8,5 +8,5 @@ public class FarmerDevicePositionRequestData
     public string GroundId { get; set; }
     public string RunId { get; set; }
     public DateTime? PositionDt { get; set; }
-    public IFarmer5dPoint Position { get; set; }
+    public Farmer5dPoint Position { get; set; }
 }

@@ -34,8 +34,9 @@ public class SmartFarmerUserJWTAuthenticationService : SmartFarmerUserAuthentica
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sid, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sid, user.ID), // Guid.NewGuid().ToString()
+                // new Claim(JwtRegisteredClaimNames.Sub, user.ID),
+                new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             }),

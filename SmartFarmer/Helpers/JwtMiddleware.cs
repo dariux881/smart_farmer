@@ -24,7 +24,16 @@ public class JwtMiddleware
 
     public async Task Invoke(HttpContext context, ISmartFarmerUserAuthenticationService userService)
     {
-        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var authHeader = context.Request.Headers["Authorization"];
+        var tokenHeader = 
+            authHeader.Any(x => x.Contains("Bearer")) ? 
+                authHeader.FirstOrDefault(x => x.Contains("Bearer")) :
+                authHeader.FirstOrDefault();
+
+        var token = tokenHeader?
+            .Replace("Bearer", "")
+            .Split(" ")
+            .Last();
 
         if (token != null)
             attachUserToContext(context, userService, token);
@@ -38,17 +47,23 @@ public class JwtMiddleware
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Key);
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
-                ClockSkew = TimeSpan.Zero
-            }, out SecurityToken validatedToken);
+            var claimsPrincipal = tokenHandler.ValidateToken(
+                token, 
+                new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+                    ClockSkew = TimeSpan.Zero
+                },
+                out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
+
+            context.User = claimsPrincipal;
+
             // var userId = jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sid).Value;
 
             // attach user to context on successful jwt validation
