@@ -53,7 +53,12 @@ public class FarmerGroundHubHandler
 
         _connection.On<string>(
             FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
-            (positionStr) => SmartFarmerLog.Debug(positionStr));
+            (positionStr) => 
+            {
+                var position = positionStr.Deserialize<FarmerDevicePositionInTime>();
+
+                SmartFarmerLog.Debug(position.ToString());
+            });
         
         try
         {
@@ -71,7 +76,17 @@ public class FarmerGroundHubHandler
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.NOTIFY_POSITION,
+            FarmerHubConstants.INSERT_DEVICE_POSITION,
+            position.Serialize());
+    }
+
+    public async Task NotifyDevicePosition(string groundId, FarmerDevicePositionInTime position)
+    {
+        if (position == null) throw new ArgumentNullException(nameof(position));
+
+        await _connection.InvokeAsync(
+            FarmerHubConstants.NOTIFY_DEVICE_POSITION,
+            groundId,
             position.Serialize());
     }
 

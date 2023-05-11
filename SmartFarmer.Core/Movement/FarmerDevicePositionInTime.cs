@@ -13,4 +13,9 @@ public class FarmerDevicePositionInTime : IFarmer5dPoint
     public double Z { get; set; }
     public double Alpha { get; set; }
     public double Beta { get; set; }
+
+    public override string ToString()
+    {
+        return $"{PositionDt.ToString("G")}) {X} - {Y} - {Z} - {Alpha} - {Beta}";
+    }
 }

@@ -52,15 +52,15 @@ public class FarmerGroundHub : Hub
 
         if (result != null)
         {
-            await NotifyNewPositionAsync(result);
+            await NotifyNewPositionAsync(result.GroundId, result);
         }
     }
 
-    public async Task NotifyNewPositionAsync(FarmerDevicePosition position)
-        => await 
-            Clients
-                .OthersInGroup(position.GroundId)
-                .SendAsync(HubConstants.NewPositionReceivedMessage, JsonSerializer.Serialize(position));
+    public async Task NotifyNewPositionAsync(string groundId, string positionStr)
+    {
+        var position = JsonSerializer.Deserialize<FarmerDevicePositionInTime>(positionStr);
+        await NotifyNewPositionAsync(groundId, position);
+    }
 
     public async Task NotifyNewPlanAsync(string groundId, string planId)
         => await 
@@ -118,5 +118,13 @@ public class FarmerGroundHub : Hub
             Clients
                 .User(Context.UserIdentifier)
                 .SendAsync(HubConstants.ReceiveCliCommandResult, userId, groundId, commandResult);
+    }
+
+    private async Task NotifyNewPositionAsync(string groundId, FarmerDevicePositionInTime position)
+    {
+        await 
+            Clients
+                .OthersInGroup(groundId)
+                .SendAsync(HubConstants.NewPositionReceivedMessage, JsonSerializer.Serialize(position));
     }
 }
