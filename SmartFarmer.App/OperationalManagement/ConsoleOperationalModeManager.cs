@@ -8,19 +8,18 @@ using SmartFarmer.Misc;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
+public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsoleOperationalModeManager
 {
     private bool CanRun = true;
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
-    public string Name => "Console Operational Manager";
-    public AppOperationalMode Mode => AppOperationalMode.Console;
+    public override string Name => "Console Operational Manager";
+    public override AppOperationalMode Mode => AppOperationalMode.Console;
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         await Task.CompletedTask;
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
         var menu = PromptAndExecute(token);
 
@@ -33,7 +32,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         await Task.CompletedTask;
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
         if (args.ExecutionException != null)
         {
@@ -46,7 +45,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
 
     }
@@ -195,24 +194,6 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         }
 
         return true;
-    }
-
-    protected void SendNewOperation(AppOperation operation, string[] data)
-    {
-        var args = new OperationRequestEventArgs(this, operation, data);
-
-        try
-        {
-            NewOperationRequired?.Invoke(this, args);
-        }
-        catch (AggregateException ex)
-        {
-            SmartFarmerLog.Exception(ex);
-        }
-        catch (Exception ex)
-        {
-            SmartFarmerLog.Exception(ex);
-        }
     }
 
     private void HandleCli()

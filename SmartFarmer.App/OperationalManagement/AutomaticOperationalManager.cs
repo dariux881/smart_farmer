@@ -15,7 +15,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class AutomaticOperationalManager : IAutoOperationalModeManager
+public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOperationalModeManager
 {
     private IScheduler _jobScheduler;
     private ConcurrentDictionary<string, List<string>> _scheduledPlansByGround;
@@ -28,15 +28,13 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule ?? "0 0/30 * ? * * *";
     }
 
-    public AppOperationalMode Mode => AppOperationalMode.Auto;
+    public override AppOperationalMode Mode => AppOperationalMode.Auto;
 
     public string PlanCheckSchedule { get; set; }
 
-    public string Name => "Automatic Operational Manager";
+    public override string Name => "Automatic Operational Manager";
 
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
-
-    public void Dispose()
+    public override void Dispose()
     {
         if (_jobScheduler != null && _jobScheduler.IsStarted)
         {
@@ -45,12 +43,12 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         }
     }
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         await PrepareScheduler();
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
         // add scheduled plans
         await AddScheduledPlansToScheduler();
@@ -64,7 +62,7 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         //TODO subscribe to Hub. New requests are added to the scheduler
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
         if (args.ExecutionException != null)
         {
@@ -75,11 +73,6 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         {
             SmartFarmerLog.Debug(args.Result);
         }
-    }
-
-    protected void SendNewOperation(AppOperation operation, string[] data)
-    {
-        NewOperationRequired?.Invoke(this, new OperationRequestEventArgs(this, operation, data));
     }
 
     private void RunOneShotPlans()

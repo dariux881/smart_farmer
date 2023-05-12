@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Handlers;
@@ -9,7 +10,7 @@ using SmartFarmer.Tasks;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class CliOperationalManager : ICliOperationalModeManager
+public class CliOperationalManager : OperationalModeManagerBase, ICliOperationalModeManager
 {
     private HubConnectionConfiguration _hubConfiguration;
     private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
@@ -29,17 +30,16 @@ public class CliOperationalManager : ICliOperationalModeManager
         _appCommunication.LocalGroundRemoved += LocalGroundRemoved;
     }
 
-    public AppOperationalMode Mode => AppOperationalMode.Cli;
-    public string Name => "Remote CLI";
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
+    public override AppOperationalMode Mode => AppOperationalMode.Cli;
+    public override string Name => "Remote CLI";
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         // Configuring hubs
         await Task.CompletedTask;
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
@@ -49,7 +49,7 @@ public class CliOperationalManager : ICliOperationalModeManager
         await Task.CompletedTask;
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
         if (args.ExecutionException != null)
         {
@@ -64,7 +64,7 @@ public class CliOperationalManager : ICliOperationalModeManager
         Task.Run(async () => await NotifyResult(args.ExecutionException?.ToString() ?? args.Result));
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         if (_appCommunication != null)
         {
@@ -123,12 +123,56 @@ public class CliOperationalManager : ICliOperationalModeManager
             _localCommand = command;
             SmartFarmerLog.Debug($"processing command {command}");
 
-            //TODO invoke event
+            bool isCommandValid = false;
+            switch(command.Command)
+            {
+                case "run":
+                    isCommandValid = ProcessRunCommand(command);
+                    break;
+
+                case "move":
+                    isCommandValid = ProcessMoveCommand(command);
+                    break;
+            }
+
+            if (!isCommandValid)
+            {
+                Task.Run(async () => await NotifyResult($"received command {command} is not valid"));
+            }
+
         }
         finally
         {
             _commandSem.Release();
         }
+    }
+
+    private bool ProcessRunCommand(IFarmerCliCommand command)
+    {
+        bool outcome = false;
+        if (!command.Args.Any()) return outcome;
+
+        var obj = command.Args.First();
+        switch (obj.Key)
+        {
+            case "-plan":
+                {
+                    var planId = obj.Value.FirstOrDefault();
+                    if (string.IsNullOrEmpty(planId)) break;
+
+                    outcome = true;
+                    SendNewOperation(AppOperation.RunPlan, new [] { planId });
+                }
+
+                break;
+        }
+
+        return outcome;
+    }
+
+    private bool ProcessMoveCommand(IFarmerCliCommand command)
+    {
+        return false;
     }
 
     private async Task NotifyResult(string result)

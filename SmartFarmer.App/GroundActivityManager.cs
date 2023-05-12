@@ -90,6 +90,8 @@ public class GroundActivityManager
             var hub = new FarmerGroundHubHandler(ground.Value, _hubConfiguration);
             await hub.InitializeAsync();
 
+            hub.CliCommandResultReceived += (s, e) => SmartFarmerLog.Debug($"cli result: {e.Result}");
+
             _hubHandlers.TryAdd(ground.Key, hub);
         }
     }

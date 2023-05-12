@@ -30,6 +30,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
     public event EventHandler<DevicePositionEventArgs> NewDevicePositionReceived;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatusEventArgsReceived;
     public event EventHandler<NewCliCommandEventArgs> NewCliCommandReceived;
+    public event EventHandler<CliCommandResultEventArgs> CliCommandResultReceived;
 
     public async Task InitializeAsync()
     {
@@ -79,7 +80,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
     private void SubscribeToNotificationMethods()
     {
         _connection.On<string>(
-            FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
+            FarmerHubConstants.RECEIVE_DEVICE_POSITION, 
             (positionStr) => 
             {
                 NewDevicePositionReceived?.Invoke(this, new DevicePositionEventArgs(positionStr));
@@ -92,9 +93,15 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             });
 
         _connection.On<string>(
-            FarmerHubConstants.NEW_CLI_COMMAND,
+            FarmerHubConstants.RECEIVE_CLI_COMMAND,
             (command) => {
                 NewCliCommandReceived?.Invoke(this, new NewCliCommandEventArgs(command));
+            });
+
+        _connection.On<string>(
+            FarmerHubConstants.RECEIVE_CLI_COMMAND_RESULT,
+            (commandResult) => {
+                CliCommandResultReceived?.Invoke(this, new CliCommandResultEventArgs(commandResult));
             });
     }
 
@@ -103,7 +110,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.INSERT_DEVICE_POSITION,
+            FarmerHubConstants.SEND_DEVICE_POSITION,
             position.Serialize());
     }
 
@@ -152,7 +159,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (groundId == null) throw new ArgumentNullException(nameof(groundId));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.NOTIFY_CLI_COMMAND_RESULT,
+            FarmerHubConstants.SEND_CLI_COMMAND_RESULT,
             groundId,
             result);
     }
