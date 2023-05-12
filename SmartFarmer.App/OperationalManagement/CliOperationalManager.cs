@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Configurations;
 using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
@@ -53,7 +54,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         if (args.ExecutionException != null)
         {
-            SmartFarmerLog.Exception(args.ExecutionException);
+            SmartFarmerLog.Error(args.ExecutionException.Message);
         }
 
         if (args.Result != null)

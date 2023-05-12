@@ -3,12 +3,14 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer;
+using SmartFarmer.Configurations;
 using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Movement;
+
+namespace SmartFarmer.Communication;
 
 /// <summary>
 /// Implements a proxy pattern towards an external device (e.g. Arduino)

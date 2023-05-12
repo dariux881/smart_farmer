@@ -21,13 +21,22 @@ public abstract class FarmerBaseTask : IFarmerTask
     protected void PrepareTask()
     {
         IsInProgress = true;
-        SmartFarmerLog.Debug($"starting task \"{this.GetTaskName()}\"");
+        SmartFarmerLog.Information($"starting task \"{this.GetTaskName()}\"");
     }
 
     protected void EndTask(bool error = false)
     {
         var withError = error ? " with error" : "";
-        SmartFarmerLog.Debug($" task \"{this.GetTaskName()}\" completed{withError}");
+
+        if (error)
+        {
+            SmartFarmerLog.Error($" task \"{this.GetTaskName()}\" completed{withError}");
+        }
+        else
+        {
+            SmartFarmerLog.Information($" task \"{this.GetTaskName()}\" completed{withError}");
+        }
+
         IsInProgress = false;
     }
 

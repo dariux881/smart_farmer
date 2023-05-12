@@ -1,4 +1,4 @@
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Configurations;
 
 public class UserConfiguration
 {

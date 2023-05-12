@@ -7,6 +7,7 @@ public class LocalConfiguration
 {
     private static object tokenLock = new object();
     private static object userIdLock = new object();
+    private static object appConfigLock = new object();
     private static string loggedUserId;
     private static string token;
 

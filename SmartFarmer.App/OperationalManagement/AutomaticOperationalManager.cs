@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using SmartFarmer.Configurations;
 using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;

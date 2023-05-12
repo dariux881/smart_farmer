@@ -59,7 +59,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var ground1 = new DTOs.FarmerGround(this)
         { 
-            //ID = "gID", 
+            ID = "gID", 
             UserID="user0", 
             GroundName="Ground Name",
         };

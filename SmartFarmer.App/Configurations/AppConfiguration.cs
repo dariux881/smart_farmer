@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SmartFarmer.OperationalManagement;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Configurations;
 
 public class AppConfiguration
 {

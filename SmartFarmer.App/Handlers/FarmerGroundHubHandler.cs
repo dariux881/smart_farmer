@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using SmartFarmer.Configurations;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -87,7 +88,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             });
         
         _connection.On<string, bool>(
-            FarmerHubConstants.ON_ALERT_STATUS_CHANGED,
+            FarmerHubConstants.RECEIVE_ALERT_STATUS_CHANGE,
             (alertId, status) => {
                 NewAlertStatusEventArgsReceived?.Invoke(this, new NewAlertStatusEventArgs(alertId, status));
             });
@@ -110,7 +111,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.SEND_DEVICE_POSITION,
+            FarmerHubConstants.INSERT_DEVICE_POSITION,
             position.Serialize());
     }
 
@@ -119,7 +120,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.NOTIFY_DEVICE_POSITION,
+            FarmerHubConstants.SEND_DEVICE_POSITION_NOTIFICATION,
             groundId,
             position.Serialize());
     }
@@ -129,7 +130,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (alertId == null) throw new ArgumentNullException(nameof(alertId));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.CHANGE_ALERT_STATUS,
+            FarmerHubConstants.SEND_NEW_ALERT_STATUS,
             alertId,
             alertStatus);
     }
@@ -139,7 +140,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         if (alertId == null) throw new ArgumentNullException(nameof(alertId));
 
         await _connection.InvokeAsync(
-            FarmerHubConstants.NOTIFY_NEW_ALERT_STATUS,
+            FarmerHubConstants.SEND_NEW_ALERT_STATUS_NOTIFICATION,
             alertId,
             status);
     }

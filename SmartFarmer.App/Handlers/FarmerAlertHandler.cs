@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Configurations;
 using SmartFarmer.Data;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;

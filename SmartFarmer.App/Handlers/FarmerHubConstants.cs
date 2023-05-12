@@ -6,17 +6,17 @@ public class FarmerHubConstants
 
     #region "Position"
     
-    public const string SEND_DEVICE_POSITION = "InsertNewPositionAsync";
-    public const string NOTIFY_DEVICE_POSITION = "NotifyNewPositionAsync";
+    public const string INSERT_DEVICE_POSITION = "InsertNewPositionAsync";
+    public const string SEND_DEVICE_POSITION_NOTIFICATION = "NotifyNewPositionAsync";
     public const string RECEIVE_DEVICE_POSITION = "NewDevicePosition";
     
     #endregion
 
     #region "Alert"
 
-    public const string CHANGE_ALERT_STATUS = "SendNewAlertStatusAsync";
-    public const string NOTIFY_NEW_ALERT_STATUS = "NotifyNewAlertStatusAsync";
-    public const string ON_ALERT_STATUS_CHANGED = "AlertStatusChanged";
+    public const string SEND_NEW_ALERT_STATUS = "SendNewAlertStatusAsync";
+    public const string SEND_NEW_ALERT_STATUS_NOTIFICATION = "NotifyNewAlertStatusAsync";
+    public const string RECEIVE_ALERT_STATUS_CHANGE = "AlertStatusChanged";
 
     #endregion
 
