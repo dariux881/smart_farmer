@@ -11,11 +11,8 @@ public class LocalConfiguration
     private static string token;
 
     static LocalConfiguration() {
-        LocalGroundIds = new List<string>();
         Grounds = new ConcurrentDictionary<string, IFarmerGround>();
     }
-
-    public static List<string> LocalGroundIds { get; set; }
 
     public static string LoggedUserId 
     { 

@@ -8,14 +8,14 @@ using SmartFarmer.Misc;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class ConsoleOperationalModeManager : IOperationalModeManager
+public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
 {
     private bool CanRun = true;
     public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
     public string Name => "Console Operational Manager";
     public AppOperationalMode Mode => AppOperationalMode.Console;
 
-    public async Task Prepare()
+    public async Task InitializeAsync()
     {
         await Task.CompletedTask;
     }
@@ -31,6 +31,19 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
 
         Console.WriteLine("closing console mode");
         await Task.CompletedTask;
+    }
+
+    public void ProcessResult(OperationRequestEventArgs args)
+    {
+        if (args.ExecutionException != null)
+        {
+            SmartFarmerLog.Error("received\n\t" + args.ExecutionException.Message);
+        }
+
+        if (args.Result != null)
+        {
+            Console.WriteLine(args.Result);
+        }
     }
 
     public void Dispose()
@@ -49,6 +62,7 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
             "4 - invert alert read flag\n"+
             "5 - update ground\n"+
             "6 - update grounds\n"+
+            "7 - cli command\n" +
             "-1 - exit\n"+
             " select: ";
 
@@ -162,6 +176,20 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
                 }
 
                 break;
+            case 7: // cli
+                {
+                    HandleCli();
+                }
+
+                break;
+            case 8: // test pos
+                {
+                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
+                    var groundId = GetGroundIdFromInputOrDefault();
+                    SendNewOperation(AppOperation.TestPosition, new [] { groundId });
+                }
+
+                break;
             default:
                 return false;
         }
@@ -171,7 +199,53 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
 
     protected void SendNewOperation(AppOperation operation, string[] data)
     {
-        NewOperationRequired?.Invoke(this, new OperationRequestEventArgs(this, operation, data));
+        var args = new OperationRequestEventArgs(this, operation, data);
+
+        try
+        {
+            NewOperationRequired?.Invoke(this, args);
+        }
+        catch (AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+    }
+
+    private void HandleCli()
+    {
+        PromptCli();
+        ReceiveCliCommand(out var groundId, out var command);
+
+        if (command == "quit")
+        {
+            return;
+        }
+
+        SendNewOperation(AppOperation.CliCommand, new [] { groundId, command });
+    }
+
+    private void PromptCli()
+    {
+        Console.WriteLine("[quit] to exit");
+        Console.WriteLine("> ");
+    }
+
+    private void ReceiveCliCommand(out string groundId, out string command)
+    {
+        command = Console.ReadLine().Trim();
+
+        if (command == "quit")
+        {
+            groundId = null;
+            return;
+        }
+
+        Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
+        groundId = GetGroundIdFromInputOrDefault();
     }
 
     private string GetGroundIdFromInputOrDefault()

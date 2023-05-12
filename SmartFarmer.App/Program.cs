@@ -20,7 +20,7 @@ public class Program
     {
         FarmerServiceLocator.InitializeServiceLocator();
 
-        FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => new FarmerAlertHandler());
         FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
+        FarmerServiceLocator.MapService<IFarmerAppCommunicationHandler>(() => new FarmerAppCommunicationHandler());
     }
 }

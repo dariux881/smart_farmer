@@ -12,6 +12,7 @@ using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
@@ -207,6 +208,19 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return planId;
     }
 
+    public IFarmerCliCommand BuildAndCheckCliCommand(string userId, string groundId, string commandStr)
+    {
+        IFarmerCliCommand command = BuildCliCommand(userId, groundId, commandStr);
+
+        // check command
+        if (!IsCliCommandValid(command))
+        {
+            return null;
+        }
+
+        return command;
+    }
+
     public async Task<FarmerDevicePosition> NotifyDevicePosition(string userId, FarmerDevicePositionRequestData position)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
@@ -308,5 +322,75 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
                 .OrderBy(p => p.PlantX)
                 .ThenBy(p => p.PlantY)
                 .ToList();
+    }
+
+    private static IFarmerCliCommand BuildCliCommand(string userId, string groundId, string commandStr)
+    {
+        if (!ExtractCliCommandParts(commandStr, out var command, out var args))
+        {
+            return null;
+        }
+
+        IFarmerCliCommand cliCommand = new FarmerCliCommand()
+        {
+            UserId = userId,
+            GroundId = groundId,
+            Command = command,
+            Args = args
+        };
+        return cliCommand;
+    }
+
+    private static bool ExtractCliCommandParts(string commandStr, out string command, out FarmerCliCommandArgs args)
+    {
+        command = null;
+        args = null;
+
+        if (string.IsNullOrEmpty(commandStr)) return false;
+
+        var commandParts = commandStr.Split(" ");
+        command = commandParts[0].Trim();
+
+        if (commandParts.Length == 1)
+        {
+            args = null;
+            return true;
+        }
+
+        args = new FarmerCliCommandArgs();
+        var commandIndex = 1;
+
+        List<string> referencePartDetails = null;
+        while (commandIndex < commandParts.Length)
+        {
+            var part = commandParts[commandIndex].Trim();
+            
+            if (part.StartsWith("-"))
+            {
+                referencePartDetails = new List<string>();
+                args.Add(new KeyValuePair<string, List<string>>(part, referencePartDetails));
+            }
+            else if (referencePartDetails != null)
+            {
+                referencePartDetails.Add(part);
+            }
+            else
+            {
+                // invalid pattern found
+                command = null;
+                args = null;
+
+                return false;
+            }
+
+            commandIndex++;
+        }
+
+        return true;
+    }
+
+    private bool IsCliCommandValid(IFarmerCliCommand command)
+    {
+        return true;
     }
 }

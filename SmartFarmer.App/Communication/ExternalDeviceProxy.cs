@@ -267,7 +267,7 @@ public class ExternalDeviceProxy :
         Task.Run(async () => {
             try
             {
-                await _hub.Prepare();
+                await _hub.InitializeAsync();
             }
             catch (AggregateException ec)
             {

@@ -4,11 +4,13 @@ using SmartFarmer.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using SmartFarmer.Controllers;
-using SmartFarmer.DTOs.Movements;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Services;
 using System.Text.Json;
+using System.Linq;
+using SmartFarmer.DTOs.Alerts;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Hubs;
 
@@ -80,44 +82,59 @@ public class FarmerGroundHub : Hub
                 .OthersInGroup(groundId)
                 .SendAsync(HubConstants.NewAlert, alertId);
 
-    public async Task NotifyNewAlertStatusAsync(string groundId, string alertId, bool alertRead)
-        => await 
-            Clients
-                .OthersInGroup(groundId)
-                .SendAsync(HubConstants.AlertStatusChanged, alertId, alertRead);
-
-    public async Task ReceiveCliCommand(string groundId, string command)
+    public async Task SendNewAlertStatusAsync(string alertId, bool alertRead)
     {
-        var userId = Context.UserIdentifier;
+        var result = await _groundProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
 
-        //TODO validate command, parse it, then send the result
-        
-        if (string.IsNullOrEmpty(userId))
+        if (result)
         {
-            //TODO return error message
-            return;
+            await NotifyNewAlertStatusAsync(alertId, alertRead);
         }
-
-        await 
-            Clients
-                .User(userId)
-                .SendAsync(HubConstants.ReceiveCliCommand, userId, groundId, command);
     }
 
-    public async Task ReceiveCliCommandResult(string groundId, string commandResult)
+    public async Task NotifyNewAlertStatusAsync(string alertId, bool alertRead)
     {
-        var userId = Context.UserIdentifier;
+        var alert =
+            (await _groundProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
+                ?.FirstOrDefault()
+                as FarmerAlert;
 
-        if (string.IsNullOrEmpty(userId))
+        if (alert == null)
         {
-            //TODO return error message
+            SmartFarmerLog.Error($"Invalid alert for {alertId} and user {Context.UserIdentifier}");
             return;
         }
 
+        await
+            Clients
+                .OthersInGroup(alert.FarmerGroundId)
+                .SendAsync(HubConstants.AlertStatusChanged, alertId, alertRead);
+    }
+
+    public async Task SendCliCommandAsync(string groundId, string commandStr)
+    {
+        var userId = Context.UserIdentifier;
+
+        IFarmerCliCommand command = _groundProvider.BuildAndCheckCliCommand(userId, groundId, commandStr);
+
+        if (command == null)
+        {
+            SmartFarmerLog.Error("Invalid command for string " + commandStr);
+            return;
+        }
+
+        await
+            Clients
+                .OthersInGroup(groundId)
+                .SendAsync(HubConstants.NewCliCommand, JsonSerializer.Serialize(command));
+    }
+
+    public async Task NotifyCliCommandResult(string groundId, string commandResult)
+    {
         await 
             Clients
-                .User(Context.UserIdentifier)
-                .SendAsync(HubConstants.ReceiveCliCommandResult, userId, groundId, commandResult);
+                .OthersInGroup(groundId)
+                .SendAsync(HubConstants.ReceiveCliCommandResult, commandResult);
     }
 
     private async Task NotifyNewPositionAsync(string groundId, FarmerDevicePositionInTime position)

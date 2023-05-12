@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SmartFarmer.OperationalManagement;
 
 namespace SmartFarmer.Helpers;
@@ -31,6 +32,8 @@ public class AppConfiguration
             }
         }
     }
+
+    public List<string> LocalGroundIds { get; set; }
 
     public string PlanCheckCronSchedule { get; set; }
 

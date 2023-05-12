@@ -17,4 +17,6 @@ public class OperationRequestEventArgs : EventArgs
     public IOperationalModeManager Sender { get; }
     public AppOperation Operation { get; }
     public string[] AdditionalData { get; }
+    public string Result { get; set; }
+    public Exception ExecutionException { get; set; }
 }

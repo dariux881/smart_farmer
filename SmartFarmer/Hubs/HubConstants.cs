@@ -12,6 +12,6 @@ public class HubConstants
     public const string NewToolCollectorPosition = "NewToolCollectorPosition";
     public const string DeviceHealthCheckResult = "DeviceHealthCheckResult";
     public const string NewUserSettings = "NewUserSettings";
-    public const string ReceiveCliCommand = "ReceiveCliCommand";
+    public const string NewCliCommand = "NewCliCommand";
     public const string ReceiveCliCommandResult = "ReceiveCliCommandResult";
 }

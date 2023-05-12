@@ -15,7 +15,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class AutomaticOperationalManager : IOperationalModeManager
+public class AutomaticOperationalManager : IAutoOperationalModeManager
 {
     private IScheduler _jobScheduler;
     private ConcurrentDictionary<string, List<string>> _scheduledPlansByGround;
@@ -45,7 +45,7 @@ public class AutomaticOperationalManager : IOperationalModeManager
         }
     }
 
-    public async Task Prepare()
+    public async Task InitializeAsync()
     {
         await PrepareScheduler();
     }
@@ -62,6 +62,19 @@ public class AutomaticOperationalManager : IOperationalModeManager
         await StartScheduler(token);
 
         //TODO subscribe to Hub. New requests are added to the scheduler
+    }
+
+    public void ProcessResult(OperationRequestEventArgs args)
+    {
+        if (args.ExecutionException != null)
+        {
+            SmartFarmerLog.Exception(args.ExecutionException);
+        }
+
+        if (args.Result != null)
+        {
+            SmartFarmerLog.Debug(args.Result);
+        }
     }
 
     protected void SendNewOperation(AppOperation operation, string[] data)

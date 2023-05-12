@@ -9,6 +9,19 @@ public interface IOperationalModeManager : IDisposable
     AppOperationalMode Mode { get; }
     string Name { get; }
     event EventHandler<OperationRequestEventArgs> NewOperationRequired;
-    Task Prepare();
+    Task InitializeAsync();
     Task Run(CancellationToken token);
+    void ProcessResult(OperationRequestEventArgs args);
+}
+
+public interface IConsoleOperationalModeManager : IOperationalModeManager
+{
+}
+
+public interface IAutoOperationalModeManager : IOperationalModeManager
+{
+}
+
+public interface ICliOperationalModeManager : IOperationalModeManager
+{
 }
