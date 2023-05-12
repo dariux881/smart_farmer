@@ -162,6 +162,14 @@ public class ConsoleOperationalModeManager : IOperationalModeManager
                 }
 
                 break;
+            case 7: // test pos
+                {
+                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
+                    var groundId = GetGroundIdFromInputOrDefault();
+                    SendNewOperation(AppOperation.TestPosition, new [] { groundId });
+                }
+
+                break;
             default:
                 return false;
         }

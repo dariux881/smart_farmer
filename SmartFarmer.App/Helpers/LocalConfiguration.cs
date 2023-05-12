@@ -15,6 +15,7 @@ public class LocalConfiguration
         Grounds = new ConcurrentDictionary<string, IFarmerGround>();
     }
 
+    //TODO convert list of string with a complete ground configuration (see appsettings.Develop "GroundsConfiguration")
     public static List<string> LocalGroundIds { get; set; }
 
     public static string LoggedUserId 

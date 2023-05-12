@@ -12,7 +12,6 @@ namespace SmartFarmer.Misc;
 
 public static class SmartFarmerLog 
 {
-    private static IFarmerAlertHandler _alertHandler;
     private static Object lockObj = new Object();
     private static bool _showThreadInfo = false;
 
@@ -36,11 +35,6 @@ public static class SmartFarmerLog
             .CreateLogger();
 
         Log.Information("logger created");
-    }
-
-    public static void SetAlertHandler(IFarmerAlertHandler alertHandler)
-    {
-        _alertHandler = alertHandler;
     }
 
     public static void SetShowThreadInfo(bool show)
@@ -70,9 +64,10 @@ public static class SmartFarmerLog
     {
         Warning(message);
 
-        if (alert != null && _alertHandler != null)
+        if (alert != null)
         {
-            return await _alertHandler.RaiseAlert(alert);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            return await alertHandler.RaiseAlert(alert);
         }
         return null;
     }
@@ -87,9 +82,10 @@ public static class SmartFarmerLog
         Error(message);
         ShowThreadInformation("Task #" + Task.CurrentId.ToString());
         
-        if (alert != null && _alertHandler != null)
+        if (alert != null)
         {
-            return await _alertHandler.RaiseAlert(alert);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            return await alertHandler.RaiseAlert(alert);
         }
         return null;
     }
@@ -110,9 +106,10 @@ public static class SmartFarmerLog
         Exception(ex);
         ShowThreadInformation("Task #" + Task.CurrentId.ToString());
 
-        if (alert != null && _alertHandler != null)
+        if (alert != null)
         {
-           return await _alertHandler.RaiseAlert(alert);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            return await alertHandler.RaiseAlert(alert);
         }
         return null;
     }

@@ -1,9 +1,8 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data;
-using SmartFarmer.Data.Alerts;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Utils;
@@ -12,6 +11,21 @@ namespace SmartFarmer.Handlers;
 
 public class FarmerAlertHandler : IFarmerAlertHandler
 {
+    private IFarmerGround _ground;
+    private FarmerGroundHubHandler _hubHandler;
+
+    public FarmerAlertHandler(IFarmerGround ground, HubConnectionConfiguration hubConfiguration)
+    {
+        _ground = ground;
+
+        _hubHandler = new FarmerGroundHubHandler(ground, hubConfiguration);
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _hubHandler.Prepare();
+    }
+
     public async Task<string> AddFarmerService(IFarmerAlert service)
     {
         return await RaiseAlert(
@@ -19,7 +33,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
             service.Code,
             service.RaisedByTaskId,
             service.PlantInstanceId,
-            LocalConfiguration.LocalGroundIds.FirstOrDefault(),
+            _ground.ID,
             service.Level,
             service.Severity);
     }
@@ -37,16 +51,19 @@ public class FarmerAlertHandler : IFarmerAlertHandler
     public async Task<bool> MarkAlertAsRead(string alertId, bool status)
     {
         var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, System.Threading.CancellationToken.None);
+
         if (result)
         {
             var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
-            if (ground == null) return false;
+            if (ground == null || ground.ID != _ground.ID) return false;
 
             var alert = ground.Alerts.First(x => x.ID == alertId);
             if (alert != null)
             {
                 alert.MarkedAsRead = status;
             }
+
+            await _hubHandler.NotifyNewAlertStatus(alertId, status);
         }
 
         return result;
@@ -61,6 +78,11 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         AlertLevel level, 
         AlertSeverity severity)
     {
+        if (groundId != _ground.ID)
+        {
+            throw new InvalidOperationException($"this instance handles only alerts for ground {_ground.ID}");
+        }
+
         return await RaiseAlert(
             new FarmerAlertRequestData()
             {

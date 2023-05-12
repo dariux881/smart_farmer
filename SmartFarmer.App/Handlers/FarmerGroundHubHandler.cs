@@ -51,14 +51,7 @@ public class FarmerGroundHubHandler
             await _connection.StartAsync();
         };
 
-        _connection.On<string>(
-            FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
-            (positionStr) => 
-            {
-                var position = positionStr.Deserialize<FarmerDevicePositionInTime>();
-
-                SmartFarmerLog.Debug(position.ToString());
-            });
+        SubscribeToNotificationMethods();
         
         try
         {
@@ -70,7 +63,27 @@ public class FarmerGroundHubHandler
             SmartFarmerLog.Exception(ex);
         }
     }
-    
+
+    private void SubscribeToNotificationMethods()
+    {
+        
+        _connection.On<string>(
+            FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
+            (positionStr) => 
+            {
+                var position = positionStr.Deserialize<FarmerDevicePositionInTime>();
+
+                SmartFarmerLog.Debug(position.ToString());
+            });
+        
+        _connection.On<string, bool>(
+            FarmerHubConstants.ON_ALERT_STATUS_CHANGED,
+            (alertId, status) => {
+                var statusStr = status ? "read" : "not read";
+                SmartFarmerLog.Debug($"alert {alertId} is now {statusStr}");
+            });
+    }
+
     public async Task SendDevicePosition(FarmerDevicePositionRequestData position)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
@@ -88,6 +101,26 @@ public class FarmerGroundHubHandler
             FarmerHubConstants.NOTIFY_DEVICE_POSITION,
             groundId,
             position.Serialize());
+    }
+
+    public async Task ChangeAlertStatus(string alertId, bool alertStatus)
+    {
+        if (alertId == null) throw new ArgumentNullException(nameof(alertId));
+
+        await _connection.InvokeAsync(
+            FarmerHubConstants.CHANGE_ALERT_STATUS,
+            alertId,
+            alertStatus);
+    }
+
+    public async Task NotifyNewAlertStatus(string alertId, bool status)
+    {
+        if (alertId == null) throw new ArgumentNullException(nameof(alertId));
+
+        await _connection.InvokeAsync(
+            FarmerHubConstants.NOTIFY_NEW_ALERT_STATUS,
+            alertId,
+            status);
     }
 
     private async Task Handshake(CancellationToken token)

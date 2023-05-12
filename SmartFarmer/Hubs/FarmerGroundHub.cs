@@ -4,11 +4,12 @@ using SmartFarmer.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using SmartFarmer.Controllers;
-using SmartFarmer.DTOs.Movements;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Services;
 using System.Text.Json;
+using System.Linq;
+using SmartFarmer.DTOs.Alerts;
 
 namespace SmartFarmer.Hubs;
 
@@ -80,11 +81,34 @@ public class FarmerGroundHub : Hub
                 .OthersInGroup(groundId)
                 .SendAsync(HubConstants.NewAlert, alertId);
 
-    public async Task NotifyNewAlertStatusAsync(string groundId, string alertId, bool alertRead)
-        => await 
+    public async Task SendNewAlertStatusAsync(string alertId, bool alertRead)
+    {
+        var result = await _groundProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
+
+        if (result)
+        {
+            await NotifyNewAlertStatusAsync(alertId, alertRead);
+        }
+    }
+
+    public async Task NotifyNewAlertStatusAsync(string alertId, bool alertRead)
+    {
+        var alert =
+            (await _groundProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
+                ?.FirstOrDefault()
+                as FarmerAlert;
+
+        if (alert == null)
+        {
+            SmartFarmerLog.Error($"Invalid alert for {alertId} and user {Context.UserIdentifier}");
+            return;
+        }
+
+        await
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(alert.FarmerGroundId)
                 .SendAsync(HubConstants.AlertStatusChanged, alertId, alertRead);
+    }
 
     public async Task ReceiveCliCommand(string groundId, string command)
     {

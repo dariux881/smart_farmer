@@ -8,5 +8,6 @@ public enum AppOperation
     MarkAlert,
     UpdateGround,
     UpdateAllGrounds,
-    RestartSerialCom
+    RestartSerialCom,
+    TestPosition
 }
