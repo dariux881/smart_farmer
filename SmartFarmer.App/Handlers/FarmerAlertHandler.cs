@@ -19,11 +19,19 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         _ground = ground;
 
         _hubHandler = new FarmerGroundHubHandler(ground, hubConfiguration);
+
+        _hubHandler.NewAlertStatusEventArgsReceived += AlertStatusChanged;
+    }
+
+    private void AlertStatusChanged(object sender, NewAlertStatusEventArgs e)
+    {
+        SmartFarmerLog.Debug($"Alert {e.AlertId} changed in {e.Status}");
+        LocallyUpdateAlert(e.AlertId, e.Status);
     }
 
     public async Task InitializeAsync()
     {
-        await _hubHandler.Prepare();
+        await _hubHandler.InitializeAsync();
     }
 
     public async Task<string> AddFarmerService(IFarmerAlert service)
@@ -54,15 +62,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
         if (result)
         {
-            var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
-            if (ground == null || ground.ID != _ground.ID) return false;
-
-            var alert = ground.Alerts.First(x => x.ID == alertId);
-            if (alert != null)
-            {
-                alert.MarkedAsRead = status;
-            }
-
+            LocallyUpdateAlert(alertId, status);
             await _hubHandler.NotifyNewAlertStatus(alertId, status);
         }
 
@@ -115,5 +115,20 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         }
 
         return alert.ID;
+    }
+
+    private void LocallyUpdateAlert(string alertId, bool status)
+    {
+        var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
+        if (ground == null || ground.ID != _ground.ID) 
+        {
+            return;
+        }
+
+        var alert = ground.Alerts.FirstOrDefault(x => x.ID == alertId);
+        if (alert != null)
+        {
+            alert.MarkedAsRead = status;
+        }
     }
 }

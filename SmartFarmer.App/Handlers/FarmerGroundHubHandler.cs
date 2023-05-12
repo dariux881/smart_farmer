@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
@@ -15,7 +14,9 @@ public class FarmerGroundHubHandler
     private HubConnectionConfiguration _hubConfiguration;
     private IFarmerGround _ground;
 
-    public FarmerGroundHubHandler(IFarmerGround ground, HubConnectionConfiguration hubConfiguration)
+    public FarmerGroundHubHandler(
+        IFarmerGround ground, 
+        HubConnectionConfiguration hubConfiguration)
     {
         if (hubConfiguration == null) throw new ArgumentNullException(nameof(hubConfiguration));
         if (string.IsNullOrEmpty(hubConfiguration.Url)) throw new InvalidProgramException("invalid specified URL");
@@ -24,7 +25,10 @@ public class FarmerGroundHubHandler
         _ground = ground;
     }
 
-    public async Task Prepare()
+    public event EventHandler<DevicePositionEventArgs> NewDevicePositionReceived;
+    public event EventHandler<NewAlertStatusEventArgs> NewAlertStatusEventArgsReceived;
+
+    public async Task InitializeAsync()
     {
         // Opening SignalR connection
         _connection = new HubConnectionBuilder()
@@ -71,16 +75,13 @@ public class FarmerGroundHubHandler
             FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
             (positionStr) => 
             {
-                var position = positionStr.Deserialize<FarmerDevicePositionInTime>();
-
-                SmartFarmerLog.Debug(position.ToString());
+                NewDevicePositionReceived?.Invoke(this, new DevicePositionEventArgs(positionStr));
             });
         
         _connection.On<string, bool>(
             FarmerHubConstants.ON_ALERT_STATUS_CHANGED,
             (alertId, status) => {
-                var statusStr = status ? "read" : "not read";
-                SmartFarmerLog.Debug($"alert {alertId} is now {statusStr}");
+                NewAlertStatusEventArgsReceived?.Invoke(this, new NewAlertStatusEventArgs(alertId, status));
             });
     }
 

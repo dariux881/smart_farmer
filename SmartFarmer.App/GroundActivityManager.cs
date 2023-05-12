@@ -72,7 +72,7 @@ public class GroundActivityManager
         foreach(var ground in LocalConfiguration.Grounds)
         {
             var hub = new FarmerGroundHubHandler(ground.Value, _hubConfiguration);
-            await hub.Prepare();
+            await hub.InitializeAsync();
 
             _hubHandlers.TryAdd(ground.Key, hub);
         }
