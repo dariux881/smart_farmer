@@ -21,5 +21,6 @@ public class Program
         FarmerServiceLocator.InitializeServiceLocator();
 
         FarmerServiceLocator.MapService<IFarmerTaskProvider>(() => new FarmerTaskProvider());
+        FarmerServiceLocator.MapService<IFarmerAppCommunicationHandler>(() => new FarmerAppCommunicationHandler());
     }
 }

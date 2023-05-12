@@ -8,7 +8,7 @@ using SmartFarmer.Movement;
 
 namespace SmartFarmer.Handlers;
 
-public class FarmerGroundHubHandler
+public class FarmerGroundHubHandler : IAsyncDisposable
 {
     private HubConnection _connection;
     private HubConnectionConfiguration _hubConfiguration;
@@ -25,8 +25,11 @@ public class FarmerGroundHubHandler
         _ground = ground;
     }
 
+    public string SubscribedGroundId => _ground?.ID;
+
     public event EventHandler<DevicePositionEventArgs> NewDevicePositionReceived;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatusEventArgsReceived;
+    public event EventHandler<NewCliCommandEventArgs> NewCliCommandReceived;
 
     public async Task InitializeAsync()
     {
@@ -68,9 +71,13 @@ public class FarmerGroundHubHandler
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        await _connection.DisposeAsync();
+    }
+
     private void SubscribeToNotificationMethods()
     {
-        
         _connection.On<string>(
             FarmerHubConstants.ON_NEW_POSITION_RECEIVED, 
             (positionStr) => 
@@ -82,6 +89,12 @@ public class FarmerGroundHubHandler
             FarmerHubConstants.ON_ALERT_STATUS_CHANGED,
             (alertId, status) => {
                 NewAlertStatusEventArgsReceived?.Invoke(this, new NewAlertStatusEventArgs(alertId, status));
+            });
+
+        _connection.On<string>(
+            FarmerHubConstants.NEW_CLI_COMMAND,
+            (command) => {
+                NewCliCommandReceived?.Invoke(this, new NewCliCommandEventArgs(command));
             });
     }
 
@@ -124,8 +137,30 @@ public class FarmerGroundHubHandler
             status);
     }
 
+    public async Task SendCliCommandAsync(string groundId, string command)
+    {
+        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+
+        await _connection.InvokeAsync(
+            FarmerHubConstants.SEND_CLI_COMMAND,
+            groundId,
+            command);
+    }
+
+    public async Task NotifyCliCommandResult(string groundId, string result)
+    {
+        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+
+        await _connection.InvokeAsync(
+            FarmerHubConstants.NOTIFY_CLI_COMMAND_RESULT,
+            groundId,
+            result);
+    }
+
     private async Task Handshake(CancellationToken token)
     {
+        if (_ground == null) return;
+
         await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, _ground.ID);
     }
 }

@@ -23,12 +23,16 @@ public class FarmerGround : IFarmerGround
     private List<IFarmerAlert> _alerts;
     private List<IFarmerPlantInstance> _plants;
     private List<IFarmerPlan> _plans;
+    private SemaphoreSlim _planExecSem;
+
 
     public FarmerGround()
     {
         _alerts = new List<IFarmerAlert>();
         _plants = new List<IFarmerPlantInstance>();
         _plans = new List<IFarmerPlan>();
+
+        _planExecSem = new SemaphoreSlim(1);
     }
 
     [JsonConstructor]
@@ -97,13 +101,18 @@ public class FarmerGround : IFarmerGround
             return false;
         }
 
+        _planExecSem.Wait();
         try {
             await plan.Execute(token);
         }
         catch(Exception ex)
         {
             SmartFarmerLog.Exception(ex);
-            return false;
+            throw;
+        }
+        finally
+        {
+            _planExecSem.Release();
         }
 
         return true;

@@ -19,4 +19,12 @@ public class FarmerHubConstants
     public const string ON_ALERT_STATUS_CHANGED = "AlertStatusChanged";
 
     #endregion
+
+    #region "Cli"
+
+    public const string SEND_CLI_COMMAND = "SendCliCommandAsync";
+    public const string NEW_CLI_COMMAND = "NewCliCommand";
+    public const string NOTIFY_CLI_COMMAND_RESULT = "NotifyCliCommandResult";
+
+    #endregion
 }

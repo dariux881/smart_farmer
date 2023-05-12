@@ -26,14 +26,13 @@ public class GroundActivityManager
     private SerialCommunicationConfiguration _serialConfiguration;
     private HubConnectionConfiguration _hubConfiguration;
     private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
+    private IFarmerAppCommunicationHandler _communicationHandler;
 
     public async Task Run()
     {
         _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();
 
         PrepareEnvironment();
-
-        FillOperationalManagers();
 
         var loginResult = await Login();
         if (!loginResult)
@@ -42,6 +41,11 @@ public class GroundActivityManager
             SmartFarmerLog.Error($"Login failed for user {_userConfiguration.UserName}. Stopping manager");
             return;
         }
+
+        _communicationHandler = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
+        _communicationHandler.NotifyNewLoggedUser();
+
+        FillOperationalManagers();
 
         await InitializeGroundsAsync();
         await InitializeHubsForGroundsAsync();
@@ -55,7 +59,19 @@ public class GroundActivityManager
             tasks.Add(Task.Run(() => opManager.Run(cancellationToken)));
         }
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAny(tasks);
+
+        foreach (var opManager in _operationalManagers)
+        {
+            try
+            {
+                opManager.Dispose();
+            }
+            catch (Exception ex)
+            {
+                SmartFarmerLog.Exception(ex);
+            }
+        }
     }
 
     private async Task InitializeHubsForGroundsAsync()
@@ -125,22 +141,31 @@ public class GroundActivityManager
 
         if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Console))
         {
-            _operationalManagers.Add(new ConsoleOperationalModeManager());
+            var console = new ConsoleOperationalModeManager();
+            _operationalManagers.Add(console);
+
+            FarmerServiceLocator.MapService<IConsoleOperationalModeManager>(() => console);
         }
 
         if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Auto))
         {
-            _operationalManagers.Add(new AutomaticOperationalManager(_appConfiguration));
+            var auto = new AutomaticOperationalManager(_appConfiguration);
+            _operationalManagers.Add(auto);
+
+            FarmerServiceLocator.MapService<IAutoOperationalModeManager>(() => auto);
         }
 
-        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.RemoteCLI))
+        if (_appConfiguration.AppOperationalMode.Value.HasFlag(AppOperationalMode.Cli))
         {
-            _operationalManagers.Add(new RemoteCommandLineInterfaceOperationalManager(_hubConfiguration));
+            var cli = new CliOperationalManager(_hubConfiguration);
+            _operationalManagers.Add(cli);
+
+            FarmerServiceLocator.MapService<ICliOperationalModeManager>(() => cli);
         }
 
         _operationalManagers.ForEach(async opMan =>
         {
-            await opMan.Prepare();
+            await opMan.InitializeAsync();
             opMan.NewOperationRequired += ExecuteRequiredOperation;
         });
 
@@ -149,12 +174,37 @@ public class GroundActivityManager
     private void ExecuteRequiredOperation(object sender, OperationRequestEventArgs e)
     {
         SmartFarmerLog.Information($"Operation {e.Operation} requested by {e.Sender.Name}");
+        var opManager = sender as IOperationalModeManager;
 
         switch(e.Operation)
         {
             case AppOperation.RunPlan:
                 {
-                    Task.Run(async () => await ExecutePlan(e.AdditionalData.FirstOrDefault()));
+                    Task.Run(async () => 
+                    {
+                        bool result;
+                        try
+                        {
+                            result = await ExecutePlanAsync(e.AdditionalData.FirstOrDefault());
+                        }
+                        catch (AggregateException ex)
+                        {
+                            e.ExecutionException = ex.InnerException;
+                            opManager?.ProcessResult(e);
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            e.ExecutionException = ex;
+                            opManager?.ProcessResult(e);
+                            return;
+                        }
+
+                        var suffix = result ? "with errors" : "";
+                        e.Result = $"plan {e.AdditionalData.FirstOrDefault()} executed {suffix}";
+                        opManager?.ProcessResult(e);
+                        return;
+                    });
                 }
 
                 break;
@@ -162,16 +212,20 @@ public class GroundActivityManager
             case AppOperation.UpdateAllGrounds:
                 ClearLocalData();
                 Task.Run(async () => 
-                {
-                    await InitializeGroundsAsync();
-                    await InitializeHubsForGroundsAsync();
-                });
+                    {
+                        await InitializeGroundsAsync();
+                        await InitializeHubsForGroundsAsync();
+                    });
                 break;
 
             case AppOperation.MarkAlert:
                 Task.Run(async () => await InvertAlertReadStatus(e.AdditionalData.FirstOrDefault()));
                 break;
             
+            case AppOperation.CliCommand:
+                Task.Run(async () => await SendCliCommand(e.AdditionalData.FirstOrDefault(), e.AdditionalData.LastOrDefault()));
+                break;
+
             case AppOperation.TestPosition:
                 Task.Run(async () => await SendTestPosition(e.AdditionalData.FirstOrDefault()));
                 break;
@@ -181,6 +235,11 @@ public class GroundActivityManager
         }
     }
 
+    private async Task SendCliCommand(string groundId, string command)
+    {
+        await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command);
+    }
+
     private async Task SendTestPosition(string groundId)
     {
         await _hubHandlers[groundId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
@@ -188,6 +247,15 @@ public class GroundActivityManager
             GroundId = groundId,
             PositionDt = DateTime.UtcNow,
             Position = new Farmer5dPoint(1, 2, 3, 4, 5)
+        });
+
+        await Task.Delay(1000);
+
+        await _hubHandlers[groundId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
+        {
+            GroundId = groundId,
+            PositionDt = DateTime.UtcNow,
+            Position = new Farmer5dPoint(1, 2, 3, 4, 15)
         });
     }
 
@@ -202,16 +270,16 @@ public class GroundActivityManager
         return await MarkAlertAsRead(ground.ID, alertId, newState);
     }
 
-    private static async Task ExecutePlan(string planId)
+    private static async Task<bool> ExecutePlanAsync(string planId)
     {
         var ground = GroundUtils.GetGroundByPlan(planId);
         if (ground == null || ground is not FarmerGround fGround)
         {
             SmartFarmerLog.Error("No valid ground found for plan " + planId);
-            return;
+            return false;
         }
 
-        await fGround.ExecutePlan(planId, CancellationToken.None);
+        return await fGround.ExecutePlan(planId, CancellationToken.None);
     }
 
     private static async Task ExecutePlans(string[] planIds)
@@ -286,10 +354,10 @@ public class GroundActivityManager
                 "List of grounds:\n\t" + grounds.Select(x => x.ID).Aggregate((g1, g2) => g1 + ", " + g2));
 
         var locallyInterestedGrounds = 
-            LocalConfiguration.LocalGroundIds.Any() ?
+            _appConfiguration.LocalGroundIds != null && _appConfiguration.LocalGroundIds.Any() ?
                 grounds
                     .Where(x => 
-                        LocalConfiguration.LocalGroundIds.Contains(x.ID)).ToList() :
+                        _appConfiguration.LocalGroundIds.Contains(x.ID)).ToList() :
                 new List<IFarmerGround>() { grounds.First() };
 
         var tasks = new List<Task>();
@@ -304,6 +372,7 @@ public class GroundActivityManager
                     .GetGround(groundId, cancellationToken);
                 
                 LocalConfiguration.Grounds.TryAdd(ground.ID, ground);
+                _communicationHandler.NotifyNewGround(ground.ID);
             }));
         }
 
@@ -342,33 +411,36 @@ public class GroundActivityManager
     {
         // clearing possibly old mapped services
         FarmerServiceLocator.RemoveService<IFarmerToolsManager>();
+        FarmerServiceLocator.RemoveService<IFarmerAlertHandler>();
         FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>();
         FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>();
         FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>();
         FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>();
+        FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>();
+        FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>();
 
         // preparing new services
-        var alertHandler = new FarmerAlertHandler(ground, _hubConfiguration);
-
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
+
+        var alertHandler = new FarmerAlertHandler(ground, _hubConfiguration);
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, ground);
 
-        var deviceHandler = new ExternalDeviceProxy(ground, _serialConfiguration, _hubConfiguration);
+        // var deviceHandler = new ExternalDeviceProxy(ground, _serialConfiguration, _hubConfiguration);
 
-        var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
-        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, ground);
+        // var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
+        // FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
+        // FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, ground);
 
-        var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
+        // var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
+        // FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
+        // FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
 
-        var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
-        FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
+        // var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
+        // FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
+        // FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
 
-        await moveOnGridTask.Initialize(cancellationToken);
-        await moveAtHeightTask.Initialize(cancellationToken);
+        // await moveOnGridTask.Initialize(cancellationToken);
+        // await moveAtHeightTask.Initialize(cancellationToken);
         await alertHandler.InitializeAsync();
     }
 }

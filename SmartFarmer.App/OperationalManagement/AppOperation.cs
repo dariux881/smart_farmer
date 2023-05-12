@@ -9,5 +9,6 @@ public enum AppOperation
     UpdateGround,
     UpdateAllGrounds,
     RestartSerialCom,
+    CliCommand,
     TestPosition
 }
