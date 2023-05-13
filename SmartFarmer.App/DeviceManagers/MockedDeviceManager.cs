@@ -82,6 +82,8 @@ public class MockedDeviceManager : IFarmerDeviceManager
         moveResult |= await TurnArmToDegreesAsync(position.Alpha, token);
         moveResult |= await PointDeviceAsync(position.Beta, token);
 
+        await Task.Delay(10000);
+
         return moveResult;
     }
 

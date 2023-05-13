@@ -12,5 +12,6 @@ public enum AppOperation
     CliCommand,
     TestPosition,
     MoveToPosition,
+    StopCurrentOperation,
     TakePicture
 }

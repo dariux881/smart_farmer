@@ -134,6 +134,11 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
                 case "move":
                     isCommandValid = ProcessMoveCommand(command);
                     break;
+
+                case "stop":
+                    isCommandValid = true;
+                    SendNewOperation(AppOperation.StopCurrentOperation, null);
+                    break;
             }
 
             if (!isCommandValid)

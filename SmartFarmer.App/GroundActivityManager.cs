@@ -22,12 +22,15 @@ public class GroundActivityManager
     private IFarmerAppCommunicationHandler _communicationHandler;
     private IFarmerConfigurationProvider _configProvider;
     private IFarmerDeviceKindProvider _deviceProvider;
+    private CancellationTokenSource _tokenSource;
 
     public GroundActivityManager()
     {
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
         _communicationHandler = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
         _deviceProvider = FarmerServiceLocator.GetService<IFarmerDeviceKindProvider>(true);
+
+        _tokenSource = new CancellationTokenSource();
     }
 
     public async Task Run()
@@ -48,16 +51,15 @@ public class GroundActivityManager
 
         FillOperationalManagers();
 
-        await InitializeGroundsAsync();
-        await InitializeHubsForGroundsAsync();
+        var token = _tokenSource.Token;
 
-        var tokenSource = new CancellationTokenSource();
-        var cancellationToken = tokenSource.Token;
+        await InitializeGroundsAsync(token);
+        await InitializeHubsForGroundsAsync();
 
         var tasks = new List<Task>();
         foreach (var opManager in _operationalManagers)
         {
-            tasks.Add(Task.Run(() => opManager.Run(cancellationToken)));
+            tasks.Add(Task.Run(() => opManager.Run(token)));
         }
 
         await Task.WhenAny(tasks);
@@ -99,7 +101,7 @@ public class GroundActivityManager
 
     private async Task<bool> Login()
     {
-        var cancellationToken = new CancellationTokenSource().Token;
+        var cancellationToken = _tokenSource.Token;
 
         var user = new Data.Security.LoginRequestData() {
                 UserName = _configProvider.GetUserConfiguration()?.UserName, 
@@ -171,7 +173,6 @@ public class GroundActivityManager
             await opMan.InitializeAsync();
             opMan.NewOperationRequired += ExecuteRequiredOperation;
         });
-
     }
 
     private void ExecuteRequiredOperation(object sender, OperationRequestEventArgs e)
@@ -188,7 +189,10 @@ public class GroundActivityManager
                         bool result;
                         try
                         {
-                            result = await ExecutePlanAsync(e.AdditionalData.FirstOrDefault());
+                            result = 
+                                await ExecutePlanAsync(
+                                    e.AdditionalData.FirstOrDefault(),
+                                    _tokenSource.Token);
                         }
                         catch (AggregateException ex)
                         {
@@ -216,7 +220,7 @@ public class GroundActivityManager
                 ClearLocalData();
                 Task.Run(async () => 
                     {
-                        await InitializeGroundsAsync();
+                        await InitializeGroundsAsync(_tokenSource.Token);
                         await InitializeHubsForGroundsAsync();
                     });
                 break;
@@ -240,13 +244,18 @@ public class GroundActivityManager
                 {
                     var result = await MoveToPosition(
                         e.AdditionalData.FirstOrDefault(), 
-                        e.AdditionalData.LastOrDefault());
+                        e.AdditionalData.LastOrDefault(),
+                        _tokenSource.Token);
 
                     var suffix = result ? "successfully" : "with errors";
                         e.Result = $"moved finished {suffix}";
                         opManager?.ProcessResult(e);
                         return;
                 });
+                break;
+
+            case AppOperation.StopCurrentOperation:
+                _tokenSource.Cancel();
                 break;
 
             default: 
@@ -259,7 +268,7 @@ public class GroundActivityManager
         await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command);
     }
 
-    private async Task<bool> MoveToPosition(string groundId, string serializedPosition)
+    private async Task<bool> MoveToPosition(string groundId, string serializedPosition, CancellationToken token)
     {
         var position = serializedPosition.Deserialize<Farmer5dPoint>();
         if (position == null) 
@@ -275,7 +284,7 @@ public class GroundActivityManager
             return false;
         }
 
-        return await device.MoveToPosition(position, CancellationToken.None);
+        return await device.MoveToPosition(position, token);
     }
 
     private async Task SendTestPosition(string groundId)
@@ -308,7 +317,7 @@ public class GroundActivityManager
         return await MarkAlertAsRead(ground.ID, alertId, newState);
     }
 
-    private static async Task<bool> ExecutePlanAsync(string planId)
+    private static async Task<bool> ExecutePlanAsync(string planId, CancellationToken token)
     {
         var ground = GroundUtils.GetGroundByPlan(planId);
         if (ground == null || ground is not FarmerGround fGround)
@@ -317,13 +326,12 @@ public class GroundActivityManager
             return false;
         }
 
-        return await fGround.ExecutePlan(planId, CancellationToken.None);
+        return await fGround.ExecutePlan(planId, token);
     }
 
-    private static async Task ExecutePlans(string[] planIds)
+    private static async Task ExecutePlans(string[] planIds, CancellationToken token)
     {
         var tasks = new List<Task>();
-        var cancellationToken = new CancellationToken();
 
         foreach (var planId in planIds)
         {
@@ -336,7 +344,7 @@ public class GroundActivityManager
                 Task.Run(async () => {
                     try
                     {
-                        await plan.Execute(cancellationToken);
+                        await plan.Execute(token);
                     }
                     catch (TaskCanceledException taskCanceled)
                     {
@@ -370,12 +378,10 @@ public class GroundActivityManager
         return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, groundId).MarkAlertAsRead(alertId, status);
     }
 
-    private async Task InitializeGroundsAsync()
+    private async Task InitializeGroundsAsync(CancellationToken token)
     {
-        var cancellationToken = new CancellationToken();
-
         // get all grounds
-        var grounds = await FarmerRequestHelper.GetGroundsList(cancellationToken);
+        var grounds = await FarmerRequestHelper.GetGroundsList(token);
         if (grounds == null)
         {
             SmartFarmerLog.Error("invalid grounds");
@@ -402,12 +408,12 @@ public class GroundActivityManager
 
         foreach (var ground in locallyInterestedGrounds)
         {
-            await InitializeServicesForSingleGround(ground, cancellationToken);
+            await InitializeServicesForSingleGround(ground, token);
 
             var groundId = ground.ID;
             tasks.Add(Task.Run(async () => {
                 var ground = await FarmerRequestHelper
-                    .GetGround(groundId, cancellationToken);
+                    .GetGround(groundId, token);
                 
                 LocalConfiguration.Grounds.TryAdd(ground.ID, ground);
                 _communicationHandler.NotifyNewGround(ground.ID);
