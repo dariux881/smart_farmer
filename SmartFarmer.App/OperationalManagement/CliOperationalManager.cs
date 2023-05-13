@@ -173,7 +173,44 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
 
     private bool ProcessMoveCommand(IFarmerCliCommand command)
     {
-        return false;
+        bool outcome = false;
+        if (!command.Args.Any()) return outcome;
+
+        var point = new Farmer5dPoint();
+
+        foreach (var arg in command.Args)
+        {
+            switch (arg.Key)
+            {
+                case "-x":
+                    point.X = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-y":
+                    point.Y = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-z":
+                    point.Z = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-alpha":
+                    point.Alpha = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-beta":
+                    point.Beta = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+            }
+        }
+
+        if (outcome)
+        {
+            SendNewOperation(AppOperation.MoveToPosition, new [] { command.GroundId, point.Serialize() });
+        }
+
+        return outcome;
     }
 
     private async Task NotifyResult(string result)

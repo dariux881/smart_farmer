@@ -226,11 +226,27 @@ public class GroundActivityManager
                 break;
             
             case AppOperation.CliCommand:
-                Task.Run(async () => await SendCliCommand(e.AdditionalData.FirstOrDefault(), e.AdditionalData.LastOrDefault()));
+                Task.Run(async () => await SendCliCommand(
+                    e.AdditionalData.FirstOrDefault(), 
+                    e.AdditionalData.LastOrDefault()));
                 break;
 
             case AppOperation.TestPosition:
                 Task.Run(async () => await SendTestPosition(e.AdditionalData.FirstOrDefault()));
+                break;
+
+            case AppOperation.MoveToPosition:
+                Task.Run(async () => 
+                {
+                    var result = await MoveToPosition(
+                        e.AdditionalData.FirstOrDefault(), 
+                        e.AdditionalData.LastOrDefault());
+
+                    var suffix = result ? "successfully" : "with errors";
+                        e.Result = $"moved finished {suffix}";
+                        opManager?.ProcessResult(e);
+                        return;
+                });
                 break;
 
             default: 
@@ -241,6 +257,25 @@ public class GroundActivityManager
     private async Task SendCliCommand(string groundId, string command)
     {
         await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command);
+    }
+
+    private async Task<bool> MoveToPosition(string groundId, string serializedPosition)
+    {
+        var position = serializedPosition.Deserialize<Farmer5dPoint>();
+        if (position == null) 
+        {
+            SmartFarmerLog.Error($"{serializedPosition} is not a valid point");
+            return false;
+        }
+
+        var device = _deviceProvider.GetDeviceManager(groundId);
+        if (device == null)
+        {
+            SmartFarmerLog.Error($"no valid device found for ground {groundId}");
+            return false;
+        }
+
+        return await device.MoveToPosition(position, CancellationToken.None);
     }
 
     private async Task SendTestPosition(string groundId)
@@ -416,9 +451,7 @@ public class GroundActivityManager
         var alertHandler = new FarmerAlertHandler(ground, _configProvider.GetHubConfiguration());
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, ground);
 
-        var deviceHandler = _deviceProvider.GetDeviceManager(
-            ground.ID,
-            _configProvider.GetGroundConfiguration(ground.ID).DeviceKind);
+        var deviceHandler = _deviceProvider.GetDeviceManager(ground.ID);
 
         var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
