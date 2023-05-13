@@ -18,6 +18,11 @@ public static class Extensions
                 || value is decimal;
     }
 
+    public static bool IsNan(this double value)
+    {
+        return double.IsNaN(value);
+    }
+
     public static int GetInt(this object number)
     {
         int x;

@@ -10,7 +10,7 @@ using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Movement;
 
-namespace SmartFarmer.Communication;
+namespace SmartFarmer.DeviceManagers;
 
 /// <summary>
 /// Implements a proxy pattern towards an external device (e.g. Arduino)
@@ -54,6 +54,12 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> MoveArmAtHeightAsync(double heightInCm, CancellationToken token)
     {
+        if (heightInCm.IsNan())
+        {
+            SmartFarmerLog.Warning($"Height is not defined. Skipping movement");
+            return false;
+        }
+
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_TO_HEIGHT_COMMAND,
             new object[] { heightInCm });
@@ -86,6 +92,12 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> MoveOnGridAsync(double x, double y, CancellationToken token)
     {
+        if (x.IsNan() || y.IsNan())
+        {
+            SmartFarmerLog.Warning($"Grid position is not completely defined {x}/{y}. Skipping movement");
+            return false;
+        }
+
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.MOVE_XY_COMMAND,
             new object[] { x, y });
@@ -101,6 +113,12 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> PointDeviceAsync(double degrees, CancellationToken token)
     {
+        if (degrees.IsNan())
+        {
+            SmartFarmerLog.Warning($"Device angle is not defined. Skipping movement");
+            return false;
+        }
+
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
             new object[] { degrees });
@@ -117,6 +135,12 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> TurnArmToDegreesAsync(double degrees, CancellationToken token)
     {
+        if (degrees.IsNan())
+        {
+            SmartFarmerLog.Warning($"Turning angle is not defined. Skipping movement");
+            return false;
+        }
+
         var result = await SendCommandToExternalDevice(
             ExternalDeviceProtocolConstants.TURN_VERTICAL_COMMAND,
             new object[] { degrees });
@@ -133,39 +157,14 @@ public class ExternalDeviceProxy :
 
     public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
     {
-        var moveResult = await MoveOnGridAsync(position.X, position.Y, token);
+        bool moveResult = false;
 
-        if (!moveResult)
-        {
-            SmartFarmerLog.Error($"Failing in moving on grid to {position.ToString()}");
-            return false;
-        }
+        moveResult = await MoveOnGridAsync(position.X, position.Y, token);
+        moveResult |= await MoveArmAtHeightAsync(position.Z, token);
+        moveResult |= await TurnArmToDegreesAsync(position.Alpha, token);
+        moveResult |= await PointDeviceAsync(position.Beta, token);
 
-        moveResult = await MoveArmAtHeightAsync(position.Z, token);
-
-        if (!moveResult)
-        {
-            SmartFarmerLog.Error($"Failing in moving at height to {position.ToString()}");
-            return false;
-        }
-
-        moveResult = await TurnArmToDegreesAsync(position.Alpha, token);
-
-        if (!moveResult)
-        {
-            SmartFarmerLog.Error($"Failing in turning arm to {position.ToString()}");
-            return false;
-        }
-
-        moveResult = await PointDeviceAsync(position.Beta, token);
-
-        if (!moveResult)
-        {
-            SmartFarmerLog.Error($"Failing in pointing to {position.ToString()}");
-            return false;
-        }
-
-        return true;
+        return moveResult;
     }
 
     public async Task<double> GetCurrentHumidityLevel(CancellationToken token)

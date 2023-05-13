@@ -16,22 +16,18 @@ public class FarmerDeviceKindProvider : IFarmerDeviceKindProvider
         _managerFactory = FarmerServiceLocator.GetService<IFarmerDeviceKindFactory>(true);
     }
 
-    public IFarmerDeviceManager GetDeviceManager(string groundId, DeviceKindEnum kind)
+    public IFarmerDeviceManager GetDeviceManager(string groundId)
     {
-        var key = BuildKey(groundId, kind);
+
+        var key = groundId;
         if (_managers.TryGetValue(key, out var manager))
         {
             return manager;
         }
 
-        var newManager = _managerFactory.GetNewDeviceManager(groundId, kind);
+        var newManager = _managerFactory.GetNewDeviceManager(groundId);
         _managers.TryAdd(key, newManager);
 
         return newManager;
-    }
-
-    private string BuildKey(string groundId, DeviceKindEnum kind)
-    {
-        return kind + groundId;
     }
 }

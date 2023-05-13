@@ -1,5 +1,5 @@
 using System;
-using SmartFarmer.Communication;
+using SmartFarmer.DeviceManagers;
 using SmartFarmer.Configurations;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
@@ -16,15 +16,17 @@ public class FarmerDeviceKindFactory : IFarmerDeviceKindFactory
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
     }
 
-    public IFarmerDeviceManager GetNewDeviceManager(string groundId, DeviceKindEnum kind)
+    public IFarmerDeviceManager GetNewDeviceManager(string groundId)
     {
+        var config = GetGroundConfiguration(groundId);
+        if (config == null) throw new InvalidProgramException();
+        
+        var kind = config.DeviceKind;
+
         switch (kind)
         {
             case DeviceKindEnum.Remote:
                 {
-                    var config = GetGroundConfiguration(groundId);
-
-                    if (config == null) throw new InvalidProgramException();
                     return 
                         new ExternalDeviceProxy(
                             LocalConfiguration.Grounds[config.GroundId], 

@@ -3,6 +3,7 @@ using SmartFarmer.Misc;
 public class Farmer5dPoint : IFarmer5dPoint
 {
     public Farmer5dPoint()
+        : this(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
     {
 
     }

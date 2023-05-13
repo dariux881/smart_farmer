@@ -5,5 +5,5 @@ namespace SmartFarmer.Handlers.Providers;
 
 public interface IFarmerDeviceKindFactory
 {
-    IFarmerDeviceManager GetNewDeviceManager(string groundId, DeviceKindEnum kind);
+    IFarmerDeviceManager GetNewDeviceManager(string groundId);
 }
