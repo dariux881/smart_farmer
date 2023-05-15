@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
@@ -18,7 +19,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-    public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status)
+    public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status, CancellationToken token)
     {
         var alert = await _alertProvider.GetFarmerService(alertId) as FarmerAlert;
         if (alert != null)
