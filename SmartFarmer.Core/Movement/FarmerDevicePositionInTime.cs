@@ -1,18 +1,23 @@
 using System;
-using SmartFarmer.Misc;
+using SmartFarmer.Position;
 
 namespace SmartFarmer.Movement;
 
-public class FarmerDevicePositionInTime : IFarmer5dPoint
+public class FarmerDevicePositionInTime : Farmer5dPoint
 {
     public string RunId { get; set; }
     public DateTime PositionDt { get; set; }
 
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Z { get; set; }
-    public double Alpha { get; set; }
-    public double Beta { get; set; }
+    public FarmerDevicePositionInTime()
+    {
+        
+    }
+
+    public FarmerDevicePositionInTime(Farmer5dPoint position)
+        : base(position)
+    {
+        
+    }
 
     public override string ToString()
     {

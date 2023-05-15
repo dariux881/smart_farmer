@@ -1,8 +1,6 @@
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;

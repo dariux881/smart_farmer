@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SmartFarmer.Exceptions;
-using SmartFarmer.Helpers;
+using SmartFarmer.Configurations;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Handlers;

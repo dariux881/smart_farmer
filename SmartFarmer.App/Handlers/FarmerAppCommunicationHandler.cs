@@ -2,27 +2,6 @@ using System;
 
 namespace SmartFarmer.Handlers;
 
-public class GroundChangedEventArgs 
-{
-    public string GroundId { get; }
-
-    public GroundChangedEventArgs (string groundId)
-    {
-        GroundId = groundId;
-    }
-}
-
-public interface IFarmerAppCommunicationHandler
-{
-    event EventHandler NewLoggedUser;
-    event EventHandler<GroundChangedEventArgs> LocalGroundAdded;
-    event EventHandler<GroundChangedEventArgs> LocalGroundRemoved;
-
-    void NotifyNewGround(string groundId);
-    void NotifyRemovedGround(string groundId);
-    void NotifyNewLoggedUser();
-}
-
 public class FarmerAppCommunicationHandler : IFarmerAppCommunicationHandler
 {
     public event EventHandler NewLoggedUser;

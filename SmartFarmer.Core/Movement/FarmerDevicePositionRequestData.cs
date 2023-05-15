@@ -1,5 +1,5 @@
 using System;
-using SmartFarmer.Misc;
+using SmartFarmer.Position;
 
 namespace SmartFarmer.Movement;
 

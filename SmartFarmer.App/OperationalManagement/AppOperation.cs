@@ -10,5 +10,8 @@ public enum AppOperation
     UpdateAllGrounds,
     RestartSerialCom,
     CliCommand,
-    TestPosition
+    TestPosition,
+    MoveToPosition,
+    StopCurrentOperation,
+    TakePicture
 }

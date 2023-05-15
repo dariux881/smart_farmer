@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
@@ -59,7 +57,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var ground1 = new DTOs.FarmerGround(this)
         { 
-            //ID = "gID", 
+            ID = "gID", 
             UserID="user0", 
             GroundName="Ground Name",
         };

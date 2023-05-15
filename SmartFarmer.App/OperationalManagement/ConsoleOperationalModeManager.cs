@@ -3,24 +3,30 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Handlers;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
+public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsoleOperationalModeManager
 {
     private bool CanRun = true;
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
-    public string Name => "Console Operational Manager";
-    public AppOperationalMode Mode => AppOperationalMode.Console;
+    private readonly IFarmerLocalInformationManager _localInfoManager;
 
-    public async Task InitializeAsync()
+    public ConsoleOperationalModeManager()
+    {
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);        
+    }
+
+    public override string Name => "Console Operational Manager";
+    public override AppOperationalMode Mode => AppOperationalMode.Console;
+
+    public override async Task InitializeAsync(CancellationToken token)
     {
         await Task.CompletedTask;
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
         var menu = PromptAndExecute(token);
 
@@ -33,7 +39,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         await Task.CompletedTask;
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
         if (args.ExecutionException != null)
         {
@@ -42,11 +48,11 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
 
         if (args.Result != null)
         {
-            Console.WriteLine(args.Result);
+            SmartFarmerLog.Information(args.Result);
         }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
 
     }
@@ -69,24 +75,35 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         int choice = -1;
         bool validAction;
 
-        do
+        try 
         {
-            if (!CanRun) break;
-            if (token.IsCancellationRequested) break;
-
-            Console.WriteLine(message);
-
-            while (!int.TryParse(Console.ReadLine().Trim(), out choice))
+            do
             {
-                choice = -1;
-                Console.WriteLine("retry: \n select: ");
+                if (!CanRun) break;
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                Console.WriteLine(message);
+
+                while (!int.TryParse(Console.ReadLine().Trim(), out choice))
+                {
+                    choice = -1;
+                    Console.WriteLine("retry: \n select: ");
+                }
+
+                validAction = ExecuteAction(choice);
             }
+            while (choice >= 0 && validAction);
 
-            validAction = ExecuteAction(choice);
+            return choice;
         }
-        while (choice >= 0 && validAction);
-
-        return choice;
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return -1;
+        }
     }
 
     private bool ExecuteAction(int choice)
@@ -99,7 +116,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
             case 0: // list grounds
                 {
                     Console.WriteLine("GROUNDS:");
-                    foreach (var ground in LocalConfiguration.Grounds.Select(x => x.Key))
+                    foreach (var ground in _localInfoManager.Grounds.Select(x => x.Key))
                     {
                         Console.WriteLine("\t" + ground);
                     }
@@ -111,7 +128,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
                     Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
 
                     var groundId = GetGroundIdFromInputOrDefault();
-                    var ground = LocalConfiguration.Grounds[groundId] as FarmerGround;
+                    var ground = _localInfoManager.Grounds[groundId] as FarmerGround;
 
                     Console.WriteLine($"PLANS OF GROUND {ground.GroundName}:");
                     foreach (var plan in ground.Plans)
@@ -134,7 +151,7 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
                     Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
 
                     var groundId = GetGroundIdFromInputOrDefault();
-                    if (!LocalConfiguration.Grounds.TryGetValue(groundId, out var ground))
+                    if (!_localInfoManager.Grounds.TryGetValue(groundId, out var ground))
                     {
                         break;
                     }
@@ -197,24 +214,6 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
         return true;
     }
 
-    protected void SendNewOperation(AppOperation operation, string[] data)
-    {
-        var args = new OperationRequestEventArgs(this, operation, data);
-
-        try
-        {
-            NewOperationRequired?.Invoke(this, args);
-        }
-        catch (AggregateException ex)
-        {
-            SmartFarmerLog.Exception(ex);
-        }
-        catch (Exception ex)
-        {
-            SmartFarmerLog.Exception(ex);
-        }
-    }
-
     private void HandleCli()
     {
         PromptCli();
@@ -259,6 +258,6 @@ public class ConsoleOperationalModeManager : IConsoleOperationalModeManager
 
     private string GetDefaultGroundId() 
     {
-        return LocalConfiguration.Grounds.FirstOrDefault().Key;
+        return _localInfoManager.Grounds.FirstOrDefault().Key;
     }
 }

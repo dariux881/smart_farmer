@@ -7,12 +7,24 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using SmartFarmer.Configurations;
+using SmartFarmer.Handlers;
+using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Helpers;
 
 public class HttpRequest
 {
+    private readonly IFarmerConfigurationProvider _configProvider;
+    private readonly IFarmerSessionManager _sessionManager;
+
+    public HttpRequest()
+    {
+        _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
+        _sessionManager = FarmerServiceLocator.GetService<IFarmerSessionManager>(true);
+    }
+
     public Exception LastException {get; private set; }
 
     public async Task<HttpResponseMessage> GetAsync(
@@ -83,7 +95,7 @@ public class HttpRequest
 
     private void PrepareHttpClient(HttpClient client, bool includeAuthentication)
     {
-        client.BaseAddress = new Uri( ApiConfiguration.BaseAddress );
+        client.BaseAddress = new Uri( _configProvider.GetApiConfiguration().BaseAddress );
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -92,7 +104,7 @@ public class HttpRequest
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     SmartFarmerApiConstants.USER_AUTHENTICATION_HEADER_KEY, 
-                    LocalConfiguration.Token);
+                    _sessionManager.Token);
         }
     }
 }

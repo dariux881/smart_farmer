@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 
@@ -16,7 +17,7 @@ public interface IFarmerAlertHandler : IFarmerServiceProvider<IFarmerAlert>
     
     Task<string> RaiseAlert(FarmerAlertRequestData data);
 
-    Task<bool> MarkAlertAsRead(string alertId, bool status);
+    Task<bool> MarkAlertAsReadAsync(string alertId, bool status, CancellationToken token);
 
     Task<IFarmerAlert> GetAlertById(string alertId);
 }

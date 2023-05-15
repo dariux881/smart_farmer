@@ -7,36 +7,39 @@ using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using SmartFarmer.Configurations;
 using SmartFarmer.Data;
-using SmartFarmer.Helpers;
+using SmartFarmer.Handlers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement.Jobs;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class AutomaticOperationalManager : IAutoOperationalModeManager
+public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOperationalModeManager
 {
     private IScheduler _jobScheduler;
     private ConcurrentDictionary<string, List<string>> _scheduledPlansByGround;
     private const string CHECK_PLAN_GROUP = "checkPlanGroup";
     private const string SCHEDULED_PLAN_GROUP = "scheduledPlanGroup";
+    private readonly IFarmerLocalInformationManager _localInfoManager;
+    private CancellationToken _operationsToken;
 
     public AutomaticOperationalManager(AppConfiguration appConfiguration)
     {
         _scheduledPlansByGround = new ConcurrentDictionary<string, List<string>>();
         PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule ?? "0 0/30 * ? * * *";
+
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
     }
 
-    public AppOperationalMode Mode => AppOperationalMode.Auto;
+    public override AppOperationalMode Mode => AppOperationalMode.Auto;
 
     public string PlanCheckSchedule { get; set; }
 
-    public string Name => "Automatic Operational Manager";
+    public override string Name => "Automatic Operational Manager";
 
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
-
-    public void Dispose()
+    public override void Dispose()
     {
         if (_jobScheduler != null && _jobScheduler.IsStarted)
         {
@@ -45,13 +48,15 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         }
     }
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync(CancellationToken token)
     {
         await PrepareScheduler();
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
+        _operationsToken = token;
+
         // add scheduled plans
         await AddScheduledPlansToScheduler();
 
@@ -61,10 +66,28 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         // start scheduler for automatic activities
         await StartScheduler(token);
 
-        //TODO subscribe to Hub. New requests are added to the scheduler
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(5000);
+            }
+
+            await Task.CompletedTask;
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+
+        SmartFarmerLog.Information("closing Auto manager");
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
         if (args.ExecutionException != null)
         {
@@ -75,11 +98,6 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
         {
             SmartFarmerLog.Debug(args.Result);
         }
-    }
-
-    protected void SendNewOperation(AppOperation operation, string[] data)
-    {
-        NewOperationRequired?.Invoke(this, new OperationRequestEventArgs(this, operation, data));
     }
 
     private void RunOneShotPlans()
@@ -95,7 +113,7 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
     {
         var plans = new List<string>();
 
-        foreach (var gGround in LocalConfiguration.Grounds.Values)
+        foreach (var gGround in _localInfoManager.Grounds.Values)
         {
             var ground = gGround as FarmerGround;
             if (ground == null) continue;
@@ -213,7 +231,7 @@ public class AutomaticOperationalManager : IAutoOperationalModeManager
 
     private async Task AddScheduledPlansToScheduler()
     {
-        foreach (var gGround in LocalConfiguration.Grounds.Values)
+        foreach (var gGround in _localInfoManager.Grounds.Values)
         {
             var ground = gGround as FarmerGround;
             if (ground == null) continue;

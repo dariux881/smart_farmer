@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer.Helpers;
+using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
 

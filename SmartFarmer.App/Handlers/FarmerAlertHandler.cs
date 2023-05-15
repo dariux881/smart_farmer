@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
+using SmartFarmer.Configurations;
 using SmartFarmer.Data;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Utils;
 
@@ -29,9 +30,9 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         LocallyUpdateAlert(e.AlertId, e.Status);
     }
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken token)
     {
-        await _hubHandler.InitializeAsync();
+        await _hubHandler.InitializeAsync(token);
     }
 
     public async Task<string> AddFarmerService(IFarmerAlert service)
@@ -53,17 +54,17 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<IFarmerAlert> GetAlertById(string alertId)
     {
-        return await FarmerRequestHelper.GetAlert(alertId, System.Threading.CancellationToken.None);
+        return await FarmerRequestHandler.GetAlert(alertId, System.Threading.CancellationToken.None);
     }
 
-    public async Task<bool> MarkAlertAsRead(string alertId, bool status)
+    public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status, CancellationToken token)
     {
-        var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, System.Threading.CancellationToken.None);
+        var result = await FarmerRequestHandler.MarkAlertAsRead(alertId, status, token);
 
         if (result)
         {
             LocallyUpdateAlert(alertId, status);
-            await _hubHandler.NotifyNewAlertStatus(alertId, status);
+            await _hubHandler.NotifyNewAlertStatus(alertId, status, token);
         }
 
         return result;
@@ -98,12 +99,12 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<string> RaiseAlert(FarmerAlertRequestData data)
     {
-        var alertId = await FarmerRequestHelper.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
+        var alertId = await FarmerRequestHandler.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
         var alert = await GetAlertById(alertId);
 
         if (alert == null) return null;
 
-        LocalConfiguration.Grounds.TryGetValue(data.FarmerGroundId, out var ground);
+        FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Grounds.TryGetValue(data.FarmerGroundId, out var ground);
         if (ground != null && ground is FarmerGround fGround && alert != null)
         {
             SmartFarmerLog.Debug("adding alert to ground " + ground.ID);

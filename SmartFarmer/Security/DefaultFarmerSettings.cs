@@ -1,4 +1,5 @@
 using System;
+using SmartFarmer.Position;
 using SmartFarmer.Settings;
 
 public class DefaultFarmerSettings : IFarmerSettings

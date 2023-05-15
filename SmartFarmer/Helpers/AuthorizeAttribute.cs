@@ -2,7 +2,6 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using SmartFarmer.DTOs.Security;
 
 namespace SmartFarmer.Helpers;
 

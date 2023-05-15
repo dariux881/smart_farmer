@@ -1,70 +1,79 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Configurations;
 using SmartFarmer.Handlers;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Position;
 using SmartFarmer.Tasks;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class CliOperationalManager : ICliOperationalModeManager
+public class CliOperationalManager : OperationalModeManagerBase, ICliOperationalModeManager
 {
     private HubConnectionConfiguration _hubConfiguration;
     private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
     private readonly IFarmerAppCommunicationHandler _appCommunication;
+    private readonly IFarmerLocalInformationManager _localInfoManager;
     private SemaphoreSlim _commandSem;
     private IFarmerCliCommand _localCommand;
+    private CancellationToken _operationsToken;
 
     public CliOperationalManager(HubConnectionConfiguration hubConfiguration)
     {
         _hubConfiguration = hubConfiguration;
         _commandSem = new SemaphoreSlim(1);
-
         _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();
+
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
         _appCommunication = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
 
         _appCommunication.LocalGroundAdded += LocalGroundAdded;
         _appCommunication.LocalGroundRemoved += LocalGroundRemoved;
     }
 
-    public AppOperationalMode Mode => AppOperationalMode.Cli;
-    public string Name => "Remote CLI";
-    public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
+    public override AppOperationalMode Mode => AppOperationalMode.Cli;
+    public override string Name => "Remote CLI";
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync(CancellationToken token)
     {
         // Configuring hubs
         await Task.CompletedTask;
     }
 
-    public async Task Run(CancellationToken token)
+    public override async Task Run(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        _operationsToken = token;
+        
+        try
         {
-            await Task.Delay(5000);
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(5000);
+            }
+
+            await Task.CompletedTask;
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
         }
 
-        await Task.CompletedTask;
+        SmartFarmerLog.Information("closing Cli manager");
     }
 
-    public void ProcessResult(OperationRequestEventArgs args)
+    public override void ProcessResult(OperationRequestEventArgs args)
     {
-        if (args.ExecutionException != null)
-        {
-            SmartFarmerLog.Exception(args.ExecutionException);
-        }
-
-        if (args.Result != null)
-        {
-            SmartFarmerLog.Debug(args.Result);
-        }
-
         Task.Run(async () => await NotifyResult(args.ExecutionException?.ToString() ?? args.Result));
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         if (_appCommunication != null)
         {
@@ -89,7 +98,7 @@ public class CliOperationalManager : ICliOperationalModeManager
             return;
         }
 
-        var hub = new FarmerGroundHubHandler(LocalConfiguration.Grounds[e.GroundId], _hubConfiguration);
+        var hub = new FarmerGroundHubHandler(_localInfoManager.Grounds[e.GroundId], _hubConfiguration);
         ConfigureHub(hub);
         
         _hubHandlers.Add(e.GroundId, hub);
@@ -111,7 +120,7 @@ public class CliOperationalManager : ICliOperationalModeManager
     private void ConfigureHub(FarmerGroundHubHandler hub)
     {
         hub.NewCliCommandReceived += NewCliCommandReceived;
-        Task.Run(async () => await hub.InitializeAsync());
+        Task.Run(async () => await hub.InitializeAsync(_operationsToken));
     }
 
     private void ProcessCliCommand(IFarmerCliCommand command)
@@ -123,7 +132,40 @@ public class CliOperationalManager : ICliOperationalModeManager
             _localCommand = command;
             SmartFarmerLog.Debug($"processing command {command}");
 
-            //TODO invoke event
+            bool isCommandValid = false;
+            switch(command.Command)
+            {
+                case "run":
+                    isCommandValid = ProcessRunCommand(command);
+                    break;
+
+                case "move":
+                    isCommandValid = ProcessMoveCommand(command);
+                    break;
+
+                case "stop":
+                    isCommandValid = true;
+                    SendNewOperation(AppOperation.StopCurrentOperation, null);
+                    break;
+            }
+
+            if (!isCommandValid)
+            {
+                Task.Run(async () => 
+                    {
+                        await NotifyResult($"received command {command} is not valid");
+                        ResetLocalCommand();
+                    });
+            }
+
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
         }
         finally
         {
@@ -131,11 +173,81 @@ public class CliOperationalManager : ICliOperationalModeManager
         }
     }
 
+    private void ResetLocalCommand()
+    {
+        _localCommand = null;
+    }
+
+    private bool ProcessRunCommand(IFarmerCliCommand command)
+    {
+        bool outcome = false;
+        if (!command.Args.Any()) return outcome;
+
+        var obj = command.Args.First();
+        switch (obj.Key)
+        {
+            case "-plan":
+                {
+                    var planId = obj.Value.FirstOrDefault();
+                    if (string.IsNullOrEmpty(planId)) break;
+
+                    outcome = true;
+                    SendNewOperation(AppOperation.RunPlan, new [] { planId });
+                }
+
+                break;
+        }
+
+        return outcome;
+    }
+
+    private bool ProcessMoveCommand(IFarmerCliCommand command)
+    {
+        bool outcome = false;
+        if (!command.Args.Any()) return outcome;
+
+        var point = new Farmer5dPoint();
+
+        foreach (var arg in command.Args)
+        {
+            switch (arg.Key)
+            {
+                case "-x":
+                    point.X = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-y":
+                    point.Y = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-z":
+                    point.Z = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-alpha":
+                    point.Alpha = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+                case "-beta":
+                    point.Beta = arg.Value.First().GetDouble();
+                    outcome = true;
+                    break;
+            }
+        }
+
+        if (outcome)
+        {
+            SendNewOperation(AppOperation.MoveToPosition, new [] { command.GroundId, point.Serialize() });
+        }
+
+        return outcome;
+    }
+
     private async Task NotifyResult(string result)
     {
         if (_localCommand == null) return;
 
-        await _hubHandlers[_localCommand.GroundId].NotifyCliCommandResult(_localCommand.GroundId, result);
+        await _hubHandlers[_localCommand.GroundId].NotifyCliCommandResult(_localCommand.GroundId, result, _operationsToken);
     }
 
     private void NewCliCommandReceived(object sender, NewCliCommandEventArgs e)

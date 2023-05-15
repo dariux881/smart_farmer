@@ -1,14 +1,14 @@
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer.Misc;
+using SmartFarmer.Position;
 
 namespace SmartFarmer.Movement;
 
 public interface IFarmerDevicePositionManager : 
     IFarmerMoveOnGridDevice,
     IFarmerMoveAtHeightDevice,
-    IFarmerTurnToolDevice,
-    IFarmer5dPointNotifier
+    IFarmerTurnToolDevice
 {
-    Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token);
+    Farmer5dPoint DevicePosition { get; }
+    Task<bool> MoveToPosition(Farmer5dPoint position, CancellationToken token);
 }
