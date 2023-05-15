@@ -67,7 +67,7 @@ public class GroundActivityManager
             tasks.Add(Task.Run(() => opManager.Run(token)));
         }
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAny(tasks);
 
         foreach (var opManager in _operationalManagers)
         {
