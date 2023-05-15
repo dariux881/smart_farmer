@@ -29,7 +29,7 @@ public class FarmerDeviceKindFactory : IFarmerDeviceKindFactory
                 {
                     return 
                         new ExternalDeviceProxy(
-                            LocalConfiguration.Grounds[config.GroundId], 
+                            FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Grounds[config.GroundId], 
                             config.SerialConfiguration,
                             _configProvider.GetHubConfiguration());
                 }

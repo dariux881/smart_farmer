@@ -16,6 +16,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     private HubConnectionConfiguration _hubConfiguration;
     private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
     private readonly IFarmerAppCommunicationHandler _appCommunication;
+    private readonly IFarmerLocalInformationManager _localInfoManager;
     private SemaphoreSlim _commandSem;
     private IFarmerCliCommand _localCommand;
     private CancellationToken _operationsToken;
@@ -24,8 +25,9 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         _hubConfiguration = hubConfiguration;
         _commandSem = new SemaphoreSlim(1);
-
         _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();
+
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
         _appCommunication = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
 
         _appCommunication.LocalGroundAdded += LocalGroundAdded;
@@ -94,7 +96,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
             return;
         }
 
-        var hub = new FarmerGroundHubHandler(LocalConfiguration.Grounds[e.GroundId], _hubConfiguration);
+        var hub = new FarmerGroundHubHandler(_localInfoManager.Grounds[e.GroundId], _hubConfiguration);
         ConfigureHub(hub);
         
         _hubHandlers.Add(e.GroundId, hub);

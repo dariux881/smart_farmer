@@ -104,7 +104,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
         if (alert == null) return null;
 
-        LocalConfiguration.Grounds.TryGetValue(data.FarmerGroundId, out var ground);
+        FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Grounds.TryGetValue(data.FarmerGroundId, out var ground);
         if (ground != null && ground is FarmerGround fGround && alert != null)
         {
             SmartFarmerLog.Debug("adding alert to ground " + ground.ID);

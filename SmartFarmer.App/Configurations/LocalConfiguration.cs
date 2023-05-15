@@ -11,7 +11,6 @@ public class LocalConfiguration
     private static string token;
 
     static LocalConfiguration() {
-        Grounds = new ConcurrentDictionary<string, IFarmerGround>();
     }
 
     public static string LoggedUserId 
@@ -47,29 +46,6 @@ public class LocalConfiguration
             {
                 token = value;
             }
-        }
-    }
-    
-    public static ConcurrentDictionary<string, IFarmerGround> Grounds { get; set; }
-
-    public static void ClearLocalData(
-        bool clearGrounds = false,
-        bool clearLoggedUser = false,
-        bool clearToken = false)
-    {
-        if (clearGrounds)
-        {
-            Grounds.Clear();
-        }
-
-        if (clearLoggedUser)
-        {
-            LoggedUserId = null;
-        }
-
-        if (clearToken)
-        {
-            Token = null;
         }
     }
 }

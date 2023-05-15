@@ -41,6 +41,6 @@ public class Program
         var configProvider = new AppsettingsBasedConfigurationProvider(config);
 
         FarmerServiceLocator.MapService<IFarmerConfigurationProvider>(() => configProvider);
-
+        FarmerServiceLocator.MapService<IFarmerLocalInformationManager>(() => new FarmerLocalInformationManager());
     }
 }

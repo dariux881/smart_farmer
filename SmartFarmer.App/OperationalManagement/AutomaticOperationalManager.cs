@@ -22,11 +22,14 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
     private ConcurrentDictionary<string, List<string>> _scheduledPlansByGround;
     private const string CHECK_PLAN_GROUP = "checkPlanGroup";
     private const string SCHEDULED_PLAN_GROUP = "scheduledPlanGroup";
+    private readonly IFarmerLocalInformationManager _localInfoManager;
 
     public AutomaticOperationalManager(AppConfiguration appConfiguration)
     {
         _scheduledPlansByGround = new ConcurrentDictionary<string, List<string>>();
         PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule ?? "0 0/30 * ? * * *";
+
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
     }
 
     public override AppOperationalMode Mode => AppOperationalMode.Auto;
@@ -89,7 +92,7 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
     {
         var plans = new List<string>();
 
-        foreach (var gGround in LocalConfiguration.Grounds.Values)
+        foreach (var gGround in _localInfoManager.Grounds.Values)
         {
             var ground = gGround as FarmerGround;
             if (ground == null) continue;
@@ -207,7 +210,7 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
 
     private async Task AddScheduledPlansToScheduler()
     {
-        foreach (var gGround in LocalConfiguration.Grounds.Values)
+        foreach (var gGround in _localInfoManager.Grounds.Values)
         {
             var ground = gGround as FarmerGround;
             if (ground == null) continue;

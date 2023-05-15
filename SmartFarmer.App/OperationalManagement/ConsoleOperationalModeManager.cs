@@ -3,14 +3,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
-using SmartFarmer.Configurations;
 using SmartFarmer.Misc;
+using SmartFarmer.Handlers;
 
 namespace SmartFarmer.OperationalManagement;
 
 public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsoleOperationalModeManager
 {
     private bool CanRun = true;
+    private readonly IFarmerLocalInformationManager _localInfoManager;
+
+    public ConsoleOperationalModeManager()
+    {
+        _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);        
+    }
+
     public override string Name => "Console Operational Manager";
     public override AppOperationalMode Mode => AppOperationalMode.Console;
 
@@ -41,7 +48,7 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
 
         if (args.Result != null)
         {
-            Console.WriteLine(args.Result);
+            SmartFarmerLog.Information(args.Result);
         }
     }
 
@@ -109,7 +116,7 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
             case 0: // list grounds
                 {
                     Console.WriteLine("GROUNDS:");
-                    foreach (var ground in LocalConfiguration.Grounds.Select(x => x.Key))
+                    foreach (var ground in _localInfoManager.Grounds.Select(x => x.Key))
                     {
                         Console.WriteLine("\t" + ground);
                     }
@@ -121,7 +128,7 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                     Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
 
                     var groundId = GetGroundIdFromInputOrDefault();
-                    var ground = LocalConfiguration.Grounds[groundId] as FarmerGround;
+                    var ground = _localInfoManager.Grounds[groundId] as FarmerGround;
 
                     Console.WriteLine($"PLANS OF GROUND {ground.GroundName}:");
                     foreach (var plan in ground.Plans)
@@ -144,7 +151,7 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                     Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
 
                     var groundId = GetGroundIdFromInputOrDefault();
-                    if (!LocalConfiguration.Grounds.TryGetValue(groundId, out var ground))
+                    if (!_localInfoManager.Grounds.TryGetValue(groundId, out var ground))
                     {
                         break;
                     }
@@ -251,6 +258,6 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
 
     private string GetDefaultGroundId() 
     {
-        return LocalConfiguration.Grounds.FirstOrDefault().Key;
+        return _localInfoManager.Grounds.FirstOrDefault().Key;
     }
 }
