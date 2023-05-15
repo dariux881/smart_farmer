@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using SmartFarmer.Configurations;
@@ -29,6 +30,11 @@ public class AppsettingsBasedConfigurationProvider : IFarmerConfigurationProvide
     public ApiConfiguration GetApiConfiguration()
     {
         return _apiConfiguration;
+    }
+
+    public LocalConfiguration GetLocalConfiguration()
+    {
+        throw new NotImplementedException();
     }
 
     public UserConfiguration GetUserConfiguration()

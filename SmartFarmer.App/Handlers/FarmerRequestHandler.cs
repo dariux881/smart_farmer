@@ -5,11 +5,11 @@ using SmartFarmer.Alerts;
 using SmartFarmer.Data.Alerts;
 using SmartFarmer.Misc;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers;
 
 ////
-// Partial class for Alert management
+// Partial class for Request management
 ////
-public partial class FarmerRequestHelper
+public partial class FarmerRequestHandler
 {
 }

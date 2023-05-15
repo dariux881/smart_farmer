@@ -9,7 +9,7 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using SmartFarmer.Configurations;
 using SmartFarmer.Data;
-using SmartFarmer.Helpers;
+using SmartFarmer.Handlers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement.Jobs;
 using SmartFarmer.Tasks.Generic;

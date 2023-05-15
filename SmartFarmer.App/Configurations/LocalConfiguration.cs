@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Configurations;
 
 public class LocalConfiguration
 {

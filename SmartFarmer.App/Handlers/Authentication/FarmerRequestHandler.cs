@@ -1,14 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data.Security;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers;
 
 ////
 // Partial class for Authentication management
 ////
-public partial class FarmerRequestHelper
+public partial class FarmerRequestHandler
 {
     public static async Task<LoginResponseData> Login(LoginRequestData data, CancellationToken token)
     {

@@ -1,25 +1,23 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
+using SmartFarmer.Position;
 
 namespace SmartFarmer.DeviceManagers;
 
 public class MockedDeviceManager : IFarmerDeviceManager
 {
-    public double Alpha { get; private set; }
+    public MockedDeviceManager()
+    {
+        DevicePosition = new Farmer5dPoint();
 
-    public double Beta { get; private set; }
-
-    public double Z { get; private set; }
-
-    public double X { get; private set; }
-
-    public double Y { get; private set; }
+        DevicePosition.NewPoint += NewPointReceived;
+    }
 
     public event EventHandler NewPoint;
+    public Farmer5dPoint DevicePosition { get; }
 
     public async Task<double> GetCurrentHumidityLevel(CancellationToken token)
     {
@@ -41,8 +39,7 @@ public class MockedDeviceManager : IFarmerDeviceManager
             return false;
         }
 
-        Z = heightInCm;
-        NewPoint?.Invoke(this, EventArgs.Empty);
+        DevicePosition.Z = heightInCm;
 
         await Task.CompletedTask;
         return true;
@@ -50,11 +47,10 @@ public class MockedDeviceManager : IFarmerDeviceManager
 
     public async Task<double> MoveArmAtMaxHeightAsync(CancellationToken token)
     {
-        Z = 100;
-        NewPoint?.Invoke(this, EventArgs.Empty);
+        DevicePosition.Z = 100;
 
         await Task.CompletedTask;
-        return Z;
+        return DevicePosition.Z;
     }
 
     public async Task<bool> MoveOnGridAsync(double x, double y, CancellationToken token)
@@ -65,15 +61,14 @@ public class MockedDeviceManager : IFarmerDeviceManager
             return false;
         }
 
-        X = x;
-        Y = y;
-        NewPoint?.Invoke(this, EventArgs.Empty);
+        DevicePosition.X = x;
+        DevicePosition.Y = y;
         
         await Task.CompletedTask;
         return true;
     }
 
-    public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
+    public async Task<bool> MoveToPosition(Farmer5dPoint position, CancellationToken token)
     {
         bool moveResult = false;
 
@@ -95,8 +90,7 @@ public class MockedDeviceManager : IFarmerDeviceManager
             return false;
         }
 
-        Beta = degrees;
-        NewPoint?.Invoke(this, EventArgs.Empty);
+        DevicePosition.Beta = degrees;
         
         await Task.CompletedTask;
         return true;
@@ -110,10 +104,20 @@ public class MockedDeviceManager : IFarmerDeviceManager
             return false;
         }
 
-        Alpha = degrees;
-        NewPoint?.Invoke(this, EventArgs.Empty);
+        DevicePosition.Alpha = degrees;
         
         await Task.CompletedTask;
         return true;
     }
+
+    private void NewPointReceived(object sender, EventArgs args)
+    {
+        var newPosition = new FarmerDevicePositionInTime(DevicePosition)
+        {
+            PositionDt = DateTime.UtcNow
+        };
+
+        NewPoint.Invoke(this, args);
+    }
+
 }

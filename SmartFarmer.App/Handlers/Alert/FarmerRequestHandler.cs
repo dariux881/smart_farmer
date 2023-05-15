@@ -5,14 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data.Alerts;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers;
 
 ////
 // Partial class for Alert management
 ////
-public partial class FarmerRequestHelper
+public partial class FarmerRequestHandler
 {
     public static async Task<IFarmerAlert> GetAlert(string alertId, CancellationToken token)
     {

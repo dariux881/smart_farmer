@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;

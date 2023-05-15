@@ -1,6 +1,6 @@
 using System;
 
-namespace SmartFarmer.Misc;
+namespace SmartFarmer.Position;
 
 public interface IFarmerPointNotifier
 {

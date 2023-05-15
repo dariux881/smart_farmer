@@ -2,10 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Position;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers;
 
 public class FarmerToolsManager : IFarmerToolsManager
 {

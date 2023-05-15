@@ -5,24 +5,24 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
-using SmartFarmer.Data.Alerts;
 using SmartFarmer.Data.Plants;
 using SmartFarmer.Data.Tasks;
+using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers;
 
 ////
 // Partial class for Ground management
 ////
-public partial class FarmerRequestHelper
+public partial class FarmerRequestHandler
 {
     private static ConcurrentDictionary<string, object> _groundElementsCache;
 
-    static FarmerRequestHelper() {
+    static FarmerRequestHandler() {
         _groundElementsCache = new ConcurrentDictionary<string, object>();
     }
 

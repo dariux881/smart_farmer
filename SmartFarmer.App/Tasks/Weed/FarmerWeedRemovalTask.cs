@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Exceptions;
 using SmartFarmer.Movement;
+using SmartFarmer.Position;
 using SmartFarmer.Tasks.Base;
 
 namespace SmartFarmer.Tasks.Weed;

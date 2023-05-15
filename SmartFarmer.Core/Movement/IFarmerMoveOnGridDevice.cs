@@ -1,11 +1,10 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using SmartFarmer.Misc;
 
 namespace SmartFarmer.Movement;
 
-public interface IFarmerMoveOnGridDevice : IFarmer2dPointNotifier
+public interface IFarmerMoveOnGridDevice
 {
     Task<bool> MoveOnGridAsync(double x, double y, CancellationToken token);
 }

@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SmartFarmer.Alerts;
-using SmartFarmer.Helpers;
 using SmartFarmer.MockedTasks;
 using SmartFarmer.MockedTasks.GenericCollection;
 using SmartFarmer.Plants;

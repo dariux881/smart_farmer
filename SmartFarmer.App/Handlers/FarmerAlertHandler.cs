@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Configurations;
 using SmartFarmer.Data;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Utils;
 
@@ -55,12 +54,12 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<IFarmerAlert> GetAlertById(string alertId)
     {
-        return await FarmerRequestHelper.GetAlert(alertId, System.Threading.CancellationToken.None);
+        return await FarmerRequestHandler.GetAlert(alertId, System.Threading.CancellationToken.None);
     }
 
     public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status, CancellationToken token)
     {
-        var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, token);
+        var result = await FarmerRequestHandler.MarkAlertAsRead(alertId, status, token);
 
         if (result)
         {
@@ -100,7 +99,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public async Task<string> RaiseAlert(FarmerAlertRequestData data)
     {
-        var alertId = await FarmerRequestHelper.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
+        var alertId = await FarmerRequestHandler.RaiseAlert(data, System.Threading.CancellationToken.None).ConfigureAwait(false);
         var alert = await GetAlertById(alertId);
 
         if (alert == null) return null;

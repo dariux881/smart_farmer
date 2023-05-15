@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Exceptions;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
+using SmartFarmer.Position;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
 
@@ -89,7 +89,6 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         _currentPosition = 
             new Farmer2dPoint(
                 0.0, 0.0, // expected 0,0 -> to reset when initializing
-                _deviceHandler,
                 ground?.WidthInMeters,
                 ground?.LengthInMeters);
     }

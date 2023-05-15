@@ -10,7 +10,7 @@ using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Helpers;
+namespace SmartFarmer.Handlers.Providers;
 
 public class FarmerTaskProvider : IFarmerTaskProvider
 {

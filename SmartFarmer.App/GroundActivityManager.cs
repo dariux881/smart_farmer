@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.Configurations;
 using SmartFarmer.Data;
 using SmartFarmer.Handlers;
 using SmartFarmer.Handlers.Providers;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
+using SmartFarmer.Position;
 using SmartFarmer.OperationalManagement;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
@@ -108,7 +109,7 @@ public class GroundActivityManager
             };
 
         // login
-        var loginResponse = await FarmerRequestHelper.Login(
+        var loginResponse = await FarmerRequestHandler.Login(
             user, 
             token);
 
@@ -446,7 +447,7 @@ public class GroundActivityManager
     private async Task InitializeGroundsAsync(CancellationToken token)
     {
         // get all grounds
-        var grounds = await FarmerRequestHelper.GetGroundsList(token);
+        var grounds = await FarmerRequestHandler.GetGroundsList(token);
         if (grounds == null)
         {
             SmartFarmerLog.Error("invalid grounds");
@@ -477,7 +478,7 @@ public class GroundActivityManager
 
             var groundId = ground.ID;
             tasks.Add(Task.Run(async () => {
-                var ground = await FarmerRequestHelper
+                var ground = await FarmerRequestHandler
                     .GetGround(groundId, token);
                 
                 LocalConfiguration.Grounds.TryAdd(ground.ID, ground);

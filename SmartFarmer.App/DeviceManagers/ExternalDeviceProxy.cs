@@ -8,7 +8,7 @@ using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
-using SmartFarmer.Tasks.Movement;
+using SmartFarmer.Position;
 
 namespace SmartFarmer.DeviceManagers;
 
@@ -20,7 +20,6 @@ public class ExternalDeviceProxy :
     IDisposable
 {
     private IFarmerGround _ground;
-    private Farmer5dPositionNotifier _positionNotifier;
     private FarmerDevicePositionsRequestData _positionsToSend;
     private FarmerGroundHubHandler _hub;
     private FarmerGroundSerialHandler _serial;
@@ -32,8 +31,8 @@ public class ExternalDeviceProxy :
     {
         _ground = ground;
         
-        _positionNotifier = new Farmer5dPositionNotifier();
-        _positionNotifier.NewPoint += NewPointReceived;
+        DevicePosition = new Farmer5dPoint();
+        DevicePosition.NewPoint += NewPointReceived;
 
         _positionsToSend = new FarmerDevicePositionsRequestData()
         {
@@ -44,13 +43,8 @@ public class ExternalDeviceProxy :
         ConfigureSerialComm(serialConfiguration);
     }
 
-    public double X => _positionNotifier.X;
-    public double Y => _positionNotifier.Y;
-    public double Z => _positionNotifier.Z;
-    public double Alpha => _positionNotifier.Alpha;
-    public double Beta => _positionNotifier.Beta;
-
     public event EventHandler NewPoint;
+    public Farmer5dPoint DevicePosition { get; }
 
     public async Task<bool> MoveArmAtHeightAsync(double heightInCm, CancellationToken token)
     {
@@ -70,7 +64,7 @@ public class ExternalDeviceProxy :
             return false;
         }
 
-        _positionNotifier.Z = heightInCm;
+        DevicePosition.Z = heightInCm;
         return true;
     }
 
@@ -86,7 +80,7 @@ public class ExternalDeviceProxy :
             return -1;
         }
 
-        _positionNotifier.Z = receivedHeight;
+        DevicePosition.Z = receivedHeight;
         return receivedHeight;
     }
 
@@ -129,7 +123,7 @@ public class ExternalDeviceProxy :
             return false;
         }
 
-        _positionNotifier.Beta = receivedDegrees;
+        DevicePosition.Beta = receivedDegrees;
         return true;
     }
 
@@ -151,11 +145,11 @@ public class ExternalDeviceProxy :
             return false;
         }
 
-        _positionNotifier.Alpha = receivedDegrees;
+        DevicePosition.Alpha = receivedDegrees;
         return true;
     }
 
-    public async Task<bool> MoveToPosition(IFarmer5dPoint position, CancellationToken token)
+    public async Task<bool> MoveToPosition(Farmer5dPoint position, CancellationToken token)
     {
         bool moveResult = false;
 
@@ -198,7 +192,7 @@ public class ExternalDeviceProxy :
 
     public void Dispose()
     {
-        _positionNotifier.NewPoint -= NewPointReceived;
+        DevicePosition.NewPoint -= NewPointReceived;
 
         try
         {
@@ -216,15 +210,8 @@ public class ExternalDeviceProxy :
 
     private void NewPointReceived(object sender, EventArgs args)
     {
-        SmartFarmerLog.Information($"new position received: {this._positionNotifier.ToString()}");
-        
-        var newPosition = new FarmerDevicePositionInTime()
+        var newPosition = new FarmerDevicePositionInTime(DevicePosition)
         {
-            X = this.X,
-            Y = this.Y,
-            Z = this.Z,
-            Alpha = this.Alpha,
-            Beta = this.Beta,
             PositionDt = DateTime.UtcNow
         };
 
@@ -320,7 +307,7 @@ public class ExternalDeviceProxy :
         }
 
         SmartFarmerLog.Debug($"position history contains {_positionsToSend.Positions.Count} positions");
-        Task.Run(async () => await FarmerRequestHelper.NotifyDevicePositions(_positionsToSend, CancellationToken.None));
+        Task.Run(async () => await FarmerRequestHandler.NotifyDevicePositions(_positionsToSend, CancellationToken.None));
 
         var lastPos = 
             _positionsToSend
@@ -359,12 +346,12 @@ public class ExternalDeviceProxy :
                     {
                         if (double.TryParse(parameters[0], out var currentX))
                         {
-                            _positionNotifier.X = currentX;
+                            DevicePosition.X = currentX;
                         }
 
                         if (double.TryParse(parameters[1], out var currentY))
                         {
-                            _positionNotifier.Y = currentY;
+                            DevicePosition.Y = currentY;
                         }
                     }
                 }
@@ -375,7 +362,7 @@ public class ExternalDeviceProxy :
                 {
                     if (double.TryParse(resultStr, out var currentZ))
                     {
-                        _positionNotifier.Z = currentZ;
+                        DevicePosition.Z = currentZ;
                     }
                 }
                 

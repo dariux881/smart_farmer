@@ -1,4 +1,4 @@
-using SmartFarmer.Helpers;
+using SmartFarmer.Handlers;
 using SmartFarmer.Movement;
 
 namespace SmartFarmer.Handlers.Providers;

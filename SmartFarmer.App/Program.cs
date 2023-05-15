@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using SmartFarmer.Handlers;
 using SmartFarmer.Handlers.Providers;
-using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Utils;
 

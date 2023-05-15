@@ -8,6 +8,11 @@ namespace SmartFarmer.DTOs.Movements;
 
 public class FarmerDevicePosition : FarmerDevicePositionInTime
 {
+    public FarmerDevicePosition()
+    {
+        
+    }
+    
     public string ID { get; set; }
     [JsonIgnore]
     public FarmerGround Ground { get; set; }

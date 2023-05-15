@@ -2,8 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Position;
 using SmartFarmer.Settings;
-using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Movement;
 
 namespace SmartFarmer.Utils;
