@@ -147,7 +147,11 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
 
             if (!isCommandValid)
             {
-                Task.Run(async () => await NotifyResult($"received command {command} is not valid"));
+                Task.Run(async () => 
+                    {
+                        await NotifyResult($"received command {command} is not valid");
+                        ResetLocalCommand();
+                    });
             }
 
         }
@@ -163,6 +167,11 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
         {
             _commandSem.Release();
         }
+    }
+
+    private void ResetLocalCommand()
+    {
+        _localCommand = null;
     }
 
     private bool ProcessRunCommand(IFarmerCliCommand command)

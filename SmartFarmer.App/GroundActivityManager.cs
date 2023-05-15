@@ -303,7 +303,6 @@ public class GroundActivityManager
 
             args.ExecutionException = ex.InnerException;
             opManager?.ProcessResult(args);
-
         }
         catch (TaskCanceledException ex)
         {

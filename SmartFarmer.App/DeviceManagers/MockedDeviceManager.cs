@@ -112,12 +112,7 @@ public class MockedDeviceManager : IFarmerDeviceManager
 
     private void NewPointReceived(object sender, EventArgs args)
     {
-        var newPosition = new FarmerDevicePositionInTime(DevicePosition)
-        {
-            PositionDt = DateTime.UtcNow
-        };
-
-        NewPoint.Invoke(this, args);
+        NewPoint?.Invoke(this, args);
     }
 
 }
