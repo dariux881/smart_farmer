@@ -33,7 +33,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
     public event EventHandler<NewCliCommandEventArgs> NewCliCommandReceived;
     public event EventHandler<CliCommandResultEventArgs> CliCommandResultReceived;
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken token)
     {
         // Opening SignalR connection
         _connection = new HubConnectionBuilder()
@@ -57,15 +57,15 @@ public class FarmerGroundHubHandler : IAsyncDisposable
         _connection.Closed += async (error) =>
         {
             await Task.Delay(new Random().Next(0,5) * 1000);
-            await _connection.StartAsync();
+            await _connection.StartAsync(token);
         };
 
         SubscribeToNotificationMethods();
         
         try
         {
-            await _connection.StartAsync();
-            await Handshake(CancellationToken.None);
+            await _connection.StartAsync(token);
+            await Handshake(token);
         }
         catch (Exception ex)
         {
@@ -106,63 +106,69 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             });
     }
 
-    public async Task SendDevicePosition(FarmerDevicePositionRequestData position)
+    public async Task SendDevicePosition(FarmerDevicePositionRequestData position, CancellationToken token)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.INSERT_DEVICE_POSITION,
-            position.Serialize());
+            position.Serialize(),
+            token);
     }
 
-    public async Task NotifyDevicePosition(string groundId, FarmerDevicePositionInTime position)
+    public async Task NotifyDevicePosition(string groundId, FarmerDevicePositionInTime position, CancellationToken token)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_DEVICE_POSITION_NOTIFICATION,
             groundId,
-            position.Serialize());
+            position.Serialize(),
+            token);
     }
 
-    public async Task ChangeAlertStatus(string alertId, bool alertStatus)
+    public async Task ChangeAlertStatus(string alertId, bool alertStatus, CancellationToken token)
     {
         if (alertId == null) throw new ArgumentNullException(nameof(alertId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_NEW_ALERT_STATUS,
             alertId,
-            alertStatus);
+            alertStatus,
+            token);
     }
 
-    public async Task NotifyNewAlertStatus(string alertId, bool status)
+    public async Task NotifyNewAlertStatus(string alertId, bool status, CancellationToken token)
     {
         if (alertId == null) throw new ArgumentNullException(nameof(alertId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_NEW_ALERT_STATUS_NOTIFICATION,
             alertId,
-            status);
+            status,
+            token);
     }
 
-    public async Task SendCliCommandAsync(string groundId, string command)
+    public async Task SendCliCommandAsync(string groundId, string command, CancellationToken token)
     {
         if (groundId == null) throw new ArgumentNullException(nameof(groundId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_CLI_COMMAND,
             groundId,
-            command);
+            command,
+            token);
     }
 
-    public async Task NotifyCliCommandResult(string groundId, string result)
+    public async Task NotifyCliCommandResult(string groundId, string result, CancellationToken token)
     {
         if (groundId == null) throw new ArgumentNullException(nameof(groundId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_CLI_COMMAND_RESULT,
             groundId,
-            result);
+            result,
+            token);
     }
 
     private async Task Handshake(CancellationToken token)

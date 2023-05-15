@@ -18,7 +18,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     public event EventHandler<FarmerAlertHandlerEventArgs> NewAlertCreated;
 
-    public async Task<bool> MarkAlertAsRead(string alertId, bool status)
+    public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status)
     {
         var alert = await _alertProvider.GetFarmerService(alertId) as FarmerAlert;
         if (alert != null)

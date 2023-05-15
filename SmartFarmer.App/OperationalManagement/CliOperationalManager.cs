@@ -18,6 +18,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     private readonly IFarmerAppCommunicationHandler _appCommunication;
     private SemaphoreSlim _commandSem;
     private IFarmerCliCommand _localCommand;
+    private CancellationToken _operationsToken;
 
     public CliOperationalManager(HubConnectionConfiguration hubConfiguration)
     {
@@ -34,7 +35,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     public override AppOperationalMode Mode => AppOperationalMode.Cli;
     public override string Name => "Remote CLI";
 
-    public override async Task InitializeAsync()
+    public override async Task InitializeAsync(CancellationToken token)
     {
         // Configuring hubs
         await Task.CompletedTask;
@@ -42,26 +43,29 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
 
     public override async Task Run(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        _operationsToken = token;
+        
+        try
         {
-            await Task.Delay(5000);
-        }
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(5000);
+            }
 
-        await Task.CompletedTask;
+            await Task.CompletedTask;
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
     }
 
     public override void ProcessResult(OperationRequestEventArgs args)
     {
-        if (args.ExecutionException != null)
-        {
-            SmartFarmerLog.Error(args.ExecutionException.Message);
-        }
-
-        if (args.Result != null)
-        {
-            SmartFarmerLog.Debug(args.Result);
-        }
-
         Task.Run(async () => await NotifyResult(args.ExecutionException?.ToString() ?? args.Result));
     }
 
@@ -112,7 +116,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     private void ConfigureHub(FarmerGroundHubHandler hub)
     {
         hub.NewCliCommandReceived += NewCliCommandReceived;
-        Task.Run(async () => await hub.InitializeAsync());
+        Task.Run(async () => await hub.InitializeAsync(_operationsToken));
     }
 
     private void ProcessCliCommand(IFarmerCliCommand command)
@@ -146,6 +150,14 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
                 Task.Run(async () => await NotifyResult($"received command {command} is not valid"));
             }
 
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
         }
         finally
         {
@@ -222,7 +234,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         if (_localCommand == null) return;
 
-        await _hubHandlers[_localCommand.GroundId].NotifyCliCommandResult(_localCommand.GroundId, result);
+        await _hubHandlers[_localCommand.GroundId].NotifyCliCommandResult(_localCommand.GroundId, result, _operationsToken);
     }
 
     private void NewCliCommandReceived(object sender, NewCliCommandEventArgs e)

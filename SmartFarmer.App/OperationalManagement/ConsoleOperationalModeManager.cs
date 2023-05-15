@@ -14,7 +14,7 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
     public override string Name => "Console Operational Manager";
     public override AppOperationalMode Mode => AppOperationalMode.Console;
 
-    public override async Task InitializeAsync()
+    public override async Task InitializeAsync(CancellationToken token)
     {
         await Task.CompletedTask;
     }
@@ -68,24 +68,35 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         int choice = -1;
         bool validAction;
 
-        do
+        try 
         {
-            if (!CanRun) break;
-            if (token.IsCancellationRequested) break;
-
-            Console.WriteLine(message);
-
-            while (!int.TryParse(Console.ReadLine().Trim(), out choice))
+            do
             {
-                choice = -1;
-                Console.WriteLine("retry: \n select: ");
+                if (!CanRun) break;
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                Console.WriteLine(message);
+
+                while (!int.TryParse(Console.ReadLine().Trim(), out choice))
+                {
+                    choice = -1;
+                    Console.WriteLine("retry: \n select: ");
+                }
+
+                validAction = ExecuteAction(choice);
             }
+            while (choice >= 0 && validAction);
 
-            validAction = ExecuteAction(choice);
+            return choice;
         }
-        while (choice >= 0 && validAction);
-
-        return choice;
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return -1;
+        }
     }
 
     private bool ExecuteAction(int choice)

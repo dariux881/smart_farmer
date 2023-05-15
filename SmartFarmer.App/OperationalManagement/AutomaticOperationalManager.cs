@@ -44,7 +44,7 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         }
     }
 
-    public override async Task InitializeAsync()
+    public override async Task InitializeAsync(CancellationToken token)
     {
         await PrepareScheduler();
     }

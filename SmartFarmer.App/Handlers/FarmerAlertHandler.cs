@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Configurations;
@@ -30,9 +31,9 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         LocallyUpdateAlert(e.AlertId, e.Status);
     }
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken token)
     {
-        await _hubHandler.InitializeAsync();
+        await _hubHandler.InitializeAsync(token);
     }
 
     public async Task<string> AddFarmerService(IFarmerAlert service)
@@ -57,14 +58,14 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         return await FarmerRequestHelper.GetAlert(alertId, System.Threading.CancellationToken.None);
     }
 
-    public async Task<bool> MarkAlertAsRead(string alertId, bool status)
+    public async Task<bool> MarkAlertAsReadAsync(string alertId, bool status, CancellationToken token)
     {
-        var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, System.Threading.CancellationToken.None);
+        var result = await FarmerRequestHelper.MarkAlertAsRead(alertId, status, token);
 
         if (result)
         {
             LocallyUpdateAlert(alertId, status);
-            await _hubHandler.NotifyNewAlertStatus(alertId, status);
+            await _hubHandler.NotifyNewAlertStatus(alertId, status, token);
         }
 
         return result;

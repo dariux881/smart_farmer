@@ -22,7 +22,8 @@ public class GroundActivityManager
     private IFarmerAppCommunicationHandler _communicationHandler;
     private IFarmerConfigurationProvider _configProvider;
     private IFarmerDeviceKindProvider _deviceProvider;
-    private CancellationTokenSource _tokenSource;
+    private CancellationTokenSource _managementTokenSource;
+    private CancellationTokenSource _currentOperationTokenSource;
 
     public GroundActivityManager()
     {
@@ -30,16 +31,18 @@ public class GroundActivityManager
         _communicationHandler = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
         _deviceProvider = FarmerServiceLocator.GetService<IFarmerDeviceKindProvider>(true);
 
-        _tokenSource = new CancellationTokenSource();
+        _managementTokenSource = new CancellationTokenSource();
+        _currentOperationTokenSource = new CancellationTokenSource();
     }
 
     public async Task Run()
     {
         _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();
+        var token = _managementTokenSource.Token;
 
         PrepareEnvironment();
 
-        var loginResult = await Login();
+        var loginResult = await Login(token);
         if (!loginResult)
         {
             //TODO retry in case of failure
@@ -51,10 +54,8 @@ public class GroundActivityManager
 
         FillOperationalManagers();
 
-        var token = _tokenSource.Token;
-
         await InitializeGroundsAsync(token);
-        await InitializeHubsForGroundsAsync();
+        await InitializeHubsForGroundsAsync(token);
 
         var tasks = new List<Task>();
         foreach (var opManager in _operationalManagers)
@@ -77,7 +78,7 @@ public class GroundActivityManager
         }
     }
 
-    private async Task InitializeHubsForGroundsAsync()
+    private async Task InitializeHubsForGroundsAsync(CancellationToken token)
     {
         var closingHubs = _hubHandlers.Values.Where(x => x is IDisposable).Cast<IDisposable>();
 
@@ -91,7 +92,7 @@ public class GroundActivityManager
         foreach(var ground in LocalConfiguration.Grounds)
         {
             var hub = new FarmerGroundHubHandler(ground.Value, _configProvider.GetHubConfiguration());
-            await hub.InitializeAsync();
+            await hub.InitializeAsync(token);
 
             hub.CliCommandResultReceived += (s, e) => SmartFarmerLog.Debug($"cli result: {e.Result}");
 
@@ -99,10 +100,8 @@ public class GroundActivityManager
         }
     }
 
-    private async Task<bool> Login()
+    private async Task<bool> Login(CancellationToken token)
     {
-        var cancellationToken = _tokenSource.Token;
-
         var user = new Data.Security.LoginRequestData() {
                 UserName = _configProvider.GetUserConfiguration()?.UserName, 
                 Password = _configProvider.GetUserConfiguration()?.Password
@@ -111,7 +110,7 @@ public class GroundActivityManager
         // login
         var loginResponse = await FarmerRequestHelper.Login(
             user, 
-            cancellationToken);
+            token);
 
         // save login result
         if (loginResponse == null || !loginResponse.IsSuccess)
@@ -170,7 +169,7 @@ public class GroundActivityManager
 
         _operationalManagers.ForEach(async opMan =>
         {
-            await opMan.InitializeAsync();
+            await opMan.InitializeAsync(_managementTokenSource.Token);
             opMan.NewOperationRequired += ExecuteRequiredOperation;
         });
     }
@@ -180,37 +179,19 @@ public class GroundActivityManager
         SmartFarmerLog.Information($"Operation {e.Operation} requested by {e.Sender.Name}");
         var opManager = sender as IOperationalModeManager;
 
+        var operationToken = _currentOperationTokenSource.Token;
+
         switch(e.Operation)
         {
             case AppOperation.RunPlan:
                 {
                     Task.Run(async () => 
                     {
-                        bool result;
-                        try
-                        {
-                            result = 
-                                await ExecutePlanAsync(
-                                    e.AdditionalData.FirstOrDefault(),
-                                    _tokenSource.Token);
-                        }
-                        catch (AggregateException ex)
-                        {
-                            e.ExecutionException = ex.InnerException;
-                            opManager?.ProcessResult(e);
-                            return;
-                        }
-                        catch (Exception ex)
-                        {
-                            e.ExecutionException = ex;
-                            opManager?.ProcessResult(e);
-                            return;
-                        }
-
-                        var suffix = result ? "successfully" : "with errors";
-                        e.Result = $"plan {e.AdditionalData.FirstOrDefault()} executed {suffix}";
-                        opManager?.ProcessResult(e);
-                        return;
+                        await ExecutePlanAsync(
+                            e.AdditionalData.FirstOrDefault(),
+                            opManager,
+                            e,
+                            operationToken);
                     });
                 }
 
@@ -220,23 +201,30 @@ public class GroundActivityManager
                 ClearLocalData();
                 Task.Run(async () => 
                     {
-                        await InitializeGroundsAsync(_tokenSource.Token);
-                        await InitializeHubsForGroundsAsync();
+                        await InitializeGroundsAsync(_managementTokenSource.Token);
+                        await InitializeHubsForGroundsAsync(_managementTokenSource.Token);
                     });
                 break;
 
             case AppOperation.MarkAlert:
-                Task.Run(async () => await InvertAlertReadStatus(e.AdditionalData.FirstOrDefault()));
+                Task.Run(async () => 
+                    await InvertAlertReadStatusAsync(
+                        e.AdditionalData.FirstOrDefault(),
+                        operationToken));
                 break;
             
             case AppOperation.CliCommand:
-                Task.Run(async () => await SendCliCommand(
-                    e.AdditionalData.FirstOrDefault(), 
-                    e.AdditionalData.LastOrDefault()));
+                Task.Run(async () => 
+                    await SendCliCommandAsync(
+                        e.AdditionalData.FirstOrDefault(), 
+                        e.AdditionalData.LastOrDefault(),
+                        opManager,
+                        e,
+                        operationToken));
                 break;
 
             case AppOperation.TestPosition:
-                Task.Run(async () => await SendTestPosition(e.AdditionalData.FirstOrDefault()));
+                Task.Run(async () => await SendTestPosition(e.AdditionalData.FirstOrDefault(), operationToken));
                 break;
 
             case AppOperation.MoveToPosition:
@@ -245,17 +233,14 @@ public class GroundActivityManager
                     var result = await MoveToPosition(
                         e.AdditionalData.FirstOrDefault(), 
                         e.AdditionalData.LastOrDefault(),
-                        _tokenSource.Token);
-
-                    var suffix = result ? "successfully" : "with errors";
-                        e.Result = $"moved finished {suffix}";
-                        opManager?.ProcessResult(e);
-                        return;
+                        opManager,
+                        e,
+                        operationToken);
                 });
                 break;
 
             case AppOperation.StopCurrentOperation:
-                _tokenSource.Cancel();
+                _currentOperationTokenSource.Cancel();
                 break;
 
             default: 
@@ -263,17 +248,31 @@ public class GroundActivityManager
         }
     }
 
-    private async Task SendCliCommand(string groundId, string command)
+    private async Task SendCliCommandAsync(
+        string groundId, 
+        string command, 
+        IOperationalModeManager opManager,
+        OperationRequestEventArgs args,
+        CancellationToken token)
     {
-        await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command);
+        await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command, token);
     }
 
-    private async Task<bool> MoveToPosition(string groundId, string serializedPosition, CancellationToken token)
+    private async Task<bool> MoveToPosition(
+        string groundId, 
+        string serializedPosition, 
+        IOperationalModeManager opManager,
+        OperationRequestEventArgs args,
+        CancellationToken token)
     {
         var position = serializedPosition.Deserialize<Farmer5dPoint>();
         if (position == null) 
         {
             SmartFarmerLog.Error($"{serializedPosition} is not a valid point");
+            
+            args.Result = "Invalid destination position";
+            opManager?.ProcessResult(args);
+
             return false;
         }
 
@@ -281,20 +280,57 @@ public class GroundActivityManager
         if (device == null)
         {
             SmartFarmerLog.Error($"no valid device found for ground {groundId}");
+
+            args.Result = $"No device found for ground {groundId}";
+            opManager?.ProcessResult(args);
+
             return false;
         }
 
-        return await device.MoveToPosition(position, token);
+        try
+        {
+            var result = await device.MoveToPosition(position, token);
+            
+            var suffix = result ? "successfully" : "with errors";
+
+            args.Result = $"moved finished {suffix}";
+            opManager?.ProcessResult(args);
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
+            args.ExecutionException = ex.InnerException;
+            opManager?.ProcessResult(args);
+
+        }
+        catch (TaskCanceledException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
+            args.ExecutionException = ex;
+            opManager?.ProcessResult(args);
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+
+            args.ExecutionException = ex;
+            opManager?.ProcessResult(args);
+        }
+
+        return false;
     }
 
-    private async Task SendTestPosition(string groundId)
+    private async Task SendTestPosition(string groundId, CancellationToken token)
     {
         await _hubHandlers[groundId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
         {
             GroundId = groundId,
             PositionDt = DateTime.UtcNow,
             Position = new Farmer5dPoint(1, 2, 3, 4, 5)
-        });
+        },
+        token);
 
         await Task.Delay(1000);
 
@@ -303,10 +339,11 @@ public class GroundActivityManager
             GroundId = groundId,
             PositionDt = DateTime.UtcNow,
             Position = new Farmer5dPoint(1, 2, 3, 4, 15)
-        });
+        },
+        token);
     }
 
-    private async Task<bool> InvertAlertReadStatus(string alertId)
+    private async Task<bool> InvertAlertReadStatusAsync(string alertId, CancellationToken token)
     {
         var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
         if (ground == null) return false;
@@ -314,22 +351,50 @@ public class GroundActivityManager
         var alert = ground.Alerts.First(x => x.ID == alertId);
         var newState = !alert.MarkedAsRead;
         
-        return await MarkAlertAsRead(ground.ID, alertId, newState);
+        return await MarkAlertAsReadAsync(ground.ID, alertId, newState, token);
     }
 
-    private static async Task<bool> ExecutePlanAsync(string planId, CancellationToken token)
+    private static async Task ExecutePlanAsync(
+        string planId, 
+        IOperationalModeManager opManager,
+        OperationRequestEventArgs args,
+        CancellationToken token)
     {
         var ground = GroundUtils.GetGroundByPlan(planId);
         if (ground == null || ground is not FarmerGround fGround)
         {
             SmartFarmerLog.Error("No valid ground found for plan " + planId);
-            return false;
+
+            args.Result = "invalid ground for plan";
+            opManager?.ProcessResult(args);
+
+            return;
         }
 
-        return await fGround.ExecutePlan(planId, token);
+        try
+        {
+            var result = await fGround.ExecutePlan(planId, token);
+
+            var suffix = result ? "successfully" : "with errors";
+
+            args.Result = $"plan {planId} executed {suffix}";
+            opManager?.ProcessResult(args);
+        }
+        catch (AggregateException ex)
+        {
+            args.ExecutionException = ex.InnerException;
+            opManager?.ProcessResult(args);
+            return;
+        }
+        catch (Exception ex)
+        {
+            args.ExecutionException = ex;
+            opManager?.ProcessResult(args);
+            return;
+        }
     }
 
-    private static async Task ExecutePlans(string[] planIds, CancellationToken token)
+    private static async Task ExecutePlansAsync(string[] planIds, CancellationToken token)
     {
         var tasks = new List<Task>();
 
@@ -373,9 +438,9 @@ public class GroundActivityManager
         LocalConfiguration.ClearLocalData(true, false, false);
     }
 
-    private async Task<bool> MarkAlertAsRead(string groundId, string alertId, bool status)
+    private async Task<bool> MarkAlertAsReadAsync(string groundId, string alertId, bool status, CancellationToken token)
     {
-        return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, groundId).MarkAlertAsRead(alertId, status);
+        return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, groundId).MarkAlertAsReadAsync(alertId, status, token);
     }
 
     private async Task InitializeGroundsAsync(CancellationToken token)
@@ -473,6 +538,6 @@ public class GroundActivityManager
 
         await moveOnGridTask.Initialize(cancellationToken);
         await moveAtHeightTask.Initialize(cancellationToken);
-        await alertHandler.InitializeAsync();
+        await alertHandler.InitializeAsync(cancellationToken);
     }
 }

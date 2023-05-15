@@ -248,7 +248,8 @@ public class ExternalDeviceProxy :
                     RunId = position.RunId,
                     PositionDt = position.PositionDt,
                     Position = new Farmer5dPoint(position)
-                }
+                },
+                CancellationToken.None
                 );
             SmartFarmerLog.Debug($"position sent through hub");
         }
@@ -268,7 +269,7 @@ public class ExternalDeviceProxy :
         Task.Run(async () => {
             try
             {
-                await _hub.InitializeAsync();
+                await _hub.InitializeAsync(CancellationToken.None);
             }
             catch (AggregateException ec)
             {
@@ -327,7 +328,7 @@ public class ExternalDeviceProxy :
                     .OrderByDescending(x => x.PositionDt)
                     .First();
 
-        Task.Run(async () => await _hub.NotifyDevicePosition(_positionsToSend.GroundId, lastPos));
+        Task.Run(async () => await _hub.NotifyDevicePosition(_positionsToSend.GroundId, lastPos, CancellationToken.None));
     }
 
     private void SendDeviceError(string requestId, string command, string receivedValue)

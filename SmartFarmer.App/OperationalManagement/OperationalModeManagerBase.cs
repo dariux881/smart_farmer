@@ -13,7 +13,7 @@ public abstract class OperationalModeManagerBase : IOperationalModeManager
     public event EventHandler<OperationRequestEventArgs> NewOperationRequired;
 
     public abstract void Dispose();
-    public abstract Task InitializeAsync();
+    public abstract Task InitializeAsync(CancellationToken token);
     public abstract void ProcessResult(OperationRequestEventArgs args);
     public abstract Task Run(CancellationToken token);
 
