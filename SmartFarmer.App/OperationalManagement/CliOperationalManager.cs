@@ -64,6 +64,8 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
         {
             SmartFarmerLog.Exception(ex);
         }
+
+        SmartFarmerLog.Information("closing Cli manager");
     }
 
     public override void ProcessResult(OperationRequestEventArgs args)

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using SmartFarmer.Configurations;
+using SmartFarmer.Handlers;
 using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;
 
@@ -16,10 +17,12 @@ namespace SmartFarmer.Helpers;
 public class HttpRequest
 {
     private readonly IFarmerConfigurationProvider _configProvider;
+    private readonly IFarmerSessionManager _sessionManager;
 
     public HttpRequest()
     {
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
+        _sessionManager = FarmerServiceLocator.GetService<IFarmerSessionManager>(true);
     }
 
     public Exception LastException {get; private set; }
@@ -101,7 +104,7 @@ public class HttpRequest
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     SmartFarmerApiConstants.USER_AUTHENTICATION_HEADER_KEY, 
-                    LocalConfiguration.Token);
+                    _sessionManager.Token);
         }
     }
 }

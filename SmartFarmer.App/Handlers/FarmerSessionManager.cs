@@ -9,6 +9,10 @@ public class FarmerSessionManager : IFarmerSessionManager
 {
     private readonly IFarmerConfigurationProvider _configProvider;
     private readonly IFarmerAppCommunicationHandler _communicationHandler;
+    private object tokenLock = new object();
+    private object userIdLock = new object();
+    private string loggedUserId;
+    private string token;
 
     public FarmerSessionManager()
     {
@@ -16,9 +20,41 @@ public class FarmerSessionManager : IFarmerSessionManager
         _communicationHandler = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
     }
 
-    public string LoggedUserId { get; private set; }
+    public string LoggedUserId 
+    { 
+        get {
+            lock(userIdLock)
+            {
+                return loggedUserId;
+            }
+        }
 
-    public string Token { get; private set; }
+        private set
+        {
+            lock(userIdLock)
+            {
+                loggedUserId = value;
+            }
+        }
+    }
+
+    public string Token
+    { 
+        get {
+            lock(tokenLock)
+            {
+                return token;
+            }
+        }
+
+        private set
+        {
+            lock(tokenLock)
+            {
+                token = value;
+            }
+        }
+    }
 
     public async Task<bool> LoginAsync(CancellationToken token)
     {

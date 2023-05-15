@@ -14,6 +14,7 @@ public class FarmerGroundHubHandler : IAsyncDisposable
     private HubConnection _connection;
     private HubConnectionConfiguration _hubConfiguration;
     private IFarmerGround _ground;
+    private readonly IFarmerSessionManager _sessionManager;
 
     public FarmerGroundHubHandler(
         IFarmerGround ground, 
@@ -24,6 +25,8 @@ public class FarmerGroundHubHandler : IAsyncDisposable
 
         _hubConfiguration = hubConfiguration;
         _ground = ground;
+
+        _sessionManager = FarmerServiceLocator.GetService<IFarmerSessionManager>(true);
     }
 
     public string SubscribedGroundId => _ground?.ID;
@@ -40,10 +43,10 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             .WithUrl(
                 _hubConfiguration.Url, 
                 options => {
-                    options.AccessTokenProvider = () => Task.FromResult(LocalConfiguration.Token);
+                    options.AccessTokenProvider = () => Task.FromResult(_sessionManager.Token);
                     options.Headers.Add(
                         SmartFarmerApiConstants.USER_AUTHENTICATION_HEADER_KEY, 
-                        LocalConfiguration.Token);
+                        _sessionManager.Token);
                 }
             )
             // .ConfigureLogging(logging => 

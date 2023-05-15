@@ -32,11 +32,6 @@ public class AppsettingsBasedConfigurationProvider : IFarmerConfigurationProvide
         return _apiConfiguration;
     }
 
-    public LocalConfiguration GetLocalConfiguration()
-    {
-        throw new NotImplementedException();
-    }
-
     public UserConfiguration GetUserConfiguration()
     {
         return _userConfiguration;

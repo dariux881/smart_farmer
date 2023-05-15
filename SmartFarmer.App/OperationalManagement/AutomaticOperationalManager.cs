@@ -23,6 +23,7 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
     private const string CHECK_PLAN_GROUP = "checkPlanGroup";
     private const string SCHEDULED_PLAN_GROUP = "scheduledPlanGroup";
     private readonly IFarmerLocalInformationManager _localInfoManager;
+    private CancellationToken _operationsToken;
 
     public AutomaticOperationalManager(AppConfiguration appConfiguration)
     {
@@ -54,6 +55,8 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
 
     public override async Task Run(CancellationToken token)
     {
+        _operationsToken = token;
+
         // add scheduled plans
         await AddScheduledPlansToScheduler();
 
@@ -63,7 +66,25 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         // start scheduler for automatic activities
         await StartScheduler(token);
 
-        //TODO subscribe to Hub. New requests are added to the scheduler
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(5000);
+            }
+
+            await Task.CompletedTask;
+        }
+        catch(AggregateException ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+        catch(Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+        }
+
+        SmartFarmerLog.Information("closing Auto manager");
     }
 
     public override void ProcessResult(OperationRequestEventArgs args)

@@ -8,7 +8,6 @@ public interface IFarmerConfigurationProvider
     GroundConfiguration GetGroundConfiguration(string groundId);
     AppConfiguration GetAppConfiguration();
     ApiConfiguration GetApiConfiguration();
-    LocalConfiguration GetLocalConfiguration();
     UserConfiguration GetUserConfiguration();
     HubConnectionConfiguration GetHubConfiguration();
 }

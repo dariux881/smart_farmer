@@ -42,5 +42,6 @@ public class Program
 
         FarmerServiceLocator.MapService<IFarmerConfigurationProvider>(() => configProvider);
         FarmerServiceLocator.MapService<IFarmerLocalInformationManager>(() => new FarmerLocalInformationManager());
+        FarmerServiceLocator.MapService<IFarmerSessionManager>(() => new FarmerSessionManager());
     }
 }
