@@ -65,8 +65,6 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
 
         foreach (var ground in locallyInterestedGrounds)
         {
-            await InitializeServicesForSingleGround(ground, token);
-
             var groundId = ground.ID;
             tasks.Add(Task.Run(async () => {
                 var ground = await FarmerRequestHandler
@@ -74,6 +72,8 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
                 
                 Grounds.TryAdd(ground.ID, ground);
                 _communicationHandler.NotifyNewGround(ground.ID);
+
+                await InitializeServicesForSingleGround(ground, token);
             }));
         }
 
@@ -122,7 +122,7 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>();
 
         // preparing new services
-        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground));
+        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground), ground);
 
         var alertHandler = new FarmerAlertHandler(ground, _configProvider.GetHubConfiguration());
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, ground);
