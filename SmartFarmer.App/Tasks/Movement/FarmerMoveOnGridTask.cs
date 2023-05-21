@@ -30,7 +30,7 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
 
     public override string TaskName => "Move on Grid task";
 
-    public async Task<bool> Initialize(CancellationToken token)
+    public async Task<bool> InitializeAsync(CancellationToken token)
     {
         // physical initialization must be performed by the external device
         await Task.CompletedTask;

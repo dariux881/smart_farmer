@@ -26,7 +26,7 @@ public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightT
 
     public override string TaskName => "Move at Height task";
 
-    public async Task<bool> Initialize(CancellationToken token)
+    public async Task<bool> InitializeAsync(CancellationToken token)
     {
         // physical initialization must be performed by the external device
         await Task.CompletedTask;

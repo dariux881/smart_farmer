@@ -16,27 +16,31 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.OperationalManagement;
 
-public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOperationalModeManager
+public class AutomaticOperationalManager : 
+    OperationalModeManagerBase, 
+    IAutoOperationalModeManager
 {
     private IScheduler _jobScheduler;
-    private ConcurrentDictionary<string, List<string>> _scheduledPlansByGround;
+    private ConcurrentDictionary<string, List<IJobDetail>> _scheduledPlanJobsByGround;
+    private SemaphoreSlim _groundProcessingSemaphore;
     private const string CHECK_PLAN_GROUP = "checkPlanGroup";
     private const string SCHEDULED_PLAN_GROUP = "scheduledPlanGroup";
     private readonly IFarmerLocalInformationManager _localInfoManager;
+    private readonly IFarmerAppCommunicationHandler _communicationManager;
     private CancellationToken _operationsToken;
 
     public AutomaticOperationalManager(AppConfiguration appConfiguration)
     {
-        _scheduledPlansByGround = new ConcurrentDictionary<string, List<string>>();
-        PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule ?? "0 0/30 * ? * * *";
+        _scheduledPlanJobsByGround = new ConcurrentDictionary<string, List<IJobDetail>>();
+        PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule;
+        _groundProcessingSemaphore = new SemaphoreSlim(1);
 
         _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
+        _communicationManager = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
     }
 
     public override AppOperationalMode Mode => AppOperationalMode.Auto;
-
-    public string PlanCheckSchedule { get; set; }
-
+    public string PlanCheckSchedule { get; }
     public override string Name => "Automatic Operational Manager";
 
     public override void Dispose()
@@ -45,6 +49,12 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         {
             _jobScheduler.Shutdown();
             _jobScheduler.Clear();
+        }
+
+        if (_communicationManager != null)
+        {
+            _communicationManager.LocalGroundAdded -= LocalGroundAdded;
+            _communicationManager.LocalGroundRemoved -= LocalGroundRemoved;
         }
     }
 
@@ -57,17 +67,21 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
     {
         _operationsToken = token;
 
-        // add scheduled plans
-        await AddScheduledPlansToScheduler();
-
-        // add other plans (to run just once)
-        RunOneShotPlans();
-
-        // start scheduler for automatic activities
-        await StartScheduler(token);
-
         try
         {
+            // add scheduled plans
+            await AddScheduledPlansToScheduler();
+
+            // add other plans (to run just once)
+            RunOneShotPlans();
+
+            // start scheduler for automatic activities
+            await StartScheduler(token);
+
+            // present grounds have been already processed. Subscribing to grounds change
+            _communicationManager.LocalGroundAdded += LocalGroundAdded;
+            _communicationManager.LocalGroundRemoved += LocalGroundRemoved;
+
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(5000);
@@ -100,6 +114,58 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         }
     }
 
+    private void LocalGroundAdded(object sender, GroundChangedEventArgs e)
+    {
+        var groundId = e.GroundId;
+
+        if (_scheduledPlanJobsByGround.ContainsKey(groundId))
+        {
+            // ground has been already processed. Recurrent jobs have been started, then stopping initialization
+            return;
+        }
+
+        Task.Run(async () =>
+            {
+                var ground = 
+                    _localInfoManager.Grounds[groundId] 
+                        as FarmerGround;
+
+                if (ground == null)
+                {
+                    return;
+                }
+
+                await AddScheduledPlansToScheduler(ground);
+                RunOneShotPlans(ground);
+            });
+    }
+
+    private void LocalGroundRemoved(object sender, GroundChangedEventArgs e)
+    {
+        if (!_scheduledPlanJobsByGround.ContainsKey(e.GroundId) ||
+            !_scheduledPlanJobsByGround[e.GroundId].Any())
+        {
+            return;
+        }
+
+        _jobScheduler.DeleteJobs(
+            _scheduledPlanJobsByGround[e.GroundId]
+                .Select(j => j.Key)
+                .ToList()
+                .AsReadOnly());
+    }
+
+    private void RunOneShotPlans(FarmerGround ground)
+    {
+        if (ground == null) return;
+        
+        var plans = GetPlansIdToRun(ground);
+        foreach (var plan in plans)
+        {
+            SendNewOperation(AppOperation.RunPlan, new[] { plan });
+        }
+    }
+
     private void RunOneShotPlans()
     {
         var plans = GetPlansToRun();
@@ -107,6 +173,22 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         {
             SendNewOperation(AppOperation.RunPlan, new[] { plan });
         }
+    }
+
+    private IEnumerable<string> GetPlansIdToRun(FarmerGround ground)
+    {
+        var now = DateTime.UtcNow;
+
+        return 
+            ground
+                .Plans
+                    .Where(x => 
+                        (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
+                        (x.ValidToDt == null || x.ValidToDt > now)) // valid end
+                    .Where(x => string.IsNullOrEmpty(x.CronSchedule)) // not scheduled plan
+                    .OrderBy(x => x.Priority)
+                    .Select(x => x.ID)
+                    .ToList();
     }
 
     private IEnumerable<string> GetPlansToRun()
@@ -118,21 +200,11 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
             var ground = gGround as FarmerGround;
             if (ground == null) continue;
             
-            var now = DateTime.UtcNow;
-            var today = now.DayOfWeek;
-
-            var plansInGround = 
-                ground
-                    .Plans
-                        .Where(x => 
-                            (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
-                            (x.ValidToDt == null || x.ValidToDt > now)) // valid end
-                        .Where(x => string.IsNullOrEmpty(x.CronSchedule)) // not scheduled plan
-                        .OrderBy(x => x.Priority)
-                        .Select(x => x.ID)
-                        .ToList();
-            
-            plans.AddRange(plansInGround);
+            var plansInGround = GetPlansIdToRun(ground);
+            if (plansInGround != null && plansInGround.Any())
+            {
+                plans.AddRange(plansInGround);
+            }
         }
 
         return plans;
@@ -148,71 +220,25 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
         await Task.CompletedTask;
     }
 
-    private class JobExecutionListener : IJobListener
-    {
-        public string Name => "Job Execution Listener";
-        private AutomaticOperationalManager _manager;
-
-        public JobExecutionListener(AutomaticOperationalManager manager)
-        {
-            _manager = manager;
-        }
-
-        public async Task JobExecutionVetoed(
-            IJobExecutionContext context, 
-            CancellationToken cancellationToken = default)
-        {
-            await Task.CompletedTask;
-        }
-
-        public async Task JobToBeExecuted(
-            IJobExecutionContext context, 
-            CancellationToken cancellationToken = default)
-        {
-            await Task.CompletedTask;
-        }
-
-        public async Task JobWasExecuted(
-            IJobExecutionContext context, 
-            JobExecutionException jobException, 
-            CancellationToken cancellationToken = default)
-        {
-            // check exceptions
-            if (jobException != null)
-            {
-                SmartFarmerLog.Exception(jobException);
-            }
-
-            // check result
-            var result = context.Result as SchedulerJobEventArgs;
-            if (result != null)
-            {
-                switch(result.Operation)
-                {
-                    case AutoAppOperation.CheckPlansToRun:
-                        _manager.RunOneShotPlans();
-                        break;
-
-                    case AutoAppOperation.RunPlan:
-                        await _manager.SendRunPlan(context);
-                        break;
-                }
-            }
-
-            await Task.CompletedTask;
-        }
-    }
-
     private async Task PrepareScheduler()
     {
         StdSchedulerFactory factory = new StdSchedulerFactory();
         _jobScheduler = await factory.GetScheduler();
 
+        if (string.IsNullOrEmpty(PlanCheckSchedule))
+        {
+            SmartFarmerLog.Information("Not defined plan check schedule. Stopping automatic job");
+            return;
+        }
+
         IJobDetail job;
         ITrigger trigger;
         CreatePlanCheckJob(out job, out trigger);
 
-        var listener = new JobExecutionListener(this);
+        var listener = new JobExecutionListener();
+
+        listener.CheckPlansToRunRequested += async (s, e) => await AddScheduledPlansToScheduler();
+        listener.NewRunPlansRequested += async (s, e) => await SendRunPlan(e.Context);
 
         _jobScheduler
             .ListenerManager
@@ -233,34 +259,69 @@ public class AutomaticOperationalManager : OperationalModeManagerBase, IAutoOper
     {
         foreach (var gGround in _localInfoManager.Grounds.Values)
         {
-            var ground = gGround as FarmerGround;
-            if (ground == null) continue;
-            
-            var now = DateTime.UtcNow;
-            var today = now.DayOfWeek;
+            await (AddScheduledPlansToScheduler(gGround as FarmerGround));
+        }
+    }
 
-            var plansInGround = 
-                ground
-                    .Plans
-                        .Where(x => 
-                            (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
-                            (x.ValidToDt == null || x.ValidToDt > now)) // valid end
-                        .Where(x => !string.IsNullOrEmpty(x.CronSchedule)) // scheduled plan
-                        //TODO .Where(x => IsValidCronSchedule(x.CronSchedule))
-                        .OrderBy(x => x.Priority)
-                        .ToList();
-            
-            foreach (var plan in plansInGround)
+    private async Task AddScheduledPlansToScheduler(FarmerGround ground)
+    {
+        if (ground == null) return;
+                
+        var jobList = _scheduledPlanJobsByGround.ContainsKey(ground.ID) ?
+            _scheduledPlanJobsByGround[ground.ID] :
+            new List<IJobDetail>();
+
+        _scheduledPlanJobsByGround.TryAdd(ground.ID, jobList);
+
+        _groundProcessingSemaphore.Wait();
+        SmartFarmerLog.Debug($"checking plans for ground {ground.ID}");
+
+        var now = DateTime.UtcNow;
+
+        var plansInGround = 
+            ground
+                .Plans
+                    .Where(x => 
+                        (x.ValidFromDt == null || x.ValidFromDt <= now) && // valid start
+                        (x.ValidToDt == null || x.ValidToDt > now) && // valid end
+                        !string.IsNullOrEmpty(x.CronSchedule)) // scheduled plan
+                    //TODO .Where(x => IsValidCronSchedule(x.CronSchedule))
+                    .OrderBy(x => x.Priority)
+                    .ToList();
+        
+        SmartFarmerLog.Debug($"{plansInGround.Count} plans to be processed");
+
+        foreach (var plan in plansInGround)
+        {
+            //TODO filter out already processed plans
+            if (IsAlreadyBeenEvaluated(ground.ID, plan.ID))
             {
-                CreateScheduledPlanJob(plan, out var job, out var trigger);
-
-                // Tell Quartz to schedule the job using our trigger
-                await _jobScheduler.ScheduleJob(job, trigger);
+                SmartFarmerLog.Debug($"{plan.ID} is already planned. Skipping");
+                continue;
             }
 
-            _scheduledPlansByGround.TryAdd(ground.ID, plansInGround.Select(x => x.ID).ToList());
+            SmartFarmerLog.Debug($"Scheduling {plan.ID} with cron {plan.CronSchedule}");
+            CreateScheduledPlanJob(plan, out var job, out var trigger);
+
+            // Tell Quartz to schedule the job using our trigger
+            await _jobScheduler.ScheduleJob(job, trigger);
+
+            jobList.Add(job);
         }
 
+        _groundProcessingSemaphore.Release();
+    }
+
+    private bool IsAlreadyBeenEvaluated(string groundId, string planId)
+    {
+        var jobList = _scheduledPlanJobsByGround[groundId];
+
+        if (jobList == null || !jobList.Any())
+        {
+            return false;
+        }
+
+        return jobList.Any(x => x.JobDataMap.GetString("planId") == planId);
     }
 
     private void CreatePlanCheckJob(out IJobDetail job, out ITrigger trigger)

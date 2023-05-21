@@ -70,10 +70,12 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
                 var ground = await FarmerRequestHandler
                     .GetGround(groundId, token);
                 
-                Grounds.TryAdd(ground.ID, ground);
-                _communicationHandler.NotifyNewGround(ground.ID);
+                await InitializeServicesForSingleGround(ground, token).ConfigureAwait(true);
 
-                await InitializeServicesForSingleGround(ground, token);
+                Grounds.TryAdd(ground.ID, ground);
+
+                SmartFarmerLog.Debug("Notifying new ground");
+                _communicationHandler.NotifyNewGround(ground.ID);
             }));
         }
 
@@ -112,20 +114,22 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
     private async Task InitializeServicesForSingleGround(IFarmerGround ground, CancellationToken cancellationToken)
     {
         // clearing possibly old mapped services
-        FarmerServiceLocator.RemoveService<IFarmerToolsManager>();
-        FarmerServiceLocator.RemoveService<IFarmerAlertHandler>();
-        FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>();
-        FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>();
-        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>();
-        FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>();
-        FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>();
-        FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>();
+        FarmerServiceLocator.RemoveService<IFarmerToolsManager>(ground);
+        FarmerServiceLocator.RemoveService<IFarmerAlertHandler>(ground);
+        FarmerServiceLocator.RemoveService<FarmerAlertHandler>(ground);
+        FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>(ground);
+        FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>(ground);
+        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>(ground);
+        FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>(ground);
+        FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>(ground);
+        FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(ground);
 
         // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground), ground);
 
         var alertHandler = new FarmerAlertHandler(ground, _configProvider.GetHubConfiguration());
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, ground);
+        FarmerServiceLocator.MapService<FarmerAlertHandler>(() => alertHandler, ground);
 
         var deviceHandler = _deviceProvider.GetDeviceManager(ground.ID);
 
@@ -141,8 +145,10 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
         FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
 
-        await moveOnGridTask.Initialize(cancellationToken);
-        await moveAtHeightTask.Initialize(cancellationToken);
+        await moveOnGridTask.InitializeAsync(cancellationToken);
+        await moveAtHeightTask.InitializeAsync(cancellationToken);
         await alertHandler.InitializeAsync(cancellationToken);
+
+        SmartFarmerLog.Debug("Services added");
     }
 }
