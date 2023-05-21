@@ -55,22 +55,6 @@ public class FarmerServiceLocator
         initializationSem.Release();
     }
 
-    [Obsolete]
-    public static void AddInstance<T, U>(U serviceInstance) 
-        where U : class, T
-    {
-        initializationSem.Wait();
-
-        var requestedType = typeof(T);
-        if (!requestedType.IsInterface) {
-            initializationSem.Release();
-            throw new InvalidOperationException(requestedType.FullName + " must be an interface");
-        }
-
-        _registry.TryAdd(requestedType.FullName, serviceInstance);
-        initializationSem.Release();
-    }
-
     public static void MapService<T>(Func<T> activator, IFarmerService fService = null)
     {
         string key = BuildKey(typeof(T), fService);
@@ -96,9 +80,26 @@ public class FarmerServiceLocator
             return;
         }
     }
+
+    public static object GetServiceByFullName(
+        string typeFullName, 
+        string fServiceId = null, 
+        bool required = true)
+    {
+        var service = GetServiceCore(typeFullName, fServiceId);
+        if (service != null)
+        {
+            return service;
+        }
+
+        if (required) throw new InvalidOperationException("service " + typeFullName + " not found but is required");
+
+        return null;        
+    }
+
     public static T GetService<T>(bool required, string fServiceId)
     {
-        var service = GetServiceCore(typeof(T), fServiceId);
+        var service = GetServiceCore(typeof(T).FullName, fServiceId);
         if (service != null)
         {
             return (T)service;
@@ -116,7 +117,7 @@ public class FarmerServiceLocator
 
     public static object GetServiceByType(Type t, bool required, string fServiceId)
     {
-        var service = GetServiceCore(t, fServiceId);
+        var service = GetServiceCore(t.FullName, fServiceId);
         if (service != null)
         {
             return service;
@@ -157,18 +158,22 @@ public class FarmerServiceLocator
 
     private static string BuildKey(Type t, string fServiceId)
     {
-        var key = t.FullName;
-        if (fServiceId != null)
-        {
-            key = fServiceId + KEY_SEPARATOR + key;
-        }
-
-        return key;
+        return BuildKey(t.FullName, fServiceId);
     }
 
-    private static object GetServiceCore(Type t, string fServiceId = null)
+    private static string BuildKey(string typeFullName, string fServiceId)
     {
-        var key = BuildKey(t, fServiceId);
+        if (fServiceId != null)
+        {
+            typeFullName = fServiceId + KEY_SEPARATOR + typeFullName;
+        }
+
+        return typeFullName;
+    }
+
+    private static object GetServiceCore(string typeFullName, string fServiceId = null)
+    {
+        var key = BuildKey(typeFullName, fServiceId);
 
         if (_registry.TryGetValue(key, out var serviceImplementor))
         {
