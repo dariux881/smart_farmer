@@ -192,7 +192,19 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
                     if (string.IsNullOrEmpty(planId)) break;
 
                     outcome = true;
-                    SendNewOperation(AppOperation.RunPlan, new [] { planId });
+                    SendNewOperation(
+                        AppOperation.RunPlan, 
+                        new [] { planId });
+                }
+
+                break;
+            
+            case "-autoPlan":
+                {
+                    outcome = true;
+                    SendNewOperation(
+                        AppOperation.RunAutoIrrigationPlan, 
+                        new [] { command.GroundId });                    
                 }
 
                 break;

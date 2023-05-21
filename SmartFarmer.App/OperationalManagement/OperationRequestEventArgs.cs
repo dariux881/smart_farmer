@@ -18,5 +18,6 @@ public class OperationRequestEventArgs : EventArgs
     public AppOperation Operation { get; }
     public string[] AdditionalData { get; }
     public string Result { get; set; }
+    public bool IsError { get; set; }
     public Exception ExecutionException { get; set; }
 }

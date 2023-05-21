@@ -13,15 +13,3 @@ public interface IOperationalModeManager : IDisposable
     Task Run(CancellationToken token);
     void ProcessResult(OperationRequestEventArgs args);
 }
-
-public interface IConsoleOperationalModeManager : IOperationalModeManager
-{
-}
-
-public interface IAutoOperationalModeManager : IOperationalModeManager
-{
-}
-
-public interface ICliOperationalModeManager : IOperationalModeManager
-{
-}

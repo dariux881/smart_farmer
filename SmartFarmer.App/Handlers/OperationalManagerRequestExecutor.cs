@@ -57,6 +57,20 @@ public class OperationalManagerRequestExecutor
                 }
 
                 break;
+            
+            case AppOperation.RunAutoIrrigationPlan:
+                {
+                    Task.Run(async () => 
+                    {
+                        await ExecuteAutoIrrigationPlanAsync(
+                            e.AdditionalData.FirstOrDefault(),
+                            opManager,
+                            e,
+                            operationToken);
+                    });
+                }
+
+                break;
 
             case AppOperation.UpdateAllGrounds:
                 Task.Run(async () => 
@@ -272,7 +286,7 @@ public class OperationalManagerRequestExecutor
         return await MarkAlertAsReadAsync(ground.ID, alertId, newState, token);
     }
 
-    private static async Task ExecutePlanAsync(
+    private async Task ExecutePlanAsync(
         string planId, 
         IOperationalModeManager opManager,
         OperationRequestEventArgs args,
@@ -312,7 +326,38 @@ public class OperationalManagerRequestExecutor
         }
     }
 
-    private static async Task ExecutePlansAsync(string[] planIds, CancellationToken token)
+    private async Task ExecuteAutoIrrigationPlanAsync(
+        string groundId,
+        IOperationalModeManager opManager,
+        OperationRequestEventArgs args,
+        CancellationToken token)
+    {
+        if (!_localInfoManager.Grounds.ContainsKey(groundId))
+        {
+            args.Result = "Invalid ground";
+            args.IsError = true;
+            opManager?.ProcessResult(args);
+            return;
+        }
+
+        var ground = _localInfoManager.Grounds[groundId];
+
+        if (string.IsNullOrEmpty(ground.GroundIrrigationPlanId))
+        {
+            args.Result = "Invalid irrigation plan";
+            args.IsError = true;
+            opManager?.ProcessResult(args);
+            return;
+        }
+
+        await ExecutePlanAsync(
+            ground.GroundIrrigationPlanId, 
+            opManager, 
+            args, 
+            token);
+    }
+
+    private async Task ExecutePlansAsync(string[] planIds, CancellationToken token)
     {
         var tasks = new List<Task>();
 

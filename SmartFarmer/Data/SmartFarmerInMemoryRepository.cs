@@ -2,6 +2,8 @@ using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Helpers;
+using SmartFarmer.Tasks.Irrigation;
+using SmartFarmer.Tasks.Movement;
 
 namespace SmartFarmer.Data;
 
@@ -117,35 +119,35 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 10.0 }, 
-                TaskInterfaceFullName = "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+                TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 5.0, 5.0 },
                 Delay = new System.TimeSpan(0, 0, 2),
-                TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+                TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 1, 0.5 },
                 Delay = new System.TimeSpan(0, 0, 1),
-                TaskInterfaceFullName = "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
+                TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName // "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 15.0, 5.0 },
                 Delay = new System.TimeSpan(0, 0, 2),
-                TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+                TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
                 BuildParameters = new object[] { 0.0 },
                 Delay = new System.TimeSpan(0, 0, 2),
-                TaskInterfaceFullName = "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+                TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
             },
         };            
 
