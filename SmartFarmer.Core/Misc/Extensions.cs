@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,7 @@ public static class Extensions
     {
         return JsonConvert.DeserializeObject<T>(obj);
     }
+
     public static string RemoveAdditionalQuotes(this string text)
     {
         if (text != null && 
@@ -119,5 +121,10 @@ public static class Extensions
     {
         if (task == null) return null;
         return task.TaskName ?? task.GetType().FullName;
+    }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> collection)
+    {
+        return collection == null || !collection.Any();
     }
 }
