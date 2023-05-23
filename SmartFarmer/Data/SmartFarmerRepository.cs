@@ -327,9 +327,8 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
     public async Task<string> SaveFarmerPlan(FarmerPlan plan)
     {
         _dbContext.Plans.Add(plan);
-        await _dbContext.SaveChangesAsync();
-
         _dbContext.PlanSteps.AddRange(plan.Steps);
+
         await _dbContext.SaveChangesAsync();
 
         return plan.ID;

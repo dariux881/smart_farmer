@@ -12,6 +12,7 @@ using SmartFarmer.Tasks.Generic;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Movement;
 using SmartFarmer.DTOs.Movements;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Controllers;
 
@@ -343,7 +344,30 @@ public class FarmerGroundController : ControllerBase
         return BadRequest(result);
     }
 
-    [HttpGet("createIrrigationPlan")]
+    [HttpPost("createPlan")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult<string>> CreateIrrigationPlan([FromBody] FarmerPlanRequestData plan)
+    {
+        if (plan == null)
+        {
+            throw new ArgumentNullException(nameof(plan));
+        }
+
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .AddPlan(userId, plan);
+
+        if (!string.IsNullOrEmpty(result))
+            return Ok(result);
+
+        return BadRequest(result);
+    }
+
+    [HttpPost("createIrrigationPlan")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
     public async Task<ActionResult<string>> CreateIrrigationPlan(string groundId)
     {

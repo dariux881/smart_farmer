@@ -150,16 +150,39 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return newPlantId != null;
     }
 
-    public async Task<string> AddPlan(string userId, FarmerPlan plan, FarmerPlanStep[] steps)
+    public async Task<string> AddPlan(string userId, FarmerPlanRequestData planRequestData)
     {
-        if (plan == null) throw new ArgumentNullException(nameof(plan));
-        if (steps == null) throw new ArgumentNullException(nameof(steps));
+        if (planRequestData == null) throw new ArgumentNullException(nameof(planRequestData));
+        if (string.IsNullOrEmpty(planRequestData.GroundId)) throw new ArgumentNullException(nameof(planRequestData.GroundId));
+        if (planRequestData.Steps.IsNullOrEmpty()) throw new ArgumentNullException(nameof(planRequestData.Steps));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, plan.GroundId) as FarmerGround;
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, planRequestData.GroundId) as FarmerGround;
         if (ground == null) return null; // no valid ground
 
-        plan.Steps.Clear();
-        plan.Steps.AddRange(steps);
+        var plan = 
+            new FarmerPlan()
+            {
+                Name = planRequestData.PlanName,
+                GroundId = planRequestData.GroundId,
+                CronSchedule = planRequestData.CronSchedule,
+                Priority = planRequestData.Priority,
+                ValidFromDt = planRequestData.ValidFromDt,
+                ValidToDt = planRequestData.ValidToDt
+            };
+
+        foreach (var reqStep in planRequestData.Steps)
+        {
+            var step = 
+                new FarmerPlanStep()
+                {
+                    BuildParameters = reqStep.BuildParameters,
+                    Delay = reqStep.Delay,
+                    TaskClassFullName = reqStep.TaskClassFullName,
+                    TaskInterfaceFullName = reqStep.TaskInterfaceFullName
+                };
+            
+            plan.Steps.Add(step);
+        }
 
         var planId = await _repository.SaveFarmerPlan(plan);
 
