@@ -75,7 +75,7 @@ public class FarmerPlanController : FarmerControllerBase
 
     [HttpPost("createPlan")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
-    public async Task<ActionResult<string>> CreateIrrigationPlan([FromBody] FarmerPlanRequestData plan)
+    public async Task<ActionResult<string>> CreatePlan([FromBody] FarmerPlanRequestData plan)
     {
         if (plan == null)
         {
@@ -91,6 +91,29 @@ public class FarmerPlanController : FarmerControllerBase
             .AddPlan(userId, plan);
 
         if (!string.IsNullOrEmpty(result))
+            return Ok(result);
+
+        return BadRequest(result);
+    }
+
+    [HttpPost("deletePlan")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    public async Task<ActionResult<string>> DeletePlan([FromBody] string planId)
+    {
+        if (string.IsNullOrEmpty(planId))
+        {
+            throw new ArgumentNullException(nameof(planId));
+        }
+
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _groundProvider
+            .DeletePlan(userId, planId);
+
+        if (result)
             return Ok(result);
 
         return BadRequest(result);

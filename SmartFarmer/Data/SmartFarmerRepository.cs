@@ -324,6 +324,14 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
 
+    public async Task<bool> DeleteFarmerPlan(FarmerPlan plan)
+    {
+        _dbContext.PlanSteps.RemoveRange(plan.Steps);
+        _dbContext.Plans.Remove(plan);
+
+        return await _dbContext.SaveChangesAsync() > 0;
+    }
+
     public async Task<string> SaveFarmerPlan(FarmerPlan plan)
     {
         _dbContext.Plans.Add(plan);

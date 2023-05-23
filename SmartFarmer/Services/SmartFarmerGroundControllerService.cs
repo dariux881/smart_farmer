@@ -31,8 +31,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     public event EventHandler<DevicePositionsEventArgs> NewDevicePositions;
     public event EventHandler<NewPlantEventArgs> NewPlantInGround;
-    public event EventHandler<NewPlanEventArgs> NewPlan;
-    public event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
+    public event EventHandler<PlanEventArgs> NewPlan;
+    public event EventHandler<PlanEventArgs> PlanDeleted;
+    public event EventHandler<PlanEventArgs> NewAutoIrrigationPlan;
     public event EventHandler<NewAlertEventArgs> NewAlert;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
@@ -188,10 +189,24 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
 
         if (!string.IsNullOrEmpty(planId))
         {
-            NewPlan?.Invoke(this, new NewPlanEventArgs(plan.GroundId, planId));
+            NewPlan?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
         }
 
         return planId;
+    }
+
+    public async Task<bool> DeletePlan(string userId, string planId)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (string.IsNullOrEmpty(planId)) throw new ArgumentNullException(nameof(planId));
+
+        var plan = await _repository.GetFarmerPlanByIdAsync(planId, userId) as FarmerPlan;
+
+        var result = await _repository.DeleteFarmerPlan(plan);
+
+        PlanDeleted?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
+
+        return result;
     }
 
     public async Task<string> BuildIrrigationPlan(string userId, string groundId)
@@ -226,7 +241,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
             return null;
         }
 
-        NewAutoIrrigationPlan?.Invoke(this, new NewPlanEventArgs(groundId, planId));
+        NewAutoIrrigationPlan?.Invoke(this, new PlanEventArgs(groundId, planId));
 
         return planId;
     }

@@ -11,4 +11,5 @@ public interface ISmartFarmerPlanManagementRepository
     Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsAsync(string[] ids, string userId);
     Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids);
     Task<string> SaveFarmerPlan(FarmerPlan plan);
+    Task<bool> DeleteFarmerPlan(FarmerPlan plan);
 }
