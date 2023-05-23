@@ -29,6 +29,21 @@ public class FarmerPlanController : FarmerControllerBase
         _groundProvider = groundProvider;
     }
 
+    [HttpGet("")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    public async Task<ActionResult<IEnumerable<string>>> GetPlansInGround(string groundId)
+    {
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var plan =
+            await _groundProvider
+                .GetFarmerPlanIdsInGroundAsync(userId, groundId);
+
+        return Ok(plan);
+    }
 
     [HttpGet("plan")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
@@ -98,7 +113,7 @@ public class FarmerPlanController : FarmerControllerBase
 
     [HttpPost("deletePlan")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
-    public async Task<ActionResult<string>> DeletePlan([FromBody] string planId)
+    public async Task<ActionResult<string>> DeletePlan(string planId)
     {
         if (string.IsNullOrEmpty(planId))
         {

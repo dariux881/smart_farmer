@@ -83,6 +83,11 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerPlanByIdAsync(planId, userId);
     }
     
+    public async Task<IEnumerable<string>> GetFarmerPlanIdsInGroundAsync(string userId, string groundId)
+    {
+        return await _repository.GetFarmerPlansInGround(groundId, userId);
+    }
+
     public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds)
     {
         return await _repository.GetFarmerPlanByIdsAsync(planIds, userId);

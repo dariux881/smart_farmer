@@ -70,6 +70,12 @@ public class FarmerGroundHub : Hub
                 .OthersInGroup(groundId)
                 .SendAsync(HubConstants.NewPlan, planId);
 
+    public async Task NotifyDeletedPlanAsync(string groundId, string planId)
+        => await 
+            Clients
+                .OthersInGroup(groundId)
+                .SendAsync(HubConstants.DeletedPlan, planId);
+
     public async Task NotifyNewAutoIrrigationPlanAsync(string groundId, string planId)
         => await 
             Clients

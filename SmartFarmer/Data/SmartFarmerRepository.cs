@@ -289,6 +289,15 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return result == 1;
     }
 
+    public async Task<IEnumerable<string>> GetFarmerPlansInGround(string groundId, string userId)
+    {
+        return await _dbContext
+            .Plans
+                .Where(p => p.GroundId == groundId)
+                .Select(x => x.ID)
+                .ToArrayAsync();
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
     {
         return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();
