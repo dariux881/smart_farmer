@@ -300,7 +300,8 @@ public class ExternalDeviceProxy :
 
     private void SendDevicePositionHistory()
     {
-        if (_positionsToSend?.Positions == null || !_positionsToSend.Positions.Any())
+        if (_positionsToSend == null ||
+            _positionsToSend.Positions.IsNullOrEmpty())
         {
             SmartFarmerLog.Debug($"position history is empty");
             return;

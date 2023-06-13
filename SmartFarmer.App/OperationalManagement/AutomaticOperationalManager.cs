@@ -22,6 +22,7 @@ public class AutomaticOperationalManager :
 {
     private IScheduler _jobScheduler;
     private ConcurrentDictionary<string, List<IJobDetail>> _scheduledPlanJobsByGround;
+    private ConcurrentDictionary<string, ConcurrentQueue<string>> _plansToRunByGround;
     private SemaphoreSlim _groundProcessingSemaphore;
     private const string CHECK_PLAN_GROUP = "checkPlanGroup";
     private const string SCHEDULED_PLAN_GROUP = "scheduledPlanGroup";
@@ -32,8 +33,10 @@ public class AutomaticOperationalManager :
     public AutomaticOperationalManager(AppConfiguration appConfiguration)
     {
         _scheduledPlanJobsByGround = new ConcurrentDictionary<string, List<IJobDetail>>();
-        PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule;
+        _plansToRunByGround = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
+
         _groundProcessingSemaphore = new SemaphoreSlim(1);
+        PlanCheckSchedule = appConfiguration?.PlanCheckCronSchedule;
 
         _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
         _communicationManager = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
@@ -112,6 +115,8 @@ public class AutomaticOperationalManager :
         {
             SmartFarmerLog.Debug(args.Result);
         }
+
+        TryRunNextPlan(GroundUtils.GetGroundByPlan(args.AdditionalData.First())?.ID);
     }
 
     private void LocalGroundAdded(object sender, GroundChangedEventArgs e)
@@ -160,19 +165,36 @@ public class AutomaticOperationalManager :
         if (ground == null) return;
         
         var plans = GetPlansIdToRun(ground);
-        foreach (var plan in plans)
-        {
-            SendNewOperation(AppOperation.RunPlan, new[] { plan });
-        }
+
+        EnqueueAndRun(ground.ID, plans);
     }
 
     private void RunOneShotPlans()
     {
-        var plans = GetPlansToRun();
-        foreach (var plan in plans)
+        var plansByGround = GetPlansToRun();
+        foreach (var plan in plansByGround)
         {
-            SendNewOperation(AppOperation.RunPlan, new[] { plan });
+            EnqueueAndRun(plan.Key, plan.Value);
         }
+    }
+
+    private void TryRunNextPlan(string groundId)
+    {
+        if (!_plansToRunByGround.ContainsKey(groundId) ||
+            !_plansToRunByGround[groundId].TryDequeue(out var nextPlanId))
+        {
+            return;
+        }
+
+        SendRunPlan(nextPlanId, groundId);
+    }
+
+    private void EnqueueAndRun(string groundId, IEnumerable<string> plans)
+    {
+        var queue = new ConcurrentQueue<string>(plans);
+        _plansToRunByGround.TryAdd(groundId, queue);
+
+        TryRunNextPlan(groundId);
     }
 
     private IEnumerable<string> GetPlansIdToRun(FarmerGround ground)
@@ -191,33 +213,41 @@ public class AutomaticOperationalManager :
                     .ToList();
     }
 
-    private IEnumerable<string> GetPlansToRun()
+    private Dictionary<string, IEnumerable<string>> GetPlansToRun()
     {
-        var plans = new List<string>();
+        var result = new Dictionary<string, IEnumerable<string>>();
 
         foreach (var gGround in _localInfoManager.Grounds.Values)
         {
             var ground = gGround as FarmerGround;
             if (ground == null) continue;
             
+            var plans = new List<string>();
+
             var plansInGround = GetPlansIdToRun(ground);
             if (plansInGround != null && plansInGround.Any())
             {
                 plans.AddRange(plansInGround);
             }
+
+            result.Add(gGround.ID, plans);
         }
 
-        return plans;
+        return result;
     }
 
-    private async Task SendRunPlan(IJobExecutionContext context)
+    private void SendRunPlan(IJobExecutionContext context)
     {
         JobDataMap dataMap = context.MergedJobDataMap; 
 
         string planId = dataMap.GetString("planId");
 
-        SendNewOperation(AppOperation.RunPlan, new [] { planId });
-        await Task.CompletedTask;
+        SendRunPlan(planId, GroundUtils.GetGroundByPlan(planId)?.ID);
+    }
+
+    private void SendRunPlan(string planId, string groundId)
+    {
+        SendNewOperation(AppOperation.RunPlan, new [] { planId, groundId });
     }
 
     private async Task PrepareScheduler()
@@ -238,7 +268,7 @@ public class AutomaticOperationalManager :
         var listener = new JobExecutionListener();
 
         listener.CheckPlansToRunRequested += async (s, e) => await AddScheduledPlansToScheduler();
-        listener.NewRunPlansRequested += async (s, e) => await SendRunPlan(e.Context);
+        listener.NewRunPlansRequested += (s, e) => SendRunPlan(e.Context);
 
         _jobScheduler
             .ListenerManager
@@ -301,7 +331,7 @@ public class AutomaticOperationalManager :
             }
 
             SmartFarmerLog.Debug($"Scheduling {plan.ID} with cron {plan.CronSchedule}");
-            CreateScheduledPlanJob(plan, out var job, out var trigger);
+            CreateScheduledPlanJob(plan, ground.ID, out var job, out var trigger);
 
             // Tell Quartz to schedule the job using our trigger
             await _jobScheduler.ScheduleJob(job, trigger);
@@ -316,7 +346,7 @@ public class AutomaticOperationalManager :
     {
         var jobList = _scheduledPlanJobsByGround[groundId];
 
-        if (jobList == null || !jobList.Any())
+        if (jobList.IsNullOrEmpty())
         {
             return false;
         }
@@ -336,7 +366,7 @@ public class AutomaticOperationalManager :
             .Build();
     }
 
-    private void CreateScheduledPlanJob(IFarmerPlan plan, out IJobDetail job, out ITrigger trigger)
+    private void CreateScheduledPlanJob(IFarmerPlan plan, string groundId, out IJobDetail job, out ITrigger trigger)
     {
         job = JobBuilder.Create<ScheduledPlanJob>()
             .WithIdentity(name: "scheduledPlan_" + plan.ID, group: SCHEDULED_PLAN_GROUP)

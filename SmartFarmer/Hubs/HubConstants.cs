@@ -4,6 +4,7 @@ public class HubConstants
 {
     public const string NewPlantInGround = "NewPlantInGround";
     public const string NewPlan = "NewPlan";
+    public const string DeletedPlan = "DeletedPlan";
     public const string NewAutoIrrigationPlan = "NewAutoIrrigationPlan";
     public const string NewAlert = "NewAlert";
     public const string AlertStatusChanged = "AlertStatusChanged";

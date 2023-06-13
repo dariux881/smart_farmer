@@ -31,8 +31,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     public event EventHandler<DevicePositionsEventArgs> NewDevicePositions;
     public event EventHandler<NewPlantEventArgs> NewPlantInGround;
-    public event EventHandler<NewPlanEventArgs> NewPlan;
-    public event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
+    public event EventHandler<PlanEventArgs> NewPlan;
+    public event EventHandler<PlanEventArgs> PlanDeleted;
+    public event EventHandler<PlanEventArgs> NewAutoIrrigationPlan;
     public event EventHandler<NewAlertEventArgs> NewAlert;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
@@ -82,6 +83,11 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerPlanByIdAsync(planId, userId);
     }
     
+    public async Task<IEnumerable<string>> GetFarmerPlanIdsInGroundAsync(string userId, string groundId)
+    {
+        return await _repository.GetFarmerPlansInGround(groundId, userId);
+    }
+
     public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds)
     {
         return await _repository.GetFarmerPlanByIdsAsync(planIds, userId);
@@ -150,25 +156,62 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return newPlantId != null;
     }
 
-    public async Task<string> AddPlan(string userId, FarmerPlan plan, FarmerPlanStep[] steps)
+    public async Task<string> AddPlan(string userId, FarmerPlanRequestData planRequestData)
     {
-        if (plan == null) throw new ArgumentNullException(nameof(plan));
-        if (steps == null) throw new ArgumentNullException(nameof(steps));
+        if (planRequestData == null) throw new ArgumentNullException(nameof(planRequestData));
+        if (string.IsNullOrEmpty(planRequestData.GroundId)) throw new ArgumentNullException(nameof(planRequestData.GroundId));
+        if (planRequestData.Steps.IsNullOrEmpty()) throw new ArgumentNullException(nameof(planRequestData.Steps));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, plan.GroundId) as FarmerGround;
+        var ground = await GetFarmerGroundByIdForUserAsync(userId, planRequestData.GroundId) as FarmerGround;
         if (ground == null) return null; // no valid ground
 
-        plan.Steps.Clear();
-        plan.Steps.AddRange(steps);
+        var plan = 
+            new FarmerPlan()
+            {
+                Name = planRequestData.PlanName,
+                GroundId = planRequestData.GroundId,
+                CronSchedule = planRequestData.CronSchedule,
+                Priority = planRequestData.Priority,
+                ValidFromDt = planRequestData.ValidFromDt,
+                ValidToDt = planRequestData.ValidToDt
+            };
+
+        foreach (var reqStep in planRequestData.Steps)
+        {
+            var step = 
+                new FarmerPlanStep()
+                {
+                    BuildParameters = reqStep.BuildParameters,
+                    Delay = reqStep.Delay,
+                    TaskClassFullName = reqStep.TaskClassFullName,
+                    TaskInterfaceFullName = reqStep.TaskInterfaceFullName
+                };
+            
+            plan.Steps.Add(step);
+        }
 
         var planId = await _repository.SaveFarmerPlan(plan);
 
         if (!string.IsNullOrEmpty(planId))
         {
-            NewPlan?.Invoke(this, new NewPlanEventArgs(plan.GroundId, planId));
+            NewPlan?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
         }
 
         return planId;
+    }
+
+    public async Task<bool> DeletePlan(string userId, string planId)
+    {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (string.IsNullOrEmpty(planId)) throw new ArgumentNullException(nameof(planId));
+
+        var plan = await _repository.GetFarmerPlanByIdAsync(planId, userId) as FarmerPlan;
+
+        var result = await _repository.DeleteFarmerPlan(plan);
+
+        PlanDeleted?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
+
+        return result;
     }
 
     public async Task<string> BuildIrrigationPlan(string userId, string groundId)
@@ -203,7 +246,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
             return null;
         }
 
-        NewAutoIrrigationPlan?.Invoke(this, new NewPlanEventArgs(groundId, planId));
+        NewAutoIrrigationPlan?.Invoke(this, new PlanEventArgs(groundId, planId));
 
         return planId;
     }

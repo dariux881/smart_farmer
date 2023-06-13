@@ -10,6 +10,7 @@ public class SmartFarmerApiConstants
     public const string USER_LOGOUT_API = USER_BASE + "/logOut";
     public const string GET_USER_SETTINGS_API = USER_BASE + "/getUserSettings";
     public const string SET_USER_SETTINGS_API = USER_BASE + "/SaveUserSettings";
+
     #endregion // User Management
 
     #region Ground Management
@@ -22,16 +23,27 @@ public class SmartFarmerApiConstants
     public const string SET_PLANT_IRRIGATION_STEP = GROUNDS_BASE + "/markIrrigation";
     public const string GET_PLANT = GROUNDS_BASE + "/plant";
     public const string GET_PLANTS = GROUNDS_BASE + "/plants";
-    public const string GET_PLAN = GROUNDS_BASE + "/plan";
-    public const string GET_PLANS = GROUNDS_BASE + "/plans";
-    public const string GET_PLAN_STEPS = GROUNDS_BASE + "/steps";
-
-    public const string GET_ALERTS = GROUNDS_BASE + "/alerts";
-    public const string SET_ALERT_READ = GROUNDS_BASE + "/markAlert";
-    public const string CREATE_ALERT = GROUNDS_BASE + "/createAlert";
-
     public const string UPDATE_DEVICE_POSITION = GROUNDS_BASE + "/notifyPosition";
     public const string UPDATE_DEVICE_POSITIONS = GROUNDS_BASE + "/notifyPositions";
 
     #endregion // Ground Management
+
+    #region Plans Management
+
+    public const string PLANS_BASE = "farmerPlan";
+    public const string GET_PLAN = PLANS_BASE + "/plan";
+    public const string GET_PLANS = PLANS_BASE + "/plans";
+    public const string GET_PLAN_STEPS = PLANS_BASE + "/steps";
+
+    #endregion // Plans Management
+
+    #region Alerts Management
+
+    public const string ALERTS_BASE = "farmerAlert";
+    public const string GET_ALERTS = ALERTS_BASE + "/alerts";
+    public const string SET_ALERT_READ = ALERTS_BASE + "/markAlert";
+    public const string CREATE_ALERT = ALERTS_BASE + "/createAlert";
+
+    #endregion // Alerts Management
+
 }

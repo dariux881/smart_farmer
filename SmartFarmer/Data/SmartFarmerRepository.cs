@@ -289,6 +289,15 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return result == 1;
     }
 
+    public async Task<IEnumerable<string>> GetFarmerPlansInGround(string groundId, string userId)
+    {
+        return await _dbContext
+            .Plans
+                .Where(p => p.GroundId == groundId)
+                .Select(x => x.ID)
+                .ToArrayAsync();
+    }
+
     public async Task<IFarmerPlan> GetFarmerPlanByIdAsync(string id, string userId)
     {
         return (await GetFarmerPlanByIdsAsync(new [] {id}, userId))?.FirstOrDefault();
@@ -324,12 +333,19 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 .ToArrayAsync();
     }
 
+    public async Task<bool> DeleteFarmerPlan(FarmerPlan plan)
+    {
+        _dbContext.PlanSteps.RemoveRange(plan.Steps);
+        _dbContext.Plans.Remove(plan);
+
+        return await _dbContext.SaveChangesAsync() > 0;
+    }
+
     public async Task<string> SaveFarmerPlan(FarmerPlan plan)
     {
         _dbContext.Plans.Add(plan);
-        await _dbContext.SaveChangesAsync();
-
         _dbContext.PlanSteps.AddRange(plan.Steps);
+
         await _dbContext.SaveChangesAsync();
 
         return plan.ID;

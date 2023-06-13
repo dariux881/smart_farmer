@@ -12,8 +12,9 @@ public interface ISmartFarmerReadGroundControllerService
 {
     event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     event EventHandler<NewPlantEventArgs> NewPlantInGround;
-    event EventHandler<NewPlanEventArgs> NewPlan;
-    event EventHandler<NewPlanEventArgs> NewAutoIrrigationPlan;
+    event EventHandler<PlanEventArgs> NewPlan;
+    event EventHandler<PlanEventArgs> PlanDeleted;
+    event EventHandler<PlanEventArgs> NewAutoIrrigationPlan;
     event EventHandler<NewAlertEventArgs> NewAlert;
     event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
@@ -28,6 +29,7 @@ public interface ISmartFarmerReadGroundControllerService
     Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlantAsync(string userId, string plantId);
     Task<bool> MarkIrrigationInstance(string userId, FarmerPlantIrrigationInstance irrigationInstance);
     
+    Task<IEnumerable<string>> GetFarmerPlanIdsInGroundAsync(string userId, string groundId);
     Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId);
     Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds);
     Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids);
