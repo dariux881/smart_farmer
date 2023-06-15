@@ -1,14 +1,30 @@
+using Newtonsoft.Json;
+using SmartFarmer.Data.Tasks;
+using SmartFarmer.Misc;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks.Irrigation;
 
 namespace SmartFarmer.Data.Plants;
 
 public class FarmerPlant : IFarmerPlant
 {
+    public FarmerPlant()
+    {
+
+    }
+    
+    [JsonConstructor]
+    public FarmerPlant(string irrigationTaskInfoString)
+        : this()
+    {
+        IrrigationTaskInfo = irrigationTaskInfoString.Deserialize<FarmerIrrigationTaskInfo>();
+    }
+
     public string Code { get; set; }
 
     public string FriendlyName { get; set; }
 
-    public string IrrigationInfoId { get; set; }
+    public IFarmerIrrigationTaskInfo IrrigationTaskInfo { get; set; }
 
     public int PlantWidth { get; set; }
 

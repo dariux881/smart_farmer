@@ -13,7 +13,7 @@ namespace SmartFarmer.Tasks.Weed
             RequiredTool = Utils.FarmerTool.Weed;
         }
 
-        public override async Task Execute(object[] parameters, CancellationToken token)
+        public override async Task Execute(CancellationToken token)
         {
             PrepareTask();
 

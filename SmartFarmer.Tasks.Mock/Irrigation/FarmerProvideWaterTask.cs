@@ -14,18 +14,19 @@ namespace SmartFarmer.Tasks.Irrigation
             RequiredTool = FarmerTool.Water;
         }
 
-        public override async Task Execute(object[] parameters, CancellationToken token)
-        {
-            if (parameters == null || parameters.Length < 2) throw new ArgumentException(nameof(parameters));
+        public int PumpNumber { get; set; }
+        public double WaterAmountInLiters { get; set; }
 
-            var pump = parameters[0].GetInt();
-            var amount = parameters[1].GetDouble();
- 
-            await ProvideWater(pump, amount, token);
+        public override async Task Execute(CancellationToken token)
+        {
+            await ProvideWater(PumpNumber, WaterAmountInLiters, token);
         }
 
         public async Task ProvideWater(int pumpNumber, double amountInLiters, CancellationToken token)
         {
+            PumpNumber = pumpNumber;
+            WaterAmountInLiters = amountInLiters;
+            
             PrepareTask();
 
             SmartFarmerLog.Debug($"providing {amountInLiters} liters of water");

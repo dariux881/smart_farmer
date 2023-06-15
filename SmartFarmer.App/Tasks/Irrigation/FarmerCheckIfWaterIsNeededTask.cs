@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Misc;
@@ -19,19 +20,16 @@ public class FarmerCheckIfWaterIsNeededTask : FarmerBaseTask, IFarmerCheckIfWate
     }
 
     public override string TaskName => "Check if water is needed for plant task";
+    public double ExpectedAmountInLiters { get; set; }
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
-        if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
-
-        var expectedAmountInLiters = parameters[0].GetDouble();
-
         Exception _ex = null;
         PrepareTask();
 
         try
         {
-            await IsWaterNeeded(expectedAmountInLiters, token);
+            await IsWaterNeeded(ExpectedAmountInLiters, token);
         }
         catch(Exception ex)
         {

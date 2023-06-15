@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
@@ -8,5 +9,5 @@ public interface IFarmerTask : IHasProgressCheckInfo, IFarmerService
 {
     string TaskName { get; }
     FarmerTool RequiredTool { get; }
-    Task Execute(object[] parameters, CancellationToken token);
+    Task Execute(CancellationToken token);
 }

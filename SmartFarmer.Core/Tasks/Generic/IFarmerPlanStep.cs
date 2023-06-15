@@ -1,18 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks.Generic
+namespace SmartFarmer.Tasks.Generic;
+
+public interface IFarmerPlanStep : IHasProgressCheckInfo, IFarmerService 
 {
-    public interface IFarmerPlanStep : IHasProgressCheckInfo, IFarmerService 
-    {
-        string TaskClassFullName { get; }
-        string TaskInterfaceFullName { get; }
+    string TaskClassFullName { get; }
+    string TaskInterfaceFullName { get; }
 
-        TimeSpan Delay { get; }
-        object[] BuildParameters { get; }
+    TimeSpan Delay { get; }
+    IDictionary<string, string> BuildParameters { get; }
 
-        Task Execute(object[] parameters, CancellationToken token);
-    }
+    Task Execute(IDictionary<string, string> parameters, CancellationToken token);
 }

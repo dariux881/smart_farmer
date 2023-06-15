@@ -24,7 +24,7 @@ public class MockedCumulativeTask : IFarmerLeavesStatusCheckerTask, IFarmerParas
 
     public Exception LastException { get; set; }
 
-    public async Task Execute(object[] parameters, CancellationToken token)
+    public async Task Execute(CancellationToken token)
     {
         IsInProgress = true;
         LastException = null;

@@ -33,7 +33,7 @@ namespace SmartFarmer.Tests
 
             public string ID { get; set; }
 
-            public async Task Execute(object[] parameters, CancellationToken token)
+            public async Task Execute(CancellationToken token)
             {
                 await Task.CompletedTask;
             }
@@ -184,7 +184,7 @@ namespace SmartFarmer.Tests
         [Test]
         public void PlanStepSerialization_ExpectedStepFilled()
         {
-            var obj = new FarmerPlanStep("id", new MockedCumulativeTask(), new object[] {1, 2, 3, "test param"})
+            var obj = new FarmerPlanStep("id", typeof(MockedCumulativeTask).FullName, null)
             {
                 Delay = new System.TimeSpan(0, 0, 5),
             };

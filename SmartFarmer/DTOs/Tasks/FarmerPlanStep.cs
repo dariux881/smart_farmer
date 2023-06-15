@@ -7,12 +7,13 @@ using System.Text.Json.Serialization;
 using SmartFarmer.Tasks.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace SmartFarmer.DTOs.Tasks;
 
 public class FarmerPlanStep : IFarmerPlanStep
 {
-    private object[] _buildParameters;
+    private IDictionary<string, string> _buildParameters;
 
     public string TaskClassFullName { get; set; }
     public string TaskInterfaceFullName { get; set; }
@@ -20,7 +21,7 @@ public class FarmerPlanStep : IFarmerPlanStep
     public TimeSpan Delay { get; set; }
 
     [JsonIgnore]
-    public object[] BuildParameters 
+    public IDictionary<string, string> BuildParameters 
     { 
         get => _buildParameters;
         set {
@@ -32,7 +33,7 @@ public class FarmerPlanStep : IFarmerPlanStep
     [JsonIgnore]
     public string BuildParametersSerialized { get; set; }
 
-    public string[] BuildParametersString 
+    public IDictionary<string, string> BuildParametersString 
     { 
         get {
             if (string.IsNullOrEmpty(BuildParametersSerialized))
@@ -40,7 +41,7 @@ public class FarmerPlanStep : IFarmerPlanStep
                 return null;
             }
 
-            return JsonSerializer.Deserialize<string[]>(BuildParametersSerialized);
+            return JsonSerializer.Deserialize<IDictionary<string, string>>(BuildParametersSerialized);
         }
     }
 
@@ -58,11 +59,10 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string ID { get; set; }
 
-    public Task Execute(object[] parameters, CancellationToken token)
+    public Task Execute(IDictionary<string, string> parameters, CancellationToken token)
     {
         throw new NotImplementedException();
     }
-
 
     private void SerializeParameters()
     {

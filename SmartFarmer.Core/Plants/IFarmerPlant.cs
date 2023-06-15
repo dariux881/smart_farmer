@@ -3,25 +3,25 @@ using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Plants
+namespace SmartFarmer.Plants;
+
+public interface IFarmerPlant : IFarmerService
 {
-    public interface IFarmerPlant : IFarmerService
-    {
-        string Code { get; }
-        string FriendlyName { get; }
-        string IrrigationInfoId { get; }
+    string Code { get; }
+    string FriendlyName { get; }
 
-        /// <summary>
-        /// values in cells, where cells size depend on garden
-        /// </summary>
-        int PlantWidth { get; }
-        int PlantDepth { get; }
+    IFarmerIrrigationTaskInfo IrrigationTaskInfo { get; }
 
-        /// <summary>
-        /// 1-12 value
-        /// </summary>
-        int MonthToPlan { get; }
+    /// <summary>
+    /// values in cells, where cells size depend on garden
+    /// </summary>
+    int PlantWidth { get; }
+    int PlantDepth { get; }
 
-        int NumberOfWeeksToHarvest { get; }
-    }
+    /// <summary>
+    /// 1-12 value
+    /// </summary>
+    int MonthToPlan { get; }
+
+    int NumberOfWeeksToHarvest { get; }
 }

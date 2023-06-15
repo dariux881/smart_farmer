@@ -22,18 +22,17 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
     }
 
     public override string TaskName => "Turn arm task";
+    public double TargetDegrees { get; set; }
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
-        if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
-
-        var degrees = (double)parameters[0];
-
-        await TurnArmToDegrees(degrees, token);
+        await TurnArmToDegrees(TargetDegrees, token);
     }
 
     public async Task TurnArmToDegrees(double degrees, CancellationToken token)
     {
+        TargetDegrees = degrees;
+        
         PrepareTask();
 
         SmartFarmerLog.Debug($"turning at {degrees} degrees");

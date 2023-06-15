@@ -16,18 +16,19 @@ namespace SmartFarmer.Tasks.Movement
             RequiredTool = FarmerTool.None;
         }
 
-        public override async Task Execute(object[] parameters, CancellationToken token)
+        public double TargetXInCm { get; set; }
+        public double TargetYInCm { get; set; }
+
+        public override async Task Execute(CancellationToken token)
         {
-            if (parameters == null || parameters.Length < 2) throw new ArgumentException(nameof(parameters));
-
-            var x = (double)parameters[0];
-            var y = (double)parameters[1];
-
-            await MoveToPosition(x, y, token);
+            await MoveToPosition(TargetXInCm, TargetYInCm, token);
         }
 
         public async Task MoveToPosition(double x, double y, CancellationToken token)
         {
+            TargetXInCm = x;
+            TargetYInCm = y;
+
             PrepareTask();
 
             SmartFarmerLog.Debug($"moving to {x}, {y}");

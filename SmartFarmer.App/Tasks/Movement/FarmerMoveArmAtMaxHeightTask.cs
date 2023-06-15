@@ -31,7 +31,7 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
         return true;
     }
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
         await MoveToMaxHeight(token);
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Misc;
@@ -16,7 +17,7 @@ public abstract class FarmerBaseTask : IFarmerTask
     public Exception LastException { get; protected set; }
     public abstract string TaskName { get; }
 
-    public abstract Task Execute(object[] parameters, CancellationToken token);
+    public abstract Task Execute(CancellationToken token);
 
     protected void PrepareTask()
     {

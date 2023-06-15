@@ -335,19 +335,32 @@ public class SmartFarmerGardenControllerService : ISmartFarmerGardenControllerSe
                 // move to plant
                 new FarmerPlanStep()
                 {
-                    BuildParameters = new object[] { plant.PlantX, plant.PlantY },
+                    BuildParameters = 
+                        new Dictionary<string, string>() 
+                        {
+                            { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+plant.PlantX },
+                            { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+plant.PlantY }
+                        },
                     TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName
                 },
                 // check water
                 new FarmerPlanStep()
                 {
-                    BuildParameters = new object[] { plant.ID },
+                    BuildParameters = 
+                        new Dictionary<string, string>() 
+                        {
+                            { nameof(IFarmerCheckIfWaterIsNeededTask.ExpectedAmountInLiters), ""+plant.Plant.IrrigationTaskInfo.AmountOfWaterInLitersPerTime }
+                        },
                     TaskInterfaceFullName = typeof(IFarmerCheckIfWaterIsNeededTask).FullName
                 },
                 // provide water, if needed
                 new FarmerPlanStep()
                 {
-                    BuildParameters = new object[] { plant.ID },
+                    BuildParameters = 
+                        new Dictionary<string, string>() 
+                        {
+                            { nameof(IFarmerProvideWaterTask.WaterAmountInLiters), ""+plant.Plant.IrrigationTaskInfo.AmountOfWaterInLitersPerTime }
+                        },
                     TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName
                 }
             };

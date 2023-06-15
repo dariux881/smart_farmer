@@ -7,12 +7,13 @@ using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 using SmartFarmer.Misc;
 using SmartFarmer.Exceptions;
+using System.Collections.Generic;
 
 namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlanStep : IFarmerPlanStep
 {
-    private object[] _buildParameters;
+    private IDictionary<string, string> _buildParameters;
     private IFarmerGarden _garden;
 
     public FarmerPlanStep() 
@@ -21,10 +22,10 @@ public class FarmerPlanStep : IFarmerPlanStep
     }
 
     [JsonConstructor]
-    public FarmerPlanStep(string[] buildParametersString)
+    public FarmerPlanStep(string buildParametersString)
         : this()
     {
-        BuildParameters = buildParametersString;
+        BuildParameters = buildParametersString.Deserialize<Dictionary<string, string>>();
     }
 
     public string TaskClassFullName { get; set; }
@@ -32,7 +33,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public TimeSpan Delay { get; set; }
 
-    public object[] BuildParameters 
+    public IDictionary<string, string> BuildParameters 
     { 
         get => _buildParameters;
         set {
@@ -56,7 +57,7 @@ public class FarmerPlanStep : IFarmerPlanStep
     /// Executes the plan step. Gathers the task, configures it with the parameters, waits the Delay, then runs the task. 
     /// </summary>
     /// <throws>Exception if task fails</throws>
-    public async Task Execute(object[] parameters, CancellationToken token)
+    public async Task Execute(IDictionary<string, string> parameters, CancellationToken token)
     {
         var task = GetTask();        
         if (task == null) throw new InvalidOperationException("task implementor not found");
@@ -70,7 +71,10 @@ public class FarmerPlanStep : IFarmerPlanStep
         try
         {
             IsInProgress = true;
-            await task.Execute(parameters ?? BuildParameters, token);
+
+            ConfigureTask(task, parameters ?? BuildParameters);
+
+            await task.Execute(token);
         }
         catch(FarmerTaskExecutionException taskEx)
         {
@@ -90,6 +94,12 @@ public class FarmerPlanStep : IFarmerPlanStep
         {
             IsInProgress = false;
         }
+    }
+
+    private void ConfigureTask(IFarmerTask task, IDictionary<string, string> dictionary)
+    {
+        //TODO implement
+        throw new NotImplementedException();
     }
 
     /// <summary>

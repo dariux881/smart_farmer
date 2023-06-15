@@ -23,32 +23,29 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
     }
 
     public override string TaskName => "Provides water to plant task";
+    public int PumpNumber { get; set; }
+    public double WaterAmountInLiters { get; set; }
 
     public void Dispose() 
     {
 
     }
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
-        if (parameters == null || parameters.Length < 2) throw new ArgumentException(nameof(parameters));
-
-        var pumpNumber = parameters[0].GetInt();
-        var amountOfWater = parameters[1].GetDouble();
-
         Exception _ex = null;
         PrepareTask();
 
         try
         {
-            var waterNeeded = await _waterCheckerTask.IsWaterNeeded(amountOfWater, token);
+            var waterNeeded = await _waterCheckerTask.IsWaterNeeded(WaterAmountInLiters, token);
             if (!waterNeeded)
             {
                 SmartFarmerLog.Information("irrigation skipped since water is not needed");
                 return;
             }
 
-            await ProvideWater(pumpNumber, amountOfWater, token);
+            await ProvideWater(PumpNumber, WaterAmountInLiters, token);
         }
         catch(Exception ex)
         {

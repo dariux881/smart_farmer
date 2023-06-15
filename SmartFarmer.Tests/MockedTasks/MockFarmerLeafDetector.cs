@@ -20,7 +20,7 @@ public abstract class MockTaskBase : IFarmerTask
 
     public Exception LastException { get; protected set; }
 
-    public async Task Execute(object[] parameters, CancellationToken token)
+    public async Task Execute(CancellationToken token)
     {
         if (ExpectFail)
         {

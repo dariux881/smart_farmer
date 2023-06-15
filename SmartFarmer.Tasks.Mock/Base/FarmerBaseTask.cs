@@ -16,7 +16,7 @@ namespace SmartFarmer.Tasks.Base
         public bool IsInProgress { get; protected set; }
         public Exception LastException { get; protected set; }
 
-        public abstract Task Execute(object[] parameters, CancellationToken token);
+        public abstract Task Execute(CancellationToken token);
 
         protected void PrepareTask()
         {

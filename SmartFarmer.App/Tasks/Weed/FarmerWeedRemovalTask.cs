@@ -24,7 +24,7 @@ public class FarmerWeedRemovalTask : FarmerBaseTask, IFarmerWeedRemovalTask
 
     public override string TaskName => "Removal of week task";
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
         Exception _ex = null;
         PrepareTask();

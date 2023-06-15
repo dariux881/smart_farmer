@@ -16,17 +16,17 @@ namespace SmartFarmer.Tasks.Movement
             RequiredTool = FarmerTool.None;
         }
 
-        public override async Task Execute(object[] parameters, CancellationToken token)
+        public double TargetHeightInCm { get; set; }
+
+        public override async Task Execute(CancellationToken token)
         {
-            if (parameters == null || parameters.Length < 1) throw new ArgumentException(nameof(parameters));
-
-            var height = (int)parameters[0];
-
-            await MoveToHeight(height, token);
+            await MoveToHeight(TargetHeightInCm, token);
         }
 
         public async Task MoveToHeight(double heightInCm, CancellationToken token)
         {
+            TargetHeightInCm = heightInCm;
+
             PrepareTask();
 
             SmartFarmerLog.Debug($"moving to height {heightInCm} cm");

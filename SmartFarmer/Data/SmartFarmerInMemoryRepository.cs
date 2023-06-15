@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
@@ -43,19 +44,18 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             TimesPerWeek = 1
         };
 
-        _dbContext.IrrigationInfo.AddRange(new [] {irrInfo1, irrInfo2 });
         _dbContext.SaveChanges();
 
         var plant1 = new FarmerPlant { 
             //ID = "plant1", 
             Code = "123",
             FriendlyName="plant 1", 
-            IrrigationInfoId = irrInfo1.ID };
+            IrrigationTaskInfo = irrInfo1 };
         var plant2 = new FarmerPlant { 
             //ID = "plant2", 
             Code = "124",
             FriendlyName="plant 2", 
-            IrrigationInfoId = irrInfo2.ID };
+            IrrigationTaskInfo = irrInfo2 };
 
         var garden1 = new DTOs.FarmerGarden(this)
         { 
@@ -118,34 +118,49 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 10.0 }, 
+                BuildParameters = new Dictionary<string, string>() {{ nameof(IFarmerMoveArmAtHeightTask.TargetHeightInCm), "10.0" }}, 
                 TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 5.0, 5.0 },
+                BuildParameters = 
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), "5.0" },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), "5.0" }
+                    },
                 Delay = new System.TimeSpan(0, 0, 2),
                 TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 1, 0.5 },
+                BuildParameters = 
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerProvideWaterTask.PumpNumber), "1" },
+                        { nameof(IFarmerProvideWaterTask.WaterAmountInLiters), "0.5" }
+                    },
                 Delay = new System.TimeSpan(0, 0, 1),
                 TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName // "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 15.0, 5.0 },
+                BuildParameters = 
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), "15.0" },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), "5.0" }
+                    },
                 Delay = new System.TimeSpan(0, 0, 2),
                 TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
             },
             new FarmerPlanStep
             {
                 PlanId = plan0.ID, 
-                BuildParameters = new object[] { 0.0 },
+                BuildParameters = new Dictionary<string, string>() {{ nameof(IFarmerMoveArmAtHeightTask.TargetHeightInCm), "0.0" }},
                 Delay = new System.TimeSpan(0, 0, 2),
                 TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
             },

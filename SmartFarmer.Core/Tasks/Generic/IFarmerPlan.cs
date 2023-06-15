@@ -1,24 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Tasks.Generic
+namespace SmartFarmer.Tasks.Generic;
+
+public interface IFarmerPlan : IFarmerBasicPlan
 {
+    DateTime? ValidFromDt { get; }
+    DateTime? ValidToDt { get; }
+    string CronSchedule { get; }
 
-    public interface IFarmerPlan : IHasProgressCheckInfo, IFarmerService
-    {
-        string Name { get; }
-
-        DateTime? ValidFromDt { get; }
-        DateTime? ValidToDt { get; }
-        string CronSchedule { get; }
-
-        // lower values means major priority
-        int Priority { get; }
-
-        IReadOnlyList<string> StepIds { get; }
-        Task Execute(CancellationToken token);
-    }
+    // lower values means major priority
+    int Priority { get; }
 }

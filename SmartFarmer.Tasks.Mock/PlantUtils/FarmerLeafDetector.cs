@@ -13,7 +13,7 @@ namespace SmartFarmer.Tasks.PlantUtils
             RequiredTool = Utils.FarmerTool.Camera;
         }
 
-        public override async Task Execute(object[] parameters, CancellationToken token)
+        public override async Task Execute(CancellationToken token)
         {
             PrepareTask();
 

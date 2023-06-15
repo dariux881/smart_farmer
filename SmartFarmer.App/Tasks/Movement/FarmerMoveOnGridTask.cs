@@ -29,6 +29,8 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
     }
 
     public override string TaskName => "Move on Grid task";
+    public double TargetXInCm { get; set; }
+    public double TargetYInCm { get; set; }
 
     public async Task<bool> InitializeAsync(CancellationToken token)
     {
@@ -37,19 +39,16 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         return true;
     }
 
-    public override async Task Execute(object[] parameters, CancellationToken token)
+    public override async Task Execute(CancellationToken token)
     {
-        if (parameters == null || parameters.Length < 2) throw new ArgumentException(nameof(parameters));
-
-        double x, y;
-        x = parameters[0].GetDouble();
-        y = parameters[1].GetDouble();
-
-        await MoveToPosition(x, y, token);
+        await MoveToPosition(TargetXInCm, TargetYInCm, token);
     }
 
     public async Task MoveToPosition(double x, double y, CancellationToken token)
     {
+        TargetXInCm = x;
+        TargetYInCm = y;
+        
         PrepareTask();
 
         SmartFarmerLog.Debug($"moving to {x}, {y}");

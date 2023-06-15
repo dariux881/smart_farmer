@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,13 +14,13 @@ namespace SmartFarmer.Tasks
         private IFarmerTask _task;
 
         [JsonConstructor]
-        public FarmerPlanStep(string id, string taskClassFullName, object[] buildParameters)
+        public FarmerPlanStep(string id, string taskClassFullName, IDictionary<string, string> buildParameters)
             : this(id, FarmerTaskProvider.GetTaskDelegateByClassFullName(taskClassFullName), buildParameters)
         {
             
         }
 
-        public FarmerPlanStep(string id, IFarmerTask task, object[] parameters = null)
+        public FarmerPlanStep(string id, IFarmerTask task, IDictionary<string, string> parameters = null)
         {
             ID = id;
             _task = task;
@@ -30,12 +31,12 @@ namespace SmartFarmer.Tasks
         public string ID { get; private set; }
         public string TaskClassFullName => _task?.GetType().FullName;
         public string TaskInterfaceFullName => _task?.GetType().FullName;
-        public object[] BuildParameters { get; private set; }
+        public IDictionary<string, string> BuildParameters { get; private set; }
         public TimeSpan Delay { get; set; }
         public bool IsInProgress { get; set; }
         public Exception LastException { get; set; }
 
-        public async Task Execute(object[] parameters, CancellationToken token)
+        public async Task Execute(IDictionary<string, string> parameters, CancellationToken token)
         {
             if (TaskClassFullName == null) throw new ArgumentNullException(nameof(TaskClassFullName));
 
@@ -63,8 +64,14 @@ namespace SmartFarmer.Tasks
                 SmartFarmerLog.Debug(message);
             }
 
-            await _task.Execute(parameters ?? BuildParameters, token);
+            ConfigureTask(_task, parameters ?? BuildParameters);
+
+            await _task.Execute(token);
         }
 
+        private void ConfigureTask(IFarmerTask task, IDictionary<string, string> dictionary)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

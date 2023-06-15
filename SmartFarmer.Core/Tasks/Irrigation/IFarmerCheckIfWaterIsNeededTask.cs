@@ -6,5 +6,6 @@ namespace SmartFarmer.Tasks.Irrigation;
 
 public interface IFarmerCheckIfWaterIsNeededTask : IFarmerTask
 {
+    double ExpectedAmountInLiters { get; }
     Task<bool> IsWaterNeeded(double expectedAmountInLiters, CancellationToken token);
 }
