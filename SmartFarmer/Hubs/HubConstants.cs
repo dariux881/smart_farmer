@@ -2,7 +2,7 @@ namespace SmartFarmer.Hubs;
 
 public class HubConstants
 {
-    public const string NewPlantInGround = "NewPlantInGround";
+    public const string NewPlantInGarden = "NewPlantInGarden";
     public const string NewPlan = "NewPlan";
     public const string DeletedPlan = "DeletedPlan";
     public const string NewAutoIrrigationPlan = "NewAutoIrrigationPlan";

@@ -20,62 +20,62 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
 
     public FarmerLocalInformationManager()
     {
-        Grounds = new ConcurrentDictionary<string, IFarmerGround>();
+        Gardens = new ConcurrentDictionary<string, IFarmerGarden>();
 
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
         _communicationHandler = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
         _deviceProvider = FarmerServiceLocator.GetService<IFarmerDeviceKindProvider>(true);
     }
 
-    public ConcurrentDictionary<string, IFarmerGround> Grounds { get; }
+    public ConcurrentDictionary<string, IFarmerGarden> Gardens { get; }
 
-    public async Task ReinitializeGroundsAsync(CancellationToken token)
+    public async Task ReinitializeGardensAsync(CancellationToken token)
     {
         ClearLocalData(true, false, false);
-        await InitializeGroundsAsync(token);
+        await InitializeGardensAsync(token);
     }
 
-    public async Task InitializeGroundsAsync(CancellationToken token)
+    public async Task InitializeGardensAsync(CancellationToken token)
     {
-        // get all grounds
-        var grounds = await FarmerRequestHandler.GetGroundsList(token);
-        if (grounds == null)
+        // get all gardens
+        var gardens = await FarmerRequestHandler.GetGardensList(token);
+        if (gardens == null)
         {
-            SmartFarmerLog.Error("invalid grounds");
+            SmartFarmerLog.Error("invalid gardens");
             return;
         }
 
-        if (!grounds.Any())
+        if (!gardens.Any())
         {
-            SmartFarmerLog.Debug("no assigned grounds");
+            SmartFarmerLog.Debug("no assigned gardens");
             return;
         }
 
         SmartFarmerLog.Debug(
-                "List of grounds:\n\t" + grounds.Select(x => x.ID).Aggregate((g1, g2) => g1 + ", " + g2));
+                "List of gardens:\n\t" + gardens.Select(x => x.ID).Aggregate((g1, g2) => g1 + ", " + g2));
 
-        var locallyInterestedGrounds = 
-            _configProvider.GetAppConfiguration().LocalGroundIds != null && _configProvider.GetAppConfiguration().LocalGroundIds.Any() ?
-                grounds
+        var locallyInterestedGardens = 
+            _configProvider.GetAppConfiguration().LocalGardenIds != null && _configProvider.GetAppConfiguration().LocalGardenIds.Any() ?
+                gardens
                     .Where(x => 
-                        _configProvider.GetAppConfiguration().LocalGroundIds.Contains(x.ID)).ToList() :
-                new List<IFarmerGround>() { grounds.First() };
+                        _configProvider.GetAppConfiguration().LocalGardenIds.Contains(x.ID)).ToList() :
+                new List<IFarmerGarden>() { gardens.First() };
 
         var tasks = new List<Task>();
 
-        foreach (var ground in locallyInterestedGrounds)
+        foreach (var garden in locallyInterestedGardens)
         {
-            var groundId = ground.ID;
+            var gardenId = garden.ID;
             tasks.Add(Task.Run(async () => {
-                var ground = await FarmerRequestHandler
-                    .GetGround(groundId, token);
+                var garden = await FarmerRequestHandler
+                    .GetGarden(gardenId, token);
                 
-                await InitializeServicesForSingleGround(ground, token).ConfigureAwait(true);
+                await InitializeServicesForSingleGarden(garden, token).ConfigureAwait(true);
 
-                Grounds.TryAdd(ground.ID, ground);
+                Gardens.TryAdd(garden.ID, garden);
 
-                SmartFarmerLog.Debug("Notifying new ground");
-                _communicationHandler.NotifyNewGround(ground.ID);
+                SmartFarmerLog.Debug("Notifying new garden");
+                _communicationHandler.NotifyNewGarden(garden.ID);
             }));
         }
 
@@ -93,57 +93,57 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
     }
 
     public void ClearLocalData(
-        bool clearGrounds = false,
+        bool clearGardens = false,
         bool clearLoggedUser = false,
         bool clearToken = false)
     {
-        if (clearGrounds)
+        if (clearGardens)
         {
-            foreach (var ground in Grounds.Values)
+            foreach (var garden in Gardens.Values)
             {
-                if (ground is IDisposable disp)
+                if (garden is IDisposable disp)
                 {
                     disp.Dispose();
                 }
             }
 
-            Grounds.Clear();
+            Gardens.Clear();
         }
     }
 
-    private async Task InitializeServicesForSingleGround(IFarmerGround ground, CancellationToken cancellationToken)
+    private async Task InitializeServicesForSingleGarden(IFarmerGarden garden, CancellationToken cancellationToken)
     {
         // clearing possibly old mapped services
-        FarmerServiceLocator.RemoveService<IFarmerToolsManager>(ground);
-        FarmerServiceLocator.RemoveService<IFarmerAlertHandler>(ground);
-        FarmerServiceLocator.RemoveService<FarmerAlertHandler>(ground);
-        FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>(ground);
-        FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>(ground);
-        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>(ground);
-        FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>(ground);
-        FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>(ground);
-        FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(ground);
+        FarmerServiceLocator.RemoveService<IFarmerToolsManager>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerAlertHandler>(garden);
+        FarmerServiceLocator.RemoveService<FarmerAlertHandler>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerMoveOnGridTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(garden);
 
         // preparing new services
-        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(ground), ground);
+        FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(garden), garden);
 
-        var alertHandler = new FarmerAlertHandler(ground, _configProvider.GetHubConfiguration());
-        FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, ground);
-        FarmerServiceLocator.MapService<FarmerAlertHandler>(() => alertHandler, ground);
+        var alertHandler = new FarmerAlertHandler(garden, _configProvider.GetHubConfiguration());
+        FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, garden);
+        FarmerServiceLocator.MapService<FarmerAlertHandler>(() => alertHandler, garden);
 
-        var deviceHandler = _deviceProvider.GetDeviceManager(ground.ID);
+        var deviceHandler = _deviceProvider.GetDeviceManager(garden.ID);
 
-        var moveOnGridTask = new FarmerMoveOnGridTask(ground, deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, ground);
-        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, ground);
+        var moveOnGridTask = new FarmerMoveOnGridTask(garden, deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveOnGridTask>(() => moveOnGridTask, garden);
+        FarmerServiceLocator.MapService<FarmerMoveOnGridTask>(() => moveOnGridTask, garden);
 
         var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
-        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, ground);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, garden);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, garden);
 
         var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
-        FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, ground);
-        FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, ground);
+        FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, garden);
+        FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, garden);
 
         await moveOnGridTask.InitializeAsync(cancellationToken);
         await moveAtHeightTask.InitializeAsync(cancellationToken);

@@ -15,55 +15,55 @@ namespace SmartFarmer.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public class FarmerGroundController : FarmerControllerBase
+public class FarmerGardenController : FarmerControllerBase
 {
-    private readonly ILogger<FarmerGroundController> _logger;
-    private readonly ISmartFarmerGroundControllerService _groundProvider;
+    private readonly ILogger<FarmerGardenController> _logger;
+    private readonly ISmartFarmerGardenControllerService _gardenProvider;
 
-    public FarmerGroundController(
-        ILogger<FarmerGroundController> logger,
-        ISmartFarmerGroundControllerService groundProvider,
+    public FarmerGardenController(
+        ILogger<FarmerGardenController> logger,
+        ISmartFarmerGardenControllerService gardenProvider,
         ISmartFarmerUserAuthenticationService userManager)
         : base(userManager)
     {
         _logger = logger;
-        _groundProvider = groundProvider;
+        _gardenProvider = gardenProvider;
     }
 
     [HttpGet]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<IEnumerable<IFarmerGround>>> GetAllGrounds()
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<IEnumerable<IFarmerGarden>>> GetAllGardens()
     {
         var userId = await GetUserIdByContext();
 
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var grounds = await _groundProvider.GetFarmerGroundByUserIdAsync(userId);
+        var gardens = await _gardenProvider.GetFarmerGardenByUserIdAsync(userId);
 
-        return Ok(grounds);
+        return Ok(gardens);
     }
 
-    [HttpGet("ground")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<IFarmerGround>> GetGround(string id)
+    [HttpGet("garden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<IFarmerGarden>> GetGarden(string id)
     {
         var userId = await GetUserIdByContext();
 
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var grounds =
-            await _groundProvider
-                .GetFarmerGroundByIdForUserAsync(
+        var gardens =
+            await _gardenProvider
+                .GetFarmerGardenByIdForUserAsync(
                     userId,
                     id);
 
-        return Ok(grounds);
+        return Ok(gardens);
     }
 
-    [HttpGet("plantInGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    [HttpGet("plantInGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
     public async Task<ActionResult<IFarmerPlantInstance>> GetPlantInstance(string id)
     {
         var userId = await GetUserIdByContext();
@@ -72,7 +72,7 @@ public class FarmerGroundController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerPlantInstanceByIdForUserAsync(
                     userId,
                     id);
@@ -80,8 +80,8 @@ public class FarmerGroundController : FarmerControllerBase
         return Ok(plant);
     }
 
-    [HttpGet("plantsInGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    [HttpGet("plantsInGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
     public async Task<ActionResult<IEnumerable<IFarmerPlantInstance>>> GetPlantsInstance(string idsSplit)
     {
         var userId = await GetUserIdByContext();
@@ -90,7 +90,7 @@ public class FarmerGroundController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerPlantInstanceByIdsForUserAsync(
                     userId,
                     idsSplit.Split('#'));
@@ -99,7 +99,7 @@ public class FarmerGroundController : FarmerControllerBase
     }
 
     [HttpGet("irrigationHistory")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
     public async Task<ActionResult<IrrigationHistory>> IrrigationHistoryByPlant(string plantId)
     {
         var userId = await GetUserIdByContext();
@@ -108,7 +108,7 @@ public class FarmerGroundController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerIrrigationHistoryByPlantAsync(
                     userId,
                     plantId);
@@ -117,7 +117,7 @@ public class FarmerGroundController : FarmerControllerBase
     }
 
     [HttpPost("markIrrigation")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
     public async Task<ActionResult<bool>> MarkIrrigation([FromBody] FarmerPlantIrrigationInstance irrigation)
     {
         var userId = await GetUserIdByContext();
@@ -126,7 +126,7 @@ public class FarmerGroundController : FarmerControllerBase
             return Unauthorized();
         
         var result = 
-            await _groundProvider
+            await _gardenProvider
                 .MarkIrrigationInstance(userId, irrigation);
 
         return Ok(result);
@@ -136,7 +136,7 @@ public class FarmerGroundController : FarmerControllerBase
     public async Task<ActionResult<IFarmerPlant>> GetPlant(string id)
     {
         var plant =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerPlantByIdAsync(id);
 
         return Ok(plant);
@@ -146,15 +146,15 @@ public class FarmerGroundController : FarmerControllerBase
     public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlants(string idsSplit)
     {
         var plant =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerPlantByIdsAsync(idsSplit.Split('#'));
 
         return Ok(plant);
     }
 
-    [HttpPost("createGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
-    public async Task<ActionResult<string>> CreateGround([FromBody] FarmerGroundRequestData data)
+    [HttpPost("createGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
+    public async Task<ActionResult<string>> CreateGarden([FromBody] FarmerGardenRequestData data)
     {
         if (data is null)
         {
@@ -166,8 +166,8 @@ public class FarmerGroundController : FarmerControllerBase
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
         
-        var result = await _groundProvider
-            .CreateFarmerGround(userId, data);
+        var result = await _gardenProvider
+            .CreateFarmerGarden(userId, data);
 
         if (result != null)
             return Ok(result.ID);
@@ -176,7 +176,7 @@ public class FarmerGroundController : FarmerControllerBase
     }
 
     [HttpPost("addPlant")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
     public async Task<ActionResult<bool>> AddPlant([FromBody] FarmerPlantRequestData data)
     {
         if (data is null)
@@ -189,7 +189,7 @@ public class FarmerGroundController : FarmerControllerBase
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var result = await _groundProvider
+        var result = await _gardenProvider
             .AddFarmerPlantInstance(userId, data);
 
         if (result)
@@ -199,7 +199,7 @@ public class FarmerGroundController : FarmerControllerBase
     }
 
     [HttpPost("notifyPositions")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
     public async Task<ActionResult> NotifyPositions([FromBody] FarmerDevicePositionsRequestData positions)
     {
         if (positions == null)
@@ -207,7 +207,7 @@ public class FarmerGroundController : FarmerControllerBase
             throw new ArgumentNullException(nameof(positions));
         }
 
-        if (string.IsNullOrEmpty(positions.GroundId))
+        if (string.IsNullOrEmpty(positions.GardenId))
         {
             return BadRequest();
         }
@@ -217,7 +217,7 @@ public class FarmerGroundController : FarmerControllerBase
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var result = await _groundProvider
+        var result = await _gardenProvider
             .NotifyDevicePositions(userId, positions);
 
         if (result)
@@ -229,16 +229,16 @@ public class FarmerGroundController : FarmerControllerBase
     }
 
     [HttpGet("devicePositionHistory")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<IEnumerable<FarmerDevicePosition>>> GetDevicePositionHistory(string groundId, string runId = null)
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<IEnumerable<FarmerDevicePosition>>> GetDevicePositionHistory(string gardenId, string runId = null)
     {
         var userId = await GetUserIdByContext();
 
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var result = await _groundProvider
-            .GetDeviceDevicePositionHistory(userId, groundId, runId);
+        var result = await _gardenProvider
+            .GetDeviceDevicePositionHistory(userId, gardenId, runId);
 
         if (result == null)
         {

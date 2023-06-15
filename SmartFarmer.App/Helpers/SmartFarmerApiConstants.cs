@@ -13,20 +13,20 @@ public class SmartFarmerApiConstants
 
     #endregion // User Management
 
-    #region Ground Management
+    #region Garden Management
 
-    public const string GROUNDS_BASE = "farmerGround";
-    public const string GET_GROUND = GROUNDS_BASE + "/ground";
-    public const string GET_PLANT_IN_GROUND = GROUNDS_BASE + "/plantInGround";
-    public const string GET_PLANTS_IN_GROUND = GROUNDS_BASE + "/plantsInGround";
-    public const string GET_PLANT_IRRIGATION_HISTORY = GROUNDS_BASE + "/irrigationHistory";
-    public const string SET_PLANT_IRRIGATION_STEP = GROUNDS_BASE + "/markIrrigation";
-    public const string GET_PLANT = GROUNDS_BASE + "/plant";
-    public const string GET_PLANTS = GROUNDS_BASE + "/plants";
-    public const string UPDATE_DEVICE_POSITION = GROUNDS_BASE + "/notifyPosition";
-    public const string UPDATE_DEVICE_POSITIONS = GROUNDS_BASE + "/notifyPositions";
+    public const string GARDENS_BASE = "farmerGarden";
+    public const string GET_GARDEN = GARDENS_BASE + "/garden";
+    public const string GET_PLANT_IN_GARDEN = GARDENS_BASE + "/plantInGarden";
+    public const string GET_PLANTS_IN_GARDEN = GARDENS_BASE + "/plantsInGarden";
+    public const string GET_PLANT_IRRIGATION_HISTORY = GARDENS_BASE + "/irrigationHistory";
+    public const string SET_PLANT_IRRIGATION_STEP = GARDENS_BASE + "/markIrrigation";
+    public const string GET_PLANT = GARDENS_BASE + "/plant";
+    public const string GET_PLANTS = GARDENS_BASE + "/plants";
+    public const string UPDATE_DEVICE_POSITION = GARDENS_BASE + "/notifyPosition";
+    public const string UPDATE_DEVICE_POSITIONS = GARDENS_BASE + "/notifyPositions";
 
-    #endregion // Ground Management
+    #endregion // Garden Management
 
     #region Plans Management
 

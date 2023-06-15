@@ -9,27 +9,27 @@ using SmartFarmer.Movement;
 
 namespace SmartFarmer.Handlers;
 
-public class FarmerGroundHubHandler : IAsyncDisposable
+public class FarmerGardenHubHandler : IAsyncDisposable
 {
     private HubConnection _connection;
     private HubConnectionConfiguration _hubConfiguration;
-    private IFarmerGround _ground;
+    private IFarmerGarden _garden;
     private readonly IFarmerSessionManager _sessionManager;
 
-    public FarmerGroundHubHandler(
-        IFarmerGround ground, 
+    public FarmerGardenHubHandler(
+        IFarmerGarden garden, 
         HubConnectionConfiguration hubConfiguration)
     {
         if (hubConfiguration == null) throw new ArgumentNullException(nameof(hubConfiguration));
         if (string.IsNullOrEmpty(hubConfiguration.Url)) throw new InvalidProgramException("invalid specified URL");
 
         _hubConfiguration = hubConfiguration;
-        _ground = ground;
+        _garden = garden;
 
         _sessionManager = FarmerServiceLocator.GetService<IFarmerSessionManager>(true);
     }
 
-    public string SubscribedGroundId => _ground?.ID;
+    public string SubscribedGardenId => _garden?.ID;
 
     public event EventHandler<DevicePositionEventArgs> NewDevicePositionReceived;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatusEventArgsReceived;
@@ -119,13 +119,13 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             token);
     }
 
-    public async Task NotifyDevicePosition(string groundId, FarmerDevicePositionInTime position, CancellationToken token)
+    public async Task NotifyDevicePosition(string gardenId, FarmerDevicePositionInTime position, CancellationToken token)
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_DEVICE_POSITION_NOTIFICATION,
-            groundId,
+            gardenId,
             position.Serialize(),
             token);
     }
@@ -152,32 +152,32 @@ public class FarmerGroundHubHandler : IAsyncDisposable
             token);
     }
 
-    public async Task SendCliCommandAsync(string groundId, string command, CancellationToken token)
+    public async Task SendCliCommandAsync(string gardenId, string command, CancellationToken token)
     {
-        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+        if (gardenId == null) throw new ArgumentNullException(nameof(gardenId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_CLI_COMMAND,
-            groundId,
+            gardenId,
             command,
             token);
     }
 
-    public async Task NotifyCliCommandResult(string groundId, string result, CancellationToken token)
+    public async Task NotifyCliCommandResult(string gardenId, string result, CancellationToken token)
     {
-        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+        if (gardenId == null) throw new ArgumentNullException(nameof(gardenId));
 
         await _connection.InvokeAsync(
             FarmerHubConstants.SEND_CLI_COMMAND_RESULT,
-            groundId,
+            gardenId,
             result,
             token);
     }
 
     private async Task Handshake(CancellationToken token)
     {
-        if (_ground == null) return;
+        if (_garden == null) return;
 
-        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, _ground.ID);
+        await _connection.InvokeAsync(FarmerHubConstants.SUBSCRIBE, _garden.ID);
     }
 }

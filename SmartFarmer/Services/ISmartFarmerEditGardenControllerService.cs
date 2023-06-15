@@ -9,21 +9,21 @@ using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Services;
 
-public interface ISmartFarmerEditGroundControllerService
+public interface ISmartFarmerEditGardenControllerService
 {
     Task<string> CreateFarmerAlert(string userId, FarmerAlertRequestData data);
     Task<bool> MarkFarmerAlertAsRead(string userId, string id, bool read);
 
-    Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
+    Task<IFarmerGarden> CreateFarmerGarden(string userId, FarmerGardenRequestData data);
     Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
     Task<string> AddPlan(string userId, FarmerPlanRequestData planRequestData);
     Task<bool> DeletePlan(string userId, string planId);
-    Task<string> BuildIrrigationPlan(string userId, string groundId);
+    Task<string> BuildIrrigationPlan(string userId, string gardenId);
 
     Task<FarmerDevicePosition> NotifyDevicePosition(string userId, FarmerDevicePositionRequestData position);
     Task<bool> NotifyDevicePositions(string userId, FarmerDevicePositionsRequestData positions);
 
-    IFarmerCliCommand BuildAndCheckCliCommand(string userId, string groundId, string commandStr);
+    IFarmerCliCommand BuildAndCheckCliCommand(string userId, string gardenId, string commandStr);
 
-    Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string groundId, string runId);
+    Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string gardenId, string runId);
 }

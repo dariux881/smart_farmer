@@ -5,17 +5,17 @@ namespace SmartFarmer.Handlers;
 public class FarmerAppCommunicationHandler : IFarmerAppCommunicationHandler
 {
     public event EventHandler NewLoggedUser;
-    public event EventHandler<GroundChangedEventArgs> LocalGroundAdded;
-    public event EventHandler<GroundChangedEventArgs> LocalGroundRemoved;
+    public event EventHandler<GardenChangedEventArgs> LocalGardenAdded;
+    public event EventHandler<GardenChangedEventArgs> LocalGardenRemoved;
 
-    public void NotifyNewGround(string groundId)
+    public void NotifyNewGarden(string gardenId)
     {
-        LocalGroundAdded?.Invoke(this, new GroundChangedEventArgs(groundId));
+        LocalGardenAdded?.Invoke(this, new GardenChangedEventArgs(gardenId));
     }
 
-    public void NotifyRemovedGround(string groundId)
+    public void NotifyRemovedGarden(string gardenId)
     {
-        LocalGroundRemoved?.Invoke(this, new GroundChangedEventArgs(groundId));
+        LocalGardenRemoved?.Invoke(this, new GardenChangedEventArgs(gardenId));
     }
 
     public void NotifyNewLoggedUser()

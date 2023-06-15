@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace SmartFarmer.Data;
 
 public interface ISmartFarmerRepository : 
-    ISmartFarmerGroundManagementRepository, 
+    ISmartFarmerGardenManagementRepository, 
     ISmartFarmerPlanManagementRepository,
     ISmartFarmerAlertManagementRepository,
     ISmartFarmerSecurityRepository
@@ -13,5 +13,5 @@ public interface ISmartFarmerRepository :
     /// Saves update on the repository.
     /// </summary>
     /// <returns><c>true</c> if some entry changes, <c>false</c> otherwise.</returns>
-    Task<bool> SaveGroundUpdates();
+    Task<bool> SaveGardenUpdates();
 }

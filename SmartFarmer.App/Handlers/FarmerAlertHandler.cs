@@ -12,14 +12,14 @@ namespace SmartFarmer.Handlers;
 
 public class FarmerAlertHandler : IFarmerAlertHandler
 {
-    private IFarmerGround _ground;
-    private FarmerGroundHubHandler _hubHandler;
+    private IFarmerGarden _garden;
+    private FarmerGardenHubHandler _hubHandler;
 
-    public FarmerAlertHandler(IFarmerGround ground, HubConnectionConfiguration hubConfiguration)
+    public FarmerAlertHandler(IFarmerGarden garden, HubConnectionConfiguration hubConfiguration)
     {
-        _ground = ground;
+        _garden = garden;
 
-        _hubHandler = new FarmerGroundHubHandler(ground, hubConfiguration);
+        _hubHandler = new FarmerGardenHubHandler(garden, hubConfiguration);
 
         _hubHandler.NewAlertStatusEventArgsReceived += AlertStatusChanged;
     }
@@ -42,7 +42,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
             service.Code,
             service.RaisedByTaskId,
             service.PlantInstanceId,
-            _ground.ID,
+            _garden.ID,
             service.Level,
             service.Severity);
     }
@@ -75,13 +75,13 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         AlertCode code, 
         string taskId, 
         string plantInstanceId, 
-        string groundId,
+        string gardenId,
         AlertLevel level, 
         AlertSeverity severity)
     {
-        if (groundId != _ground.ID)
+        if (gardenId != _garden.ID)
         {
-            throw new InvalidOperationException($"this instance handles only alerts for ground {_ground.ID}");
+            throw new InvalidOperationException($"this instance handles only alerts for garden {_garden.ID}");
         }
 
         return await RaiseAlert(
@@ -93,7 +93,7 @@ public class FarmerAlertHandler : IFarmerAlertHandler
                 PlantInstanceId = plantInstanceId,
                 Level = level,
                 Severity = severity,
-                FarmerGroundId = groundId
+                GardenId = gardenId
             });
     }
 
@@ -104,15 +104,15 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
         if (alert == null) return null;
 
-        FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Grounds.TryGetValue(data.FarmerGroundId, out var ground);
-        if (ground != null && ground is FarmerGround fGround && alert != null)
+        FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Gardens.TryGetValue(data.GardenId, out var garden);
+        if (garden != null && garden is FarmerGarden fGarden && alert != null)
         {
-            SmartFarmerLog.Debug("adding alert to ground " + ground.ID);
-            fGround.AddAlert(alert);
+            SmartFarmerLog.Debug("adding alert to garden " + garden.ID);
+            fGarden.AddAlert(alert);
         }
         else
         {
-            SmartFarmerLog.Warning("ground found? " + (ground != null) + " alert found? " + (alert != null));
+            SmartFarmerLog.Warning("garden found? " + (garden != null) + " alert found? " + (alert != null));
         }
 
         return alert.ID;
@@ -120,13 +120,13 @@ public class FarmerAlertHandler : IFarmerAlertHandler
 
     private void LocallyUpdateAlert(string alertId, bool status)
     {
-        var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
-        if (ground == null || ground.ID != _ground.ID) 
+        var garden = GardenUtils.GetGardenByAlert(alertId) as FarmerGarden;
+        if (garden == null || garden.ID != _garden.ID) 
         {
             return;
         }
 
-        var alert = ground.Alerts.FirstOrDefault(x => x.ID == alertId);
+        var alert = garden.Alerts.FirstOrDefault(x => x.ID == alertId);
         if (alert != null)
         {
             alert.MarkedAsRead = status;

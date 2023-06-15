@@ -4,9 +4,9 @@ using SmartFarmer.DTOs;
 
 namespace SmartFarmer.Data.Configuration;
 
-public class FarmerGroundTypeConfiguration : IEntityTypeConfiguration<FarmerGround>
+public class FarmerGardenTypeConfiguration : IEntityTypeConfiguration<FarmerGarden>
 {
-    public void Configure(EntityTypeBuilder<FarmerGround> builder)
+    public void Configure(EntityTypeBuilder<FarmerGarden> builder)
     {
         builder
             .Property(f => f.ID)

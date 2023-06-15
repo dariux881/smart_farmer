@@ -1,8 +1,8 @@
-namespace SmartFarmer.Data.Plants;
+namespace SmartFarmer.Plants;
 
-public class FarmerGroundRequestData
+public class FarmerGardenRequestData
 {
-    public string GroundName { get; set; }
+    public string GardenName { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public double WidthInMeters { get; set; }

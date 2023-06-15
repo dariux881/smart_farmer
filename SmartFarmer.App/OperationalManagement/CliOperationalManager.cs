@@ -14,7 +14,7 @@ namespace SmartFarmer.OperationalManagement;
 public class CliOperationalManager : OperationalModeManagerBase, ICliOperationalModeManager
 {
     private HubConnectionConfiguration _hubConfiguration;
-    private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
+    private Dictionary<string, FarmerGardenHubHandler> _hubHandlers;
     private readonly IFarmerAppCommunicationHandler _appCommunication;
     private readonly IFarmerLocalInformationManager _localInfoManager;
     private SemaphoreSlim _commandSem;
@@ -25,13 +25,13 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         _hubConfiguration = hubConfiguration;
         _commandSem = new SemaphoreSlim(1);
-        _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();
+        _hubHandlers = new Dictionary<string, FarmerGardenHubHandler>();
 
         _localInfoManager = FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true);
         _appCommunication = FarmerServiceLocator.GetService<IFarmerAppCommunicationHandler>(true);
 
-        _appCommunication.LocalGroundAdded += LocalGroundAdded;
-        _appCommunication.LocalGroundRemoved += LocalGroundRemoved;
+        _appCommunication.LocalGardenAdded += LocalGardenAdded;
+        _appCommunication.LocalGardenRemoved += LocalGardenRemoved;
     }
 
     public override AppOperationalMode Mode => AppOperationalMode.Cli;
@@ -77,8 +77,8 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         if (_appCommunication != null)
         {
-            _appCommunication.LocalGroundAdded -= LocalGroundAdded;
-            _appCommunication.LocalGroundRemoved -= LocalGroundRemoved;
+            _appCommunication.LocalGardenAdded -= LocalGardenAdded;
+            _appCommunication.LocalGardenRemoved -= LocalGardenRemoved;
         }
 
         if (_hubHandlers != null)
@@ -91,33 +91,33 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
         }
     }
 
-    private void LocalGroundAdded(object sender, GroundChangedEventArgs e)
+    private void LocalGardenAdded(object sender, GardenChangedEventArgs e)
     {
-        if (_hubHandlers.ContainsKey(e.GroundId))
+        if (_hubHandlers.ContainsKey(e.GardenId))
         {
             return;
         }
 
-        var hub = new FarmerGroundHubHandler(_localInfoManager.Grounds[e.GroundId], _hubConfiguration);
+        var hub = new FarmerGardenHubHandler(_localInfoManager.Gardens[e.GardenId], _hubConfiguration);
         ConfigureHub(hub);
         
-        _hubHandlers.Add(e.GroundId, hub);
+        _hubHandlers.Add(e.GardenId, hub);
     }
 
-    private void LocalGroundRemoved(object sender, GroundChangedEventArgs e)
+    private void LocalGardenRemoved(object sender, GardenChangedEventArgs e)
     {
-        if (!_hubHandlers.TryGetValue(e.GroundId, out var hub))
+        if (!_hubHandlers.TryGetValue(e.GardenId, out var hub))
         {
             return;
         }
 
         hub.NewCliCommandReceived -= NewCliCommandReceived;
-        _hubHandlers.Remove(e.GroundId);
+        _hubHandlers.Remove(e.GardenId);
 
         Task.Run(async () => await hub.DisposeAsync());
     }
 
-    private void ConfigureHub(FarmerGroundHubHandler hub)
+    private void ConfigureHub(FarmerGardenHubHandler hub)
     {
         hub.NewCliCommandReceived += NewCliCommandReceived;
         Task.Run(async () => await hub.InitializeAsync(_operationsToken));
@@ -204,7 +204,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
                     outcome = true;
                     SendNewOperation(
                         AppOperation.RunAutoIrrigationPlan, 
-                        new [] { command.GroundId });                    
+                        new [] { command.GardenId });                    
                 }
 
                 break;
@@ -249,7 +249,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
 
         if (outcome)
         {
-            SendNewOperation(AppOperation.MoveToPosition, new [] { command.GroundId, point.Serialize() });
+            SendNewOperation(AppOperation.MoveToPosition, new [] { command.GardenId, point.Serialize() });
         }
 
         return outcome;
@@ -259,7 +259,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         if (_localCommand == null) return;
 
-        await _hubHandlers[_localCommand.GroundId].NotifyCliCommandResult(_localCommand.GroundId, result, _operationsToken);
+        await _hubHandlers[_localCommand.GardenId].NotifyCliCommandResult(_localCommand.GardenId, result, _operationsToken);
     }
 
     private void NewCliCommandReceived(object sender, NewCliCommandEventArgs e)

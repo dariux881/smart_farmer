@@ -13,7 +13,7 @@ namespace SmartFarmer.Data.Tasks;
 public class FarmerPlanStep : IFarmerPlanStep
 {
     private object[] _buildParameters;
-    private IFarmerGround _ground;
+    private IFarmerGarden _garden;
 
     public FarmerPlanStep() 
     {
@@ -46,9 +46,9 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string ID { get; set; }
 
-    public IFarmerPlanStep PropagateGround(IFarmerGround ground)
+    public IFarmerPlanStep PropagateGarden(IFarmerGarden garden)
     {
-        _ground = ground;
+        _garden = garden;
         return this;
     }
     
@@ -116,7 +116,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 
         try {
             SmartFarmerLog.Debug($"Getting instance of {TaskClassFullName}");
-            return FarmerServiceLocator.GetServiceByFullName(TaskClassFullName, _ground.ID, true) as IFarmerTask;
+            return FarmerServiceLocator.GetServiceByFullName(TaskClassFullName, _garden.ID, true) as IFarmerTask;
         }
         catch(Exception ex)
         {
@@ -136,7 +136,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 
         try {
             SmartFarmerLog.Debug($"Getting implementor of {TaskInterfaceFullName}");
-            return FarmerServiceLocator.GetServiceByFullName(TaskInterfaceFullName, _ground.ID, true) as IFarmerTask;
+            return FarmerServiceLocator.GetServiceByFullName(TaskInterfaceFullName, _garden.ID, true) as IFarmerTask;
         }
         catch(Exception ex)
         {

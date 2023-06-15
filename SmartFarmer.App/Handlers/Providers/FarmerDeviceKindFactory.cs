@@ -16,9 +16,9 @@ public class FarmerDeviceKindFactory : IFarmerDeviceKindFactory
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
     }
 
-    public IFarmerDeviceManager GetNewDeviceManager(string groundId)
+    public IFarmerDeviceManager GetNewDeviceManager(string gardenId)
     {
-        var config = GetGroundConfiguration(groundId);
+        var config = GetGardenConfiguration(gardenId);
         if (config == null) throw new InvalidProgramException();
         
         var kind = config.DeviceKind;
@@ -29,7 +29,7 @@ public class FarmerDeviceKindFactory : IFarmerDeviceKindFactory
                 {
                     return 
                         new ExternalDeviceProxy(
-                            FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Grounds[config.GroundId], 
+                            FarmerServiceLocator.GetService<IFarmerLocalInformationManager>(true).Gardens[config.GardenId], 
                             config.SerialConfiguration,
                             _configProvider.GetHubConfiguration());
                 }
@@ -44,8 +44,8 @@ public class FarmerDeviceKindFactory : IFarmerDeviceKindFactory
         }
     }
 
-    private GroundConfiguration GetGroundConfiguration(string groundId)
+    private GardenConfiguration GetGardenConfiguration(string gardenId)
     {
-        return _configProvider.GetGroundConfiguration(groundId);
+        return _configProvider.GetGardenConfiguration(gardenId);
     }
 }

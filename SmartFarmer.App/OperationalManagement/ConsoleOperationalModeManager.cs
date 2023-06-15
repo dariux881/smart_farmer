@@ -61,13 +61,13 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
     {
         string message = 
             "\n"+
-            "0 - list grounds\n" +
+            "0 - list gardens\n" +
             "1 - list plans\n" +
             "2 - execute plan\n" +
             "3 - list alerts\n"+
             "4 - invert alert read flag\n"+
-            "5 - update ground\n"+
-            "6 - update grounds\n"+
+            "5 - update garden\n"+
+            "6 - update gardens\n"+
             "7 - cli command\n" +
             "-1 - exit\n"+
             " select: ";
@@ -113,25 +113,25 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         {
             case -1:
                 break;
-            case 0: // list grounds
+            case 0: // list gardens
                 {
-                    Console.WriteLine("GROUNDS:");
-                    foreach (var ground in _localInfoManager.Grounds.Select(x => x.Key))
+                    Console.WriteLine("GARDENS:");
+                    foreach (var garden in _localInfoManager.Gardens.Select(x => x.Key))
                     {
-                        Console.WriteLine("\t" + ground);
+                        Console.WriteLine("\t" + garden);
                     }
                 }
 
                 break;
             case 1: // list plans
                 {
-                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
+                    Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
 
-                    var groundId = GetGroundIdFromInputOrDefault();
-                    var ground = _localInfoManager.Grounds[groundId] as FarmerGround;
+                    var gardenId = GetGardenIdFromInputOrDefault();
+                    var garden = _localInfoManager.Gardens[gardenId] as FarmerGarden;
 
-                    Console.WriteLine($"PLANS OF GROUND {ground.GroundName}:");
-                    foreach (var plan in ground.Plans)
+                    Console.WriteLine($"PLANS OF GARDEN {garden.GardenName}:");
+                    foreach (var plan in garden.Plans)
                     {
                         Console.WriteLine($"\t{plan.ID} ({plan.StepIds?.Count} steps)");
                     }
@@ -148,22 +148,22 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                 break;            
             case 3: // list alerts
                 {
-                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
+                    Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
 
-                    var groundId = GetGroundIdFromInputOrDefault();
-                    if (!_localInfoManager.Grounds.TryGetValue(groundId, out var ground))
+                    var gardenId = GetGardenIdFromInputOrDefault();
+                    if (!_localInfoManager.Gardens.TryGetValue(gardenId, out var garden))
                     {
                         break;
                     }
 
-                    var fGround = ground as FarmerGround;
-                    if (fGround == null)
+                    var fGarden = garden as FarmerGarden;
+                    if (fGarden == null)
                     {
                         break;
                     }
 
-                    Console.WriteLine($"ALERTS OF GROUND {ground.GroundName}:");
-                    foreach (var alert in fGround.Alerts)
+                    Console.WriteLine($"ALERTS OF GARDEN {garden.GardenName}:");
+                    foreach (var alert in fGarden.Alerts)
                     {
                         var readStatus = (alert.MarkedAsRead ? "" : "not ") + "read"; 
                         Console.WriteLine($"\t{alert.ID} - {alert.Code} ({alert.Level}/{alert.Severity}) - {readStatus}\n\t\t{alert.Message}");
@@ -179,17 +179,17 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                 }
 
                 break;
-            case 5: // update ground
+            case 5: // update garden
                 {
-                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
-                    var groundId = GetGroundIdFromInputOrDefault();
-                    SendNewOperation(AppOperation.UpdateGround, new [] { groundId });
+                    Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
+                    var gardenId = GetGardenIdFromInputOrDefault();
+                    SendNewOperation(AppOperation.UpdateGarden, new [] { gardenId });
                 }
 
                 break;
-            case 6: // update grounds
+            case 6: // update gardens
                 {
-                    SendNewOperation(AppOperation.UpdateAllGrounds, null);
+                    SendNewOperation(AppOperation.UpdateAllGardens, null);
                 }
 
                 break;
@@ -201,9 +201,9 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                 break;
             case 8: // test pos
                 {
-                    Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
-                    var groundId = GetGroundIdFromInputOrDefault();
-                    SendNewOperation(AppOperation.TestPosition, new [] { groundId });
+                    Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
+                    var gardenId = GetGardenIdFromInputOrDefault();
+                    SendNewOperation(AppOperation.TestPosition, new [] { gardenId });
                 }
 
                 break;
@@ -217,14 +217,14 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
     private void HandleCli()
     {
         PromptCli();
-        ReceiveCliCommand(out var groundId, out var command);
+        ReceiveCliCommand(out var gardenId, out var command);
 
         if (command == "quit")
         {
             return;
         }
 
-        SendNewOperation(AppOperation.CliCommand, new [] { groundId, command });
+        SendNewOperation(AppOperation.CliCommand, new [] { gardenId, command });
     }
 
     private void PromptCli()
@@ -233,31 +233,31 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         Console.WriteLine("> ");
     }
 
-    private void ReceiveCliCommand(out string groundId, out string command)
+    private void ReceiveCliCommand(out string gardenId, out string command)
     {
         command = Console.ReadLine().Trim();
 
         if (command == "quit")
         {
-            groundId = null;
+            gardenId = null;
             return;
         }
 
-        Console.WriteLine("insert ground ID [" +  GetDefaultGroundId() +"]: ");
-        groundId = GetGroundIdFromInputOrDefault();
+        Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
+        gardenId = GetGardenIdFromInputOrDefault();
     }
 
-    private string GetGroundIdFromInputOrDefault()
+    private string GetGardenIdFromInputOrDefault()
     {
         var input = Console.ReadLine().Trim();
         return
             string.IsNullOrEmpty(input) ? 
-                GetDefaultGroundId() : 
+                GetDefaultGardenId() : 
                 input;
     }
 
-    private string GetDefaultGroundId() 
+    private string GetDefaultGardenId() 
     {
-        return _localInfoManager.Grounds.FirstOrDefault().Key;
+        return _localInfoManager.Gardens.FirstOrDefault().Key;
     }
 }

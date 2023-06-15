@@ -5,11 +5,11 @@ namespace SmartFarmer.Services;
 public class NewAlertEventArgs : EventArgs
 {
     public string AlertId { get; }
-    public string FarmerGroundId { get; }
+    public string GardenId { get; }
 
-    public NewAlertEventArgs(string groundId, string alertId)
+    public NewAlertEventArgs(string gardenId, string alertId)
     {
-        FarmerGroundId = groundId;
+        GardenId = gardenId;
         AlertId = alertId;
     }
 }
@@ -18,11 +18,11 @@ public class NewAlertStatusEventArgs : EventArgs
 {
     public string AlertId { get; }
     public bool AlertRead { get; }
-    public string FarmerGroundId { get; }
+    public string GardenId { get; }
 
-    public NewAlertStatusEventArgs(string groundId, string alertId, bool alertRead)
+    public NewAlertStatusEventArgs(string gardenId, string alertId, bool alertRead)
     {
-        FarmerGroundId = groundId;
+        GardenId = gardenId;
         AlertId = alertId;
         AlertRead = alertRead;
     }

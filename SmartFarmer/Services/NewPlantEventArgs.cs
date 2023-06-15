@@ -5,11 +5,11 @@ namespace SmartFarmer.Services;
 public class NewPlantEventArgs : EventArgs
 {
     public string PlantInstanceId { get; }
-    public string FarmerGroundId { get; }
+    public string GardenId { get; }
 
-    public NewPlantEventArgs(string groundId, string plantInstanceId)
+    public NewPlantEventArgs(string gardenId, string plantInstanceId)
     {
-        FarmerGroundId = groundId;
+        GardenId = gardenId;
         PlantInstanceId = plantInstanceId;
     }
 }

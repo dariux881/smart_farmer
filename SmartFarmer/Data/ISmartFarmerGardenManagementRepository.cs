@@ -7,10 +7,10 @@ using SmartFarmer.Plants;
 
 namespace SmartFarmer.Data;
 
-public interface ISmartFarmerGroundManagementRepository
+public interface ISmartFarmerGardenManagementRepository
 {
-    Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
-    Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
+    Task<IEnumerable<IFarmerGarden>> GetFarmerGardenByUserIdAsync(string userId);
+    Task<IFarmerGarden> GetFarmerGardenByIdForUserAsync(string userId, string gardenId);
 
     Task<IFarmerPlantInstance> GetFarmerPlantInstanceById(string id, string userId = null);
     Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantsInstanceById(string[] ids, string userId = null);
@@ -20,10 +20,10 @@ public interface ISmartFarmerGroundManagementRepository
     Task<IFarmerPlant> GetFarmerPlantById(string id);
     Task<IEnumerable<IFarmerPlant>> GetFarmerPlantsById(string[] ids);
 
-    Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data);
+    Task<IFarmerGarden> CreateFarmerGarden(string userId, FarmerGardenRequestData data);
     Task<string> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data);
 
     Task<FarmerDevicePosition> SaveDevicePosition(string userId, FarmerDevicePositionRequestData position);
     Task<string[]> SaveDevicePositions(string userId, FarmerDevicePositionsRequestData positions);
-    Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(string userId, string groundId, string runId);
+    Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(string userId, string gardenId, string runId);
 }

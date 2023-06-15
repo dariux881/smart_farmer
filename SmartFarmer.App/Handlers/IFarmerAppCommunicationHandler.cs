@@ -5,10 +5,10 @@ namespace SmartFarmer.Handlers;
 public interface IFarmerAppCommunicationHandler
 {
     event EventHandler NewLoggedUser;
-    event EventHandler<GroundChangedEventArgs> LocalGroundAdded;
-    event EventHandler<GroundChangedEventArgs> LocalGroundRemoved;
+    event EventHandler<GardenChangedEventArgs> LocalGardenAdded;
+    event EventHandler<GardenChangedEventArgs> LocalGardenRemoved;
 
-    void NotifyNewGround(string groundId);
-    void NotifyRemovedGround(string groundId);
+    void NotifyNewGarden(string gardenId);
+    void NotifyRemovedGarden(string gardenId);
     void NotifyNewLoggedUser();
 }

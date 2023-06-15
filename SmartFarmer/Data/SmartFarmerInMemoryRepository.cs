@@ -24,13 +24,13 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var user = new User { ID = "user0", UserName="test", Password="test", Email="prova@test.it"};
 
-        var readGroundAuth = new Authorization { ID = Constants.AUTH_READ_GROUND, Name="Read Ground" };
-        var editGroundAuth = new Authorization { ID = Constants.AUTH_EDIT_GROUND, Name="Change Ground adding plans and plants" };
+        var readGardenAuth = new Authorization { ID = Constants.AUTH_READ_GARDEN, Name="Read Garden" };
+        var editGardenAuth = new Authorization { ID = Constants.AUTH_EDIT_GARDEN, Name="Change Garden adding plans and plants" };
         var readUsersAuth = new Authorization { ID = Constants.AUTH_READ_USERS, Name="See current users" };
         var editUsersAuth = new Authorization { ID = Constants.AUTH_EDIT_USERS, Name="Edit users, creating or deleting them, changing their permissions" };
 
-        user.Authorizations.Add(readGroundAuth);
-        user.Authorizations.Add(editGroundAuth);
+        user.Authorizations.Add(readGardenAuth);
+        user.Authorizations.Add(editGardenAuth);
 
         var irrInfo1 = new FarmerIrrigationTaskInfo {
             //ID = "ii0",
@@ -57,14 +57,14 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             FriendlyName="plant 2", 
             IrrigationInfoId = irrInfo2.ID };
 
-        var ground1 = new DTOs.FarmerGround(this)
+        var garden1 = new DTOs.FarmerGarden(this)
         { 
             ID = "gID", 
             UserID="user0", 
-            GroundName="Ground Name",
+            GardenName="Garden Name",
         };
 
-        _dbContext.Grounds.Add(ground1);
+        _dbContext.Gardens.Add(garden1);
         _dbContext.Plants.AddRange(new [] {plant1, plant2});
         _dbContext.SaveChanges();
 
@@ -74,7 +74,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             PlantName=plant1.FriendlyName, 
             PlantX=1, 
             PlantY=2,
-            FarmerGroundId = ground1.ID 
+            FarmerGardenId = garden1.ID 
         };
 
         var plantInstance2 = new FarmerPlantInstance { 
@@ -83,19 +83,19 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
             PlantName="pianta", 
             PlantX=10, 
             PlantY=22,
-            FarmerGroundId = ground1.ID 
+            FarmerGardenId = garden1.ID 
         };
 
         var plan0 = new FarmerPlan
         {
-            GroundId = ground1.ID,
+            GardenId = garden1.ID,
             //ID = "plan1",
             Name = "Test plan"
         };
 
         // var plan1 = new FarmerPlan
         // {
-        //     GroundId = ground1.ID,
+        //     GardenId = garden1.ID,
         //     //ID = "plan1",
         //     Name = "Monday plan",
         //     CronSchedule = "* * * ? * MON *"
@@ -103,7 +103,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         // var plan2 = new FarmerPlan
         // {
-        //     GroundId = ground1.ID,
+        //     GardenId = garden1.ID,
         //     //ID = "plan1",
         //     Name = "Fridy plan",
         //     CronSchedule = "0/10 * * ? * FRI *"
@@ -178,14 +178,14 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         // var alert = new FarmerAlert
         // {
         //     //ID = "alertId",
-        //     FarmerGroundId = ground1.ID,
+        //     FarmerGardenId = garden1.ID,
         //     Level = Alerts.AlertLevel.Warning,
         //     Severity = Alerts.AlertSeverity.Low
         // };
 
         _dbContext.Users.Add(user);
-        _dbContext.Authorizations.Add(readGroundAuth);
-        _dbContext.Authorizations.Add(editGroundAuth);
+        _dbContext.Authorizations.Add(readGardenAuth);
+        _dbContext.Authorizations.Add(editGardenAuth);
         _dbContext.Authorizations.Add(readUsersAuth);
         _dbContext.Authorizations.Add(editUsersAuth);
 

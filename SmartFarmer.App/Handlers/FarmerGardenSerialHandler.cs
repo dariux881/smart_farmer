@@ -10,7 +10,7 @@ using SmartFarmer.Misc;
 
 namespace SmartFarmer.Handlers;
 
-public class FarmerGroundSerialHandler : IDisposable
+public class FarmerGardenSerialHandler : IDisposable
 {
     private SerialCommunicationConfiguration _serialConfiguration;
     private SerialPort _serialPort;
@@ -19,7 +19,7 @@ public class FarmerGroundSerialHandler : IDisposable
     private SemaphoreSlim _commandInProgressSem;
     private bool _commandInProgress;
 
-    public FarmerGroundSerialHandler(SerialCommunicationConfiguration serialConfiguration)
+    public FarmerGardenSerialHandler(SerialCommunicationConfiguration serialConfiguration)
     {
         _serialConfiguration = serialConfiguration;
 

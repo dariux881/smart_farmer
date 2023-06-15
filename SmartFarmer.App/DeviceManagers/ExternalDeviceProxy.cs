@@ -19,24 +19,24 @@ public class ExternalDeviceProxy :
     IFarmerDeviceManager,
     IDisposable
 {
-    private IFarmerGround _ground;
+    private IFarmerGarden _garden;
     private FarmerDevicePositionsRequestData _positionsToSend;
-    private FarmerGroundHubHandler _hub;
-    private FarmerGroundSerialHandler _serial;
+    private FarmerGardenHubHandler _hub;
+    private FarmerGardenSerialHandler _serial;
 
     public ExternalDeviceProxy(
-        IFarmerGround ground, 
+        IFarmerGarden garden, 
         SerialCommunicationConfiguration serialConfiguration,
         HubConnectionConfiguration hubConfiguration)
     {
-        _ground = ground;
+        _garden = garden;
         
         DevicePosition = new Farmer5dPoint();
         DevicePosition.NewPoint += NewPointReceived;
 
         _positionsToSend = new FarmerDevicePositionsRequestData()
         {
-            GroundId = ground.ID
+            GardenId = garden.ID
         };
 
         ConfigureHub(hubConfiguration);
@@ -231,7 +231,7 @@ public class ExternalDeviceProxy :
             await _hub.SendDevicePosition(
                 new FarmerDevicePositionRequestData()
                 {
-                    GroundId = _ground.ID,
+                    GardenId = _garden.ID,
                     RunId = position.RunId,
                     PositionDt = position.PositionDt,
                     Position = new Farmer5dPoint(position)
@@ -251,7 +251,7 @@ public class ExternalDeviceProxy :
 
     private void ConfigureHub(HubConnectionConfiguration hubConfiguration)
     {
-        _hub = new FarmerGroundHubHandler(_ground, hubConfiguration);
+        _hub = new FarmerGardenHubHandler(_garden, hubConfiguration);
 
         Task.Run(async () => {
             try
@@ -267,7 +267,7 @@ public class ExternalDeviceProxy :
     
     private void ConfigureSerialComm(SerialCommunicationConfiguration serialConfiguration)
     {
-        _serial = new FarmerGroundSerialHandler(serialConfiguration);
+        _serial = new FarmerGardenSerialHandler(serialConfiguration);
 
         _serial.PartialResultReceived += ProcessRequestUpdateResult;
     }
@@ -316,7 +316,7 @@ public class ExternalDeviceProxy :
                     .OrderByDescending(x => x.PositionDt)
                     .First();
 
-        Task.Run(async () => await _hub.NotifyDevicePosition(_positionsToSend.GroundId, lastPos, CancellationToken.None));
+        Task.Run(async () => await _hub.NotifyDevicePosition(_positionsToSend.GardenId, lastPos, CancellationToken.None));
     }
 
     private void SendDeviceError(string requestId, string command, string receivedValue)

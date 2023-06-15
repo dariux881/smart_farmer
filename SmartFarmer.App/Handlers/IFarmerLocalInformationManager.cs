@@ -7,13 +7,13 @@ namespace SmartFarmer.Handlers;
 public interface IFarmerLocalInformationManager
 {
 
-    ConcurrentDictionary<string, IFarmerGround> Grounds { get; }
+    ConcurrentDictionary<string, IFarmerGarden> Gardens { get; }
 
-    Task InitializeGroundsAsync(CancellationToken token);
-    Task ReinitializeGroundsAsync(CancellationToken token);
+    Task InitializeGardensAsync(CancellationToken token);
+    Task ReinitializeGardensAsync(CancellationToken token);
 
     void ClearLocalData(
-        bool clearGrounds = false,
+        bool clearGardens = false,
         bool clearLoggedUser = false,
         bool clearToken = false);
 }

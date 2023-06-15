@@ -33,7 +33,7 @@ public class AppConfiguration
         }
     }
 
-    public List<string> LocalGroundIds { get; set; }
+    public List<string> LocalGardenIds { get; set; }
 
     public string PlanCheckCronSchedule { get; set; }
 

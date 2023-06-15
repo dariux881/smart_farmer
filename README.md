@@ -5,24 +5,24 @@ Smart Farmer is a test of social improvement of home-made farming. The goal is t
 # Practical information
 
 The Smart Farmer framework organizes the domain in three main concepts:
-- **Ground**: where the farmer plays.
+- **Garden**: where the farmer plays.
 - **Plant**: it is the family of known plants.
-- **Plan**: is a sequence of Actions, or **tasks**, that the controller executes to carry the ground on. 
+- **Plan**: is a sequence of Actions, or **tasks**, that the controller executes to carry the garden on. 
 - **Alerts**: is a message that tasks may raise, if notifiable information happen. 
 
-## Ground
+## Garden
 
-The ground is the playground. It is organized as a grid with many plants on it. Each plant has coordinates and an occupancy. The ground has a collection of plans, as well, that are executed to play with the ground itself.
+The garden is the playground. It is organized as a grid with many plants on it. Each plant has coordinates and an occupancy. The garden has a collection of plans, as well, that are executed to play with the garden itself.
 
-The ground has a special task, as well, the _Auto irrigation task_, that runs the irrigation automatically, where applicable. 
+The garden has a special task, as well, the _Auto irrigation task_, that runs the irrigation automatically, where applicable. 
 
 ## Plants
 
-Smart Farmer has a set of known plants. When placed on a ground, they become Plant instance; each plant in the ground has a given name
+Smart Farmer has a set of known plants. When placed on a garden, they become Plant instance; each plant in the garden has a given name
 
 ## Plans & Tasks
 
-is a sequence of Actions, or **tasks**, that the controller executes to carry the ground on. 
+is a sequence of Actions, or **tasks**, that the controller executes to carry the garden on. 
 
 Example of tasks:
 - seed

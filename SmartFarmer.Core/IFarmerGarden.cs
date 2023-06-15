@@ -3,9 +3,9 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer;
 
-public interface IFarmerGround : IFarmerService
+public interface IFarmerGarden : IFarmerService
 {
-    string GroundName { get; }
+    string GardenName { get; }
     double Latitude { get; }
     double Longitude { get; }
     string UserID { get; }
@@ -15,7 +15,7 @@ public interface IFarmerGround : IFarmerService
     IReadOnlyList<string> AlertIds { get; }
 
     bool CanIrrigationPlanStart { get; }
-    string GroundIrrigationPlanId { get; }
+    string IrrigationPlanId { get; }
     double WidthInMeters { get; }
     double LengthInMeters { get; }
 

@@ -13,7 +13,7 @@ using SmartFarmer.Utils;
 
 namespace SmartFarmer;
 
-public class FarmerGround : IFarmerGround, IDisposable
+public class FarmerGarden : IFarmerGarden, IDisposable
 {
     private List<IFarmerPlantInstance> _plants;
     private List<IFarmerPlan> _plans;
@@ -27,14 +27,14 @@ public class FarmerGround : IFarmerGround, IDisposable
     private bool _buildAutoIrrigationPlan;
 
     [JsonConstructor]
-    public FarmerGround(
+    public FarmerGarden(
         string id,
-        string groundName, 
+        string gardenName, 
         double latitude, 
         double longitude, 
         double widthInMeters,
         double lengthInMeters, 
-        string groundIrrigationPlanId, 
+        string gardenIrrigationPlanId, 
         string userId, 
         string[] plantIds,
         string[] planIds,
@@ -42,12 +42,12 @@ public class FarmerGround : IFarmerGround, IDisposable
         bool buildAutoIrrigationPlan = true)
         : this(
             id,
-            groundName, 
+            gardenName, 
             latitude, 
             longitude, 
             widthInMeters,
             lengthInMeters, 
-            groundIrrigationPlanId,
+            gardenIrrigationPlanId,
             userId, 
             plantIds, 
             planIds, 
@@ -63,14 +63,14 @@ public class FarmerGround : IFarmerGround, IDisposable
 
     }
 
-    public FarmerGround(
+    public FarmerGarden(
         string id,
-        string groundName, 
+        string gardenName, 
         double latitude, 
         double longitude, 
         double widthInMeters,
         double lengthInMeters, 
-        string groundIrrigationPlanId, 
+        string gardenIrrigationPlanId, 
         string userId, 
         string[] plantIds,
         string[] planIds,
@@ -85,15 +85,15 @@ public class FarmerGround : IFarmerGround, IDisposable
         : this(plantProvider, irrigationInfoProvider, plantInstanceProvider, planProvider, alertProvider, alertHandler, buildAutoIrrigationPlan)
     {
         ID = id;
-        GroundName = groundName;
+        GardenName = gardenName;
         Latitude = latitude;
         Longitude = longitude;
         WidthInMeters = widthInMeters;
         LengthInMeters = lengthInMeters;
 
-        if (!string.IsNullOrEmpty(groundIrrigationPlanId))
+        if (!string.IsNullOrEmpty(gardenIrrigationPlanId))
         {
-            GroundIrrigationPlan = planProvider.GetFarmerService(groundIrrigationPlanId) as IFarmerAutoIrrigationPlan;
+            GardenIrrigationPlan = planProvider.GetFarmerService(gardenIrrigationPlanId) as IFarmerAutoIrrigationPlan;
         }
 
         Task.Run(async () => await GatherPlants(plantIds));
@@ -103,7 +103,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         UserID = userId;
     }
 
-    public FarmerGround(
+    public FarmerGarden(
         IFarmerPlantProvider plantProvider,
         IFarmerIrrigationInfoProvider irrigationInfoProvider,
         IFarmerPlantInstanceProvider plantInstanceProvider,
@@ -136,7 +136,7 @@ public class FarmerGround : IFarmerGround, IDisposable
 #region Public Properties
 
     public string ID { get; private set; }
-    public string GroundName { get; set; }
+    public string GardenName { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string UserID { get; private set; }
@@ -170,10 +170,10 @@ public class FarmerGround : IFarmerGround, IDisposable
     [JsonIgnore]
     public IReadOnlyList<IFarmerPlan> Plans => _plans?.AsReadOnly();
     
-    public string GroundIrrigationPlanId => GroundIrrigationPlan?.ID;
+    public string IrrigationPlanId => GardenIrrigationPlan?.ID;
     
     [JsonIgnore]
-    public IFarmerAutoIrrigationPlan GroundIrrigationPlan { get; private set; }
+    public IFarmerAutoIrrigationPlan GardenIrrigationPlan { get; private set; }
 
     public bool CanIrrigationPlanStart { get; set; }
 
@@ -256,7 +256,7 @@ public class FarmerGround : IFarmerGround, IDisposable
 
 #region Private Methods
 
-    private async Task BuildAutoGroundIrrigationPlan()
+    private async Task BuildAutoGardenIrrigationPlan()
     {
         if (!_buildAutoIrrigationPlan)
         {
@@ -274,22 +274,22 @@ public class FarmerGround : IFarmerGround, IDisposable
             UserDefinedSettingsProvider
                 .GetUserDefinedSettings(UserID);
 
-        var oldGroundIrrigationPlanId = GroundIrrigationPlan?.ID;
+        var oldGardenIrrigationPlanId = GardenIrrigationPlan?.ID;
 
-        // GroundIrrigationPlan = 
+        // GardenIrrigationPlan = 
         //     new FarmerAutoIrrigationPlan()
         //     {
-        //         CanAutoGroundIrrigationPlanStart = 
+        //         CanAutoGardenIrrigationPlanStart = 
         //             userSettings.AUTOIRRIGATION_AUTOSTART,
         //         PlannedAt = 
         //             userSettings.AUTOIRRIGATION_PLANNED_TIME
         //     };
 
-        // await FarmerPlanProvider.Instance.AddFarmerService(GroundIrrigationPlan);
+        // await FarmerPlanProvider.Instance.AddFarmerService(GardenIrrigationPlan);
 
-        // if (oldGroundIrrigationPlanId == null)
+        // if (oldGardenIrrigationPlanId == null)
         // {
-        //     FarmerPlanProvider.Instance.RemoveFarmerService(oldGroundIrrigationPlanId);
+        //     FarmerPlanProvider.Instance.RemoveFarmerService(oldGardenIrrigationPlanId);
         // }
 
         // asking irrigation
@@ -297,7 +297,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         //     {
         //         var plantKind = _plantsProvider.GetFarmerService(plant.PlantKindID);
 
-        //         GroundIrrigationPlan.AddIrrigationStep(
+        //         GardenIrrigationPlan.AddIrrigationStep(
         //             plant, 
         //             _irrigationInfoProvider.GetFarmerService(plantKind.IrrigationInfoId));
         //     });
@@ -323,7 +323,7 @@ public class FarmerGround : IFarmerGround, IDisposable
             _plants.Add(plant);
         }
 
-        BuildAutoGroundIrrigationPlan();
+        BuildAutoGardenIrrigationPlan();
     }
 
     private void AddPlant(IFarmerPlantInstance plant)
@@ -331,7 +331,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
         _plants.Add(plant);
-        BuildAutoGroundIrrigationPlan();
+        BuildAutoGardenIrrigationPlan();
     }
 
     private void RemovePlant(IFarmerPlantInstance plant)
@@ -339,7 +339,7 @@ public class FarmerGround : IFarmerGround, IDisposable
         if (plant == null) throw new ArgumentNullException(nameof(plant));
 
         _plants.Remove(plant);
-        BuildAutoGroundIrrigationPlan();
+        BuildAutoGardenIrrigationPlan();
     }
 
     private void AddPlan(IFarmerPlan plan)

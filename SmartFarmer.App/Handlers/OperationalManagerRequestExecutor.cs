@@ -19,12 +19,12 @@ public class OperationalManagerRequestExecutor
     private readonly IFarmerAppCommunicationHandler _communicationHandler;
     private readonly IFarmerLocalInformationManager _localInfoManager;
 
-    private Dictionary<string, FarmerGroundHubHandler> _hubHandlers;
+    private Dictionary<string, FarmerGardenHubHandler> _hubHandlers;
     private CancellationTokenSource _currentOperationTokenSource;
 
     public OperationalManagerRequestExecutor()
     {
-        _hubHandlers = new Dictionary<string, FarmerGroundHubHandler>();        
+        _hubHandlers = new Dictionary<string, FarmerGardenHubHandler>();        
         _currentOperationTokenSource = new CancellationTokenSource();
 
         _deviceProvider = FarmerServiceLocator.GetService<IFarmerDeviceKindProvider>(true);
@@ -72,10 +72,10 @@ public class OperationalManagerRequestExecutor
 
                 break;
 
-            case AppOperation.UpdateAllGrounds:
+            case AppOperation.UpdateAllGardens:
                 Task.Run(async () => 
                     {
-                        await _localInfoManager.ReinitializeGroundsAsync(_currentOperationTokenSource.Token);
+                        await _localInfoManager.ReinitializeGardensAsync(_currentOperationTokenSource.Token);
                     });
                 break;
 
@@ -125,28 +125,28 @@ public class OperationalManagerRequestExecutor
     {
         if (_communicationHandler == null) return;
 
-        _communicationHandler.LocalGroundAdded += LocalGroundAdded;
-        _communicationHandler.LocalGroundRemoved += LocalGroundRemoved;
+        _communicationHandler.LocalGardenAdded += LocalGardenAdded;
+        _communicationHandler.LocalGardenRemoved += LocalGardenRemoved;
     }
 
-    private void LocalGroundAdded(object sender, GroundChangedEventArgs e)
+    private void LocalGardenAdded(object sender, GardenChangedEventArgs e)
     {
-        Task.Run(async () => await InitializeHubForGroundAsync(e.GroundId, CancellationToken.None));
+        Task.Run(async () => await InitializeHubForGardenAsync(e.GardenId, CancellationToken.None));
     }
 
-    private void LocalGroundRemoved(object sender, GroundChangedEventArgs e)
+    private void LocalGardenRemoved(object sender, GardenChangedEventArgs e)
     {
-        RemoveHubForGround(e.GroundId);
+        RemoveHubForGarden(e.GardenId);
     }
 
-    private void RemoveHubForGround(string groundId)
+    private void RemoveHubForGarden(string gardenId)
     {
-        if (!_hubHandlers.ContainsKey(groundId))
+        if (!_hubHandlers.ContainsKey(gardenId))
         {
             return;
         }
 
-        var closingHub = _hubHandlers[groundId];
+        var closingHub = _hubHandlers[gardenId];
 
         closingHub.CliCommandResultReceived -= CliCommandResultReceived;
 
@@ -155,25 +155,25 @@ public class OperationalManagerRequestExecutor
             disp.Dispose();
         }
 
-        _hubHandlers.Remove(groundId);
+        _hubHandlers.Remove(gardenId);
     }
 
-    private async Task InitializeHubForGroundAsync(string groundId, CancellationToken token)
+    private async Task InitializeHubForGardenAsync(string gardenId, CancellationToken token)
     {
-        if (_hubHandlers.ContainsKey(groundId))
+        if (_hubHandlers.ContainsKey(gardenId))
         {
-            RemoveHubForGround(groundId);
+            RemoveHubForGarden(gardenId);
         }
 
-        var ground = _localInfoManager.Grounds.FirstOrDefault(x => x.Key == groundId).Value;
-        if (ground == null) return;
+        var garden = _localInfoManager.Gardens.FirstOrDefault(x => x.Key == gardenId).Value;
+        if (garden == null) return;
 
-        var hub = new FarmerGroundHubHandler(ground, _configProvider.GetHubConfiguration());
+        var hub = new FarmerGardenHubHandler(garden, _configProvider.GetHubConfiguration());
         await hub.InitializeAsync(token);
 
         hub.CliCommandResultReceived += CliCommandResultReceived;
 
-        _hubHandlers.TryAdd(groundId, hub);
+        _hubHandlers.TryAdd(gardenId, hub);
     }
 
     private void CliCommandResultReceived(object sender, CliCommandResultEventArgs args)
@@ -182,17 +182,17 @@ public class OperationalManagerRequestExecutor
     }
 
     private async Task SendCliCommandAsync(
-        string groundId, 
+        string gardenId, 
         string command, 
         IOperationalModeManager opManager,
         OperationRequestEventArgs args,
         CancellationToken token)
     {
-        await _hubHandlers[groundId]?.SendCliCommandAsync(groundId, command, token);
+        await _hubHandlers[gardenId]?.SendCliCommandAsync(gardenId, command, token);
     }
 
     private async Task<bool> MoveToPosition(
-        string groundId, 
+        string gardenId, 
         string serializedPosition, 
         IOperationalModeManager opManager,
         OperationRequestEventArgs args,
@@ -209,12 +209,12 @@ public class OperationalManagerRequestExecutor
             return false;
         }
 
-        var device = _deviceProvider.GetDeviceManager(groundId);
+        var device = _deviceProvider.GetDeviceManager(gardenId);
         if (device == null)
         {
-            SmartFarmerLog.Error($"no valid device found for ground {groundId}");
+            SmartFarmerLog.Error($"no valid device found for garden {gardenId}");
 
-            args.Result = $"No device found for ground {groundId}";
+            args.Result = $"No device found for garden {gardenId}";
             opManager?.ProcessResult(args);
 
             return false;
@@ -254,11 +254,11 @@ public class OperationalManagerRequestExecutor
         return false;
     }
 
-    private async Task SendTestPosition(string groundId, CancellationToken token)
+    private async Task SendTestPosition(string gardenId, CancellationToken token)
     {
-        await _hubHandlers[groundId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
+        await _hubHandlers[gardenId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
         {
-            GroundId = groundId,
+            GardenId = gardenId,
             PositionDt = DateTime.UtcNow,
             Position = new Farmer5dPoint(1, 2, 3, 4, 5)
         },
@@ -266,9 +266,9 @@ public class OperationalManagerRequestExecutor
 
         await Task.Delay(1000);
 
-        await _hubHandlers[groundId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
+        await _hubHandlers[gardenId].SendDevicePosition(new Movement.FarmerDevicePositionRequestData()
         {
-            GroundId = groundId,
+            GardenId = gardenId,
             PositionDt = DateTime.UtcNow,
             Position = new Farmer5dPoint(1, 2, 3, 4, 15)
         },
@@ -277,13 +277,13 @@ public class OperationalManagerRequestExecutor
 
     private async Task<bool> InvertAlertReadStatusAsync(string alertId, CancellationToken token)
     {
-        var ground = GroundUtils.GetGroundByAlert(alertId) as FarmerGround;
-        if (ground == null) return false;
+        var garden = GardenUtils.GetGardenByAlert(alertId) as FarmerGarden;
+        if (garden == null) return false;
 
-        var alert = ground.Alerts.First(x => x.ID == alertId);
+        var alert = garden.Alerts.First(x => x.ID == alertId);
         var newState = !alert.MarkedAsRead;
         
-        return await MarkAlertAsReadAsync(ground.ID, alertId, newState, token);
+        return await MarkAlertAsReadAsync(garden.ID, alertId, newState, token);
     }
 
     private async Task ExecutePlanAsync(
@@ -292,12 +292,12 @@ public class OperationalManagerRequestExecutor
         OperationRequestEventArgs args,
         CancellationToken token)
     {
-        var ground = GroundUtils.GetGroundByPlan(planId);
-        if (ground == null || ground is not FarmerGround fGround)
+        var garden = GardenUtils.GetGardenByPlan(planId);
+        if (garden == null || garden is not FarmerGarden fGarden)
         {
-            SmartFarmerLog.Error("No valid ground found for plan " + planId);
+            SmartFarmerLog.Error("No valid garden found for plan " + planId);
 
-            args.Result = "invalid ground for plan";
+            args.Result = "invalid garden for plan";
             opManager?.ProcessResult(args);
 
             return;
@@ -305,7 +305,7 @@ public class OperationalManagerRequestExecutor
 
         try
         {
-            var result = await fGround.ExecutePlan(planId, token);
+            var result = await fGarden.ExecutePlan(planId, token);
 
             var suffix = result ? "successfully" : "with errors";
 
@@ -327,22 +327,22 @@ public class OperationalManagerRequestExecutor
     }
 
     private async Task ExecuteAutoIrrigationPlanAsync(
-        string groundId,
+        string gardenId,
         IOperationalModeManager opManager,
         OperationRequestEventArgs args,
         CancellationToken token)
     {
-        if (!_localInfoManager.Grounds.ContainsKey(groundId))
+        if (!_localInfoManager.Gardens.ContainsKey(gardenId))
         {
-            args.Result = "Invalid ground";
+            args.Result = "Invalid garden";
             args.IsError = true;
             opManager?.ProcessResult(args);
             return;
         }
 
-        var ground = _localInfoManager.Grounds[groundId];
+        var garden = _localInfoManager.Gardens[gardenId];
 
-        if (string.IsNullOrEmpty(ground.GroundIrrigationPlanId))
+        if (string.IsNullOrEmpty(garden.IrrigationPlanId))
         {
             args.Result = "Invalid irrigation plan";
             args.IsError = true;
@@ -351,7 +351,7 @@ public class OperationalManagerRequestExecutor
         }
 
         await ExecutePlanAsync(
-            ground.GroundIrrigationPlanId, 
+            garden.IrrigationPlanId, 
             opManager, 
             args, 
             token);
@@ -363,10 +363,10 @@ public class OperationalManagerRequestExecutor
 
         foreach (var planId in planIds)
         {
-            var ground = GroundUtils.GetGroundByPlan(planId) as FarmerGround;
+            var garden = GardenUtils.GetGardenByPlan(planId) as FarmerGarden;
 
-            if (ground == null) continue;
-            var plan = ground.Plans.First(x => x.ID == planId);
+            if (garden == null) continue;
+            var plan = garden.Plans.First(x => x.ID == planId);
 
             tasks.Add(
                 Task.Run(async () => {
@@ -401,9 +401,9 @@ public class OperationalManagerRequestExecutor
         _localInfoManager.ClearLocalData(true, false, false);
     }
 
-    private async Task<bool> MarkAlertAsReadAsync(string groundId, string alertId, bool status, CancellationToken token)
+    private async Task<bool> MarkAlertAsReadAsync(string gardenId, string alertId, bool status, CancellationToken token)
     {
-        return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, groundId).MarkAlertAsReadAsync(alertId, status, token);
+        return await FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, gardenId).MarkAlertAsReadAsync(alertId, status, token);
     }
 
 }

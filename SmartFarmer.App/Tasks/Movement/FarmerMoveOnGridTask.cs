@@ -17,15 +17,15 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
     private IFarmerMoveOnGridDevice _deviceHandler;
 
 
-    public FarmerMoveOnGridTask(IFarmerGround ground, IFarmerMoveOnGridDevice handler)
+    public FarmerMoveOnGridTask(IFarmerGarden garden, IFarmerMoveOnGridDevice handler)
     {
-        if (ground == null) throw new ArgumentNullException(nameof(ground));
+        if (garden == null) throw new ArgumentNullException(nameof(garden));
         if (handler == null) throw new ArgumentNullException(nameof(handler));
 
         RequiredTool = FarmerTool.None;
         _deviceHandler = handler;
 
-        InitCurrentPosition(ground);
+        InitCurrentPosition(garden);
     }
 
     public override string TaskName => "Move on Grid task";
@@ -84,12 +84,12 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         _currentPosition?.Dispose();
     }
 
-    private void InitCurrentPosition(IFarmerGround ground)
+    private void InitCurrentPosition(IFarmerGarden garden)
     {
         _currentPosition = 
             new Farmer2dPoint(
                 0.0, 0.0, // expected 0,0 -> to reset when initializing
-                ground?.WidthInMeters,
-                ground?.LengthInMeters);
+                garden?.WidthInMeters,
+                garden?.LengthInMeters);
     }
 }

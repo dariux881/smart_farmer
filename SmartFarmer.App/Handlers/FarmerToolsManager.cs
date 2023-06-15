@@ -12,17 +12,17 @@ public class FarmerToolsManager : IFarmerToolsManager
 {
     private FarmerTool _currentlyMountedTool;
     private Farmer2dPoint _toolsCollectorPosition;
-    private IFarmerGround _ground;
+    private IFarmerGarden _garden;
     private SemaphoreSlim _mountingToolSem;
     private IFarmerMoveOnGridTask _moveOnGrid;
     private IFarmerMoveArmAtHeightTask _moveHeight;
 
-    public FarmerToolsManager(IFarmerGround ground)
+    public FarmerToolsManager(IFarmerGarden garden)
     {
         _currentlyMountedTool = FarmerTool.None;
         _mountingToolSem = new SemaphoreSlim(1);
 
-        _ground = ground;
+        _garden = garden;
 
         InitializeDependencies();
     }
@@ -84,10 +84,10 @@ public class FarmerToolsManager : IFarmerToolsManager
     {
         _moveOnGrid =
             FarmerServiceLocator
-                .GetService<IFarmerMoveOnGridTask>(true, _ground);
+                .GetService<IFarmerMoveOnGridTask>(true, _garden);
 
         _moveHeight =
             FarmerServiceLocator
-                .GetService<IFarmerMoveArmAtHeightTask>(true, _ground);
+                .GetService<IFarmerMoveArmAtHeightTask>(true, _garden);
     }
 }

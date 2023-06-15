@@ -11,7 +11,7 @@ namespace SmartFarmer.Data.Tasks;
 
 public class FarmerPlan : IFarmerPlan
 {
-    private IFarmerGround _ground;
+    private IFarmerGarden _garden;
 
     public FarmerPlan()
     {
@@ -35,11 +35,11 @@ public class FarmerPlan : IFarmerPlan
 
     public string ID { get; set; }
 
-    public IFarmerPlan PropagateGround(IFarmerGround ground)
+    public IFarmerPlan PropagateGarden(IFarmerGarden garden)
     {
-        _ground = ground;
+        _garden = garden;
 
-        Steps.ForEach(step => step.PropagateGround(ground));
+        Steps.ForEach(step => step.PropagateGarden(garden));
         
         return this;
     }
@@ -67,7 +67,7 @@ public class FarmerPlan : IFarmerPlan
                 new SmartFarmer.Alerts.FarmerAlertRequestData()
                 {
                     Code = fEx.Code,
-                    FarmerGroundId = _ground.ID,
+                    GardenId = _garden.ID,
                     Message = fEx.Message,
                     Level = fEx.Level,
                     Severity = fEx.Severity,
@@ -83,7 +83,7 @@ public class FarmerPlan : IFarmerPlan
                 new SmartFarmer.Alerts.FarmerAlertRequestData()
                 {
                     Code = SmartFarmer.Alerts.AlertCode.Unknown,
-                    FarmerGroundId = _ground.ID,
+                    GardenId = _garden.ID,
                     Message = ex.Message,
                     Level = SmartFarmer.Alerts.AlertLevel.Error,
                     Severity = SmartFarmer.Alerts.AlertSeverity.High,

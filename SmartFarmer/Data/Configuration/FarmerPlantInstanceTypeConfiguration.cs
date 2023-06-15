@@ -17,7 +17,7 @@ public class FarmerPlantInstanceTypeConfiguration : IEntityTypeConfiguration<Far
             .IsRequired();
 
         builder
-            .Property(p => p.FarmerGroundId)
+            .Property(p => p.FarmerGardenId)
             .IsRequired();
 
         builder
@@ -38,8 +38,8 @@ public class FarmerPlantInstanceTypeConfiguration : IEntityTypeConfiguration<Far
             .HasForeignKey(nameof(FarmerPlantInstance.PlantKindID));
             
         builder
-            .HasOne(p => p.Ground)
+            .HasOne(p => p.Garden)
             .WithMany(g => g.Plants)
-            .HasForeignKey(p => p.FarmerGroundId);
+            .HasForeignKey(p => p.FarmerGardenId);
     }
 }

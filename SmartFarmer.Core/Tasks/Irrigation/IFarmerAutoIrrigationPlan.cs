@@ -9,7 +9,7 @@ namespace SmartFarmer.Tasks.Irrigation
     {
         void AddIrrigationStep(IFarmerPlantInstance plant, IFarmerIrrigationTaskInfo irrigationInfo);
 
-        bool CanAutoGroundIrrigationPlanStart { get; }
+        bool CanAutoIrrigationPlanStart { get; }
         DateTime PlannedAt { get; }
     }
 }

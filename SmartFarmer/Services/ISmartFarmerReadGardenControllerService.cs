@@ -8,18 +8,18 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Services;
 
-public interface ISmartFarmerReadGroundControllerService
+public interface ISmartFarmerReadGardenControllerService
 {
     event EventHandler<DevicePositionEventArgs> NewDevicePosition;
-    event EventHandler<NewPlantEventArgs> NewPlantInGround;
+    event EventHandler<NewPlantEventArgs> NewPlantInGarden;
     event EventHandler<PlanEventArgs> NewPlan;
     event EventHandler<PlanEventArgs> PlanDeleted;
     event EventHandler<PlanEventArgs> NewAutoIrrigationPlan;
     event EventHandler<NewAlertEventArgs> NewAlert;
     event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
-    Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId);
-    Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId);
+    Task<IEnumerable<IFarmerGarden>> GetFarmerGardenByUserIdAsync(string userId);
+    Task<IFarmerGarden> GetFarmerGardenByIdForUserAsync(string userId, string gardenId);
 
     Task<IFarmerPlantInstance> GetFarmerPlantInstanceByIdForUserAsync(string userId, string plantId);
     Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantInstanceByIdsForUserAsync(string userId, string[] plantIds);
@@ -29,11 +29,11 @@ public interface ISmartFarmerReadGroundControllerService
     Task<IrrigationHistory> GetFarmerIrrigationHistoryByPlantAsync(string userId, string plantId);
     Task<bool> MarkIrrigationInstance(string userId, FarmerPlantIrrigationInstance irrigationInstance);
     
-    Task<IEnumerable<string>> GetFarmerPlanIdsInGroundAsync(string userId, string groundId);
+    Task<IEnumerable<string>> GetFarmerPlanIdsInGardenAsync(string userId, string gardenId);
     Task<IFarmerPlan> GetFarmerPlanByIdForUserAsync(string userId, string planId);
     Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds);
     Task<IEnumerable<IFarmerPlanStep>> GetFarmerPlanStepByIdsAsync (string[] ids);
 
-    Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId);
+    Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGardenIdAsync(string userId, string gardenId);
     Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids);
 }

@@ -10,7 +10,7 @@ public class AppsettingsBasedConfigurationProvider : IFarmerConfigurationProvide
     private AppConfiguration _appConfiguration;
     private ApiConfiguration _apiConfiguration;
     private HubConnectionConfiguration _hubConfiguration;
-    private GroundsConfiguration _groundsConfiguration;
+    private GardensConfiguration _gardensConfiguration;
     private UserConfiguration _userConfiguration;
 
     public AppsettingsBasedConfigurationProvider(IConfiguration config)
@@ -19,7 +19,7 @@ public class AppsettingsBasedConfigurationProvider : IFarmerConfigurationProvide
         _userConfiguration = config.GetSection("UserConfiguration").Get<UserConfiguration>();
         _appConfiguration = config.GetSection("AppConfiguration").Get<AppConfiguration>();
         _hubConfiguration = config.GetSection("HubConnectionConfiguration").Get<HubConnectionConfiguration>();
-        _groundsConfiguration = config.GetSection("GroundsConfiguration").Get<GroundsConfiguration>();
+        _gardensConfiguration = config.GetSection("GardensConfiguration").Get<GardensConfiguration>();
     }
 
     public AppConfiguration GetAppConfiguration()
@@ -37,9 +37,9 @@ public class AppsettingsBasedConfigurationProvider : IFarmerConfigurationProvide
         return _userConfiguration;
     }
 
-    public GroundConfiguration GetGroundConfiguration(string groundId)
+    public GardenConfiguration GetGardenConfiguration(string gardenId)
     {
-        return _groundsConfiguration.Configurations.FirstOrDefault(x => x.GroundId == groundId);
+        return _gardensConfiguration.Configurations.FirstOrDefault(x => x.GardenId == gardenId);
     }
 
     public HubConnectionConfiguration GetHubConfiguration()

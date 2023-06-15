@@ -31,7 +31,7 @@ namespace SmartFarmer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ISmartFarmerUserAuthenticationService, SmartFarmerUserJWTAuthenticationService>();
-            services.AddScoped<ISmartFarmerGroundControllerService, SmartFarmerGroundControllerService>();
+            services.AddScoped<ISmartFarmerGardenControllerService, SmartFarmerGardenControllerService>();
             services.AddScoped<ISmartFarmerRepository, SmartFarmerInMemoryRepository>();
 
             services.AddDbContext<SmartFarmerDbContext>(
@@ -78,7 +78,7 @@ namespace SmartFarmer
                                 // If the request is for our hub...
                                 var path = context.HttpContext.Request.Path;
                                 if (!string.IsNullOrEmpty(accessToken) 
-                                    && (path.StartsWithSegments("/FarmerGroundHub", System.StringComparison.OrdinalIgnoreCase)))
+                                    && (path.StartsWithSegments("/" + nameof(FarmerGardenHub), System.StringComparison.OrdinalIgnoreCase)))
                                 {
                                     // Read the token out of the query string
                                     context.Token = accessToken;
@@ -144,7 +144,7 @@ namespace SmartFarmer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<FarmerGroundHub>("farmerGroundHub");
+                endpoints.MapHub<FarmerGardenHub>(nameof(FarmerGardenHub));
             });
         }
     }

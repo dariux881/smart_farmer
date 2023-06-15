@@ -6,7 +6,7 @@ public class FarmerAlertRequestData
 {    
     public string RaisedByTaskId { get; set; }
     public string PlantInstanceId { get; set; }
-    public string FarmerGroundId { get; set; }
+    public string GardenId { get; set; }
 
     public AlertCode Code { get; set; }
     public string Message { get; set; }

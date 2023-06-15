@@ -2,9 +2,9 @@ using SmartFarmer.Helpers;
 
 namespace SmartFarmer.Configurations;
 
-public class GroundConfiguration
+public class GardenConfiguration
 {
-    public string GroundId { get; set; }
+    public string GardenId { get; set; }
     public SerialCommunicationConfiguration SerialConfiguration { get; set; }
     public DeviceKindEnum DeviceKind { get; set; }
 }

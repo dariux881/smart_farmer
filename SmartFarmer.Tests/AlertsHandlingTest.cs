@@ -9,11 +9,11 @@ namespace SmartFarmer.Tests
     [TestFixture]
     public class AlertHandlingTests
     {
-        private IFarmerGround _ground;
+        private IFarmerGarden _garden;
 
         public AlertHandlingTests() 
         {
-            _ground = new FarmerGround(
+            _garden = new FarmerGarden(
                 FarmerPlantProvider.Instance, 
                 FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
@@ -23,21 +23,21 @@ namespace SmartFarmer.Tests
         }
 
         [Test]
-        public async Task RaisingAlert_ExpectedGroundFound()
+        public async Task RaisingAlert_ExpectedGardenFound()
         {
             var alertHandler = FarmerAlertHandler.Instance;
 
-            Assert.IsNotNull(_ground);
+            Assert.IsNotNull(_garden);
             Assert.IsNotNull(alertHandler);
-            Assert.IsEmpty(_ground.AlertIds);
+            Assert.IsEmpty(_garden.AlertIds);
 
             var message = "test";
 
             await alertHandler.RaiseAlert(message, AlertCode.Unknown, null, null, null, AlertLevel.Error, AlertSeverity.Low);
 
-            Assert.IsNotEmpty(_ground.AlertIds);
+            Assert.IsNotEmpty(_garden.AlertIds);
 
-            foreach (var alertId in _ground.AlertIds)
+            foreach (var alertId in _garden.AlertIds)
             {
                 var receivedAlert = await FarmerAlertProvider.Instance.GetFarmerService(alertId);
                 Assert.IsNotNull(receivedAlert);

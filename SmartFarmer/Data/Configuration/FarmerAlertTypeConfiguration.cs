@@ -13,18 +13,18 @@ public class FarmerAlertTypeConfiguration : IEntityTypeConfiguration<FarmerAlert
             .ValueGeneratedOnAdd();
             
         builder
-            .HasOne(s => s.FarmerGround)
+            .HasOne(s => s.FarmerGarden)
             .WithMany(p => p.Alerts)
-            .HasForeignKey("FarmerGroundId");
+            .HasForeignKey(nameof(FarmerAlert.FarmerGardenId));
         
         builder
             .HasOne(s => s.PlantInstance)
             .WithMany()
-            .HasForeignKey("PlantInstanceId");
+            .HasForeignKey(nameof(FarmerAlert.PlantInstanceId));
         
         builder
             .HasOne(s => s.RaisedByTask)
             .WithMany()
-            .HasForeignKey("RaisedByTaskId");
+            .HasForeignKey(nameof(FarmerAlert.RaisedByTaskId));
     }
 }

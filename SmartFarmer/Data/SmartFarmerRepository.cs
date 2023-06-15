@@ -91,29 +91,29 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
     }
 #endregion
 
-#region Ground Management
+#region Garden Management
 
-    public async Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId)
+    public async Task<IEnumerable<IFarmerGarden>> GetFarmerGardenByUserIdAsync(string userId)
     {
-        return await _dbContext.Grounds.Where(x => x.UserID == userId).ToListAsync();
+        return await _dbContext.Gardens.Where(x => x.UserID == userId).ToListAsync();
     }
 
-    public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
+    public async Task<IFarmerGarden> GetFarmerGardenByIdForUserAsync(string userId, string gardenId)
     {
         return await _dbContext
-            .Grounds
+            .Gardens
                 .Include(g => g.Plants)
                 .Include(g => g.Plans)
                 .Include(g => g.Alerts)
                 .FirstOrDefaultAsync(
-                    x => x.ID == groundId && x.UserID == userId);
+                    x => x.ID == gardenId && x.UserID == userId);
     }
 
     public async Task<FarmerDevicePosition> SaveDevicePosition(string userId, FarmerDevicePositionRequestData position)
     {
         var positionToStore = new FarmerDevicePosition()
         {
-            GroundId = position.GroundId,
+            GardenId = position.GardenId,
             UserId = userId,
             X = position.Position.X,
             Y = position.Position.Y,
@@ -132,7 +132,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<string[]> SaveDevicePositions(string userId, FarmerDevicePositionsRequestData positions)
     {
-        var groundId = positions.GroundId;
+        var gardenId = positions.GardenId;
 
         var posToStore = 
             positions
@@ -140,7 +140,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                     .Select(pos => 
                         new FarmerDevicePosition()
                         {
-                            GroundId = groundId,
+                            GardenId = gardenId,
                             UserId = userId,
                             X = pos.X,
                             Y = pos.Y,
@@ -160,14 +160,14 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IEnumerable<FarmerDevicePosition>> GetDevicePositionHistory(
         string userId, 
-        string groundId, 
+        string gardenId, 
         string runId)
     {
         return await _dbContext
             .DevicePositions
                 .Where(x =>
                     x.UserId == userId &&
-                    x.GroundId == groundId && 
+                    x.GardenId == gardenId && 
                     string.IsNullOrEmpty(runId) || x.RunId == runId)
                 .OrderByDescending(x => x.PositionDt)
                 .ToListAsync();
@@ -177,7 +177,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
     /// Saves update on the repository.
     /// </summary>
     /// <returns><c>true</c> if some entry changes, <c>false</c> otherwise.</returns>
-    public async Task<bool> SaveGroundUpdates()
+    public async Task<bool> SaveGardenUpdates()
     {
         return await _dbContext.SaveChangesAsync() > 0;
     }
@@ -191,22 +191,22 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IEnumerable<IFarmerPlantInstance>> GetFarmerPlantsInstanceById(string[] ids, string userId = null)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
 
-            if (!grounds.Any())
+            if (!gardens.Any())
             {
-                throw new InvalidOperationException("no grounds found for user "+ userId);
+                throw new InvalidOperationException("no gardens found for user "+ userId);
             }
         }
 
         return await _dbContext
             .PlantsInstance
                 .Where(p => ids.Contains(p.ID))
-                .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
+                .Where(p => !gardens.Any() || gardens.Contains(p.FarmerGardenId))
                 .Include(p => p.Plant)
                 .ToArrayAsync();
     }
@@ -236,10 +236,10 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 _dbContext
                     .PlantsInstance
                         .Where(x => x.ID == plantId)
-                        .Include(x => x.Ground)
+                        .Include(x => x.Garden)
                         .FirstAsync();
             
-            if (plant.Ground.UserID != userId)
+            if (plant.Garden.UserID != userId)
             {
                 throw new InvalidOperationException("user " + userId + " cannot access plant " + plantId);
             }
@@ -266,10 +266,10 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
                 _dbContext
                     .PlantsInstance
                         .Where(x => x.ID == irrigation.PlantId)
-                        .Include(x => x.Ground)
+                        .Include(x => x.Garden)
                         .FirstAsync();
             
-            if (plant.Ground.UserID != userId)
+            if (plant.Garden.UserID != userId)
             {
                 throw new InvalidOperationException("user " + userId + " cannot access plant " + irrigation.PlantId);
             }
@@ -289,11 +289,11 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return result == 1;
     }
 
-    public async Task<IEnumerable<string>> GetFarmerPlansInGround(string groundId, string userId)
+    public async Task<IEnumerable<string>> GetFarmerPlansInGarden(string gardenId, string userId)
     {
         return await _dbContext
             .Plans
-                .Where(p => p.GroundId == groundId)
+                .Where(p => p.GardenId == gardenId)
                 .Select(x => x.ID)
                 .ToArrayAsync();
     }
@@ -305,22 +305,22 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsAsync(string[] ids, string userId)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
 
-            if (!grounds.Any())
+            if (!gardens.Any())
             {
-                throw new InvalidOperationException("no grounds found for user "+ userId);
+                throw new InvalidOperationException("no gardens found for user "+ userId);
             }
         }
 
         return await _dbContext
             .Plans
                 .Where(p => ids.Contains(p.ID))
-                .Where(p => !grounds.Any() || grounds.Contains(p.GroundId))
+                .Where(p => !gardens.Any() || gardens.Contains(p.GardenId))
                 .Include(p => p.Steps)
                 .ToArrayAsync();
     }
@@ -353,77 +353,77 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdsAsync(string userId, string[] ids = null)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
 
-            if (!grounds.Any())
+            if (!gardens.Any())
             {
-                throw new InvalidOperationException("no grounds found for user "+ userId);
+                throw new InvalidOperationException("no gardens found for user "+ userId);
             }
         }
 
         return await _dbContext
             .Alerts
-                .Where(p => !grounds.Any() || grounds.Contains(p.FarmerGroundId))
+                .Where(p => !gardens.Any() || gardens.Contains(p.FarmerGardenId))
                 .Where(p => ids == null || ids.Contains(p.ID))
                 .Include(t => t.PlantInstance)
                 .Include(t => t.RaisedByTask)
                 .ToArrayAsync();
     }
 
-    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId)
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGardenIdAsync(string userId, string gardenId)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
         }
 
-        if (!grounds.Any())
+        if (!gardens.Any())
         {
             return new IFarmerAlert[] {};
         }
 
-        if (!grounds.Contains(groundId))
+        if (!gardens.Contains(gardenId))
         {
-            throw new InvalidOperationException("Ground " + groundId + " is not held by user " + userId);
+            throw new InvalidOperationException("Garden " + gardenId + " is not held by user " + userId);
         }
 
         return await _dbContext
             .Alerts
-                .Where(p => p.FarmerGroundId == groundId)
+                .Where(p => p.FarmerGardenId == gardenId)
                 .ToArrayAsync();
     }
     
     public async Task<string> CreateFarmerAlert(string userId, FarmerAlertRequestData data)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
         }
 
-        if (!grounds.Any())
+        if (!gardens.Any())
         {
             await Task.CompletedTask;
             return null;
         }
 
-        var groundId = data.FarmerGroundId;
-        if (!grounds.Contains(groundId))
+        var gardenId = data.GardenId;
+        if (!gardens.Contains(gardenId))
         {
             await Task.CompletedTask;
-            throw new InvalidOperationException("Ground " + groundId + " is not held by user " + userId);
+            throw new InvalidOperationException("Garden " + gardenId + " is not held by user " + userId);
         }
         
         var alert = new FarmerAlert
             {
-                FarmerGroundId = groundId,
+                FarmerGardenId = gardenId,
                 RaisedByTaskId = data.RaisedByTaskId,
                 PlantInstanceId = data.PlantInstanceId,
                 Message = data.Message,
@@ -451,11 +451,11 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
     public async Task<bool> MarkFarmerAlertAsReadAsync(string userId, string alertId, bool read)
     {
-        var grounds = new List<string>();
+        var gardens = new List<string>();
 
         if (!string.IsNullOrEmpty(userId))
         {
-            grounds = (await GetGroundIdsForUser(userId))?.ToList();
+            gardens = (await GetGardenIdsForUser(userId))?.ToList();
         }
         
         try
@@ -463,7 +463,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             var alert = await _dbContext
                 .Alerts
                     .Where(p => 
-                        (grounds.Any() || grounds.Contains(p.FarmerGroundId)) &&
+                        (gardens.Any() || gardens.Contains(p.FarmerGardenId)) &&
                         p.ID == alertId)
                     .SingleAsync();
 
@@ -480,20 +480,20 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return true;
     }
 
-    public async Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data)
+    public async Task<IFarmerGarden> CreateFarmerGarden(string userId, FarmerGardenRequestData data)
     {
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (data == null) throw new ArgumentNullException(nameof(data));
 
-        var groundCount = await 
+        var gardenCount = await 
             _dbContext
-                .Grounds
+                .Gardens
                 .Where(g => g.UserID == userId)
-                .CountAsync() + 1; // +1 for the next automatic Ground Name
+                .CountAsync() + 1; // +1 for the next automatic Garden Name
 
-        var ground = new FarmerGround
+        var garden = new FarmerGarden
         {
-            GroundName = data.GroundName ?? "FarmerGround_" + userId + "_" + groundCount,
+            GardenName = data.GardenName ?? "FarmerGarden_" + userId + "_" + gardenCount,
             Latitude = data.Latitude,
             Longitude = data.Longitude,
             WidthInMeters = data.WidthInMeters,
@@ -501,10 +501,10 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             UserID = userId
         };
 
-        await _dbContext.Grounds.AddAsync(ground);
+        await _dbContext.Gardens.AddAsync(garden);
         await _dbContext.SaveChangesAsync();
 
-        return ground;
+        return garden;
     }
 
     public async Task<string> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
@@ -512,9 +512,9 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (data == null) throw new ArgumentNullException(nameof(data));
 
-        var ground = await _dbContext
-            .Grounds
-                .SingleAsync(x => x.UserID == userId && x.ID == data.FarmerGroundId);
+        var garden = await _dbContext
+            .Gardens
+                .SingleAsync(x => x.UserID == userId && x.ID == data.GardenId);
 
         var plantKind = await _dbContext.Plants.FirstOrDefaultAsync(x => x.ID == data.PlantKindID);
         if (plantKind == null)
@@ -522,8 +522,8 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
             throw new InvalidOperationException("invalid plant kind");
         }
 
-        if (data.PlantX < 0 || data.PlantX >= Helpers.Utils.GetCellsFromMeters(ground.WidthInMeters) ||
-            data.PlantY < 0 || data.PlantY >= Helpers.Utils.GetCellsFromMeters(ground.LengthInMeters))
+        if (data.PlantX < 0 || data.PlantX >= Helpers.Utils.GetCellsFromMeters(garden.WidthInMeters) ||
+            data.PlantY < 0 || data.PlantY >= Helpers.Utils.GetCellsFromMeters(garden.LengthInMeters))
         {
             throw new InvalidOperationException("invalid position");
         }
@@ -541,7 +541,7 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
 
         var plant = new FarmerPlantInstance
         {
-            FarmerGroundId = data.FarmerGroundId,
+            FarmerGardenId = data.GardenId,
             PlantKindID = data.PlantKindID,
             PlantDepth = data.PlantDepth ?? plantKind.PlantDepth,
             PlantWidth = data.PlantWidth ?? plantKind.PlantWidth,
@@ -593,12 +593,12 @@ public abstract class SmartFarmerRepository : ISmartFarmerRepository
         return true;
     }
 
-    private async Task<IEnumerable<string>> GetGroundIdsForUser(string userId)
+    private async Task<IEnumerable<string>> GetGardenIdsForUser(string userId)
     {
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
 
         return await _dbContext
-            .Grounds
+            .Gardens
                 .Where(x => x.UserID == userId)
                 .Select(g => g.ID)
                 .ToListAsync();

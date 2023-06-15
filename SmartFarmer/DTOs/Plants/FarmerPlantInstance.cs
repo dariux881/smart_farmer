@@ -14,9 +14,9 @@ public class FarmerPlantInstance : IFarmerPlantInstance
     public string PlantKindID  { get; set; }
 
     [JsonIgnore]
-    public FarmerGround Ground { get; set; }
+    public FarmerGarden Garden { get; set; }
     [JsonIgnore]
-    public string FarmerGroundId { get; set; }
+    public string FarmerGardenId { get; set; }
     public int PlantX { get; set; }
     public int PlantY { get; set; }
     public int PlantWidth { get; set; }

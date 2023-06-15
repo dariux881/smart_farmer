@@ -16,8 +16,8 @@ public class Program
     {
         InitializeServices();
 
-        var groundManager = new GroundActivityManager();
-        await groundManager.Run();
+        var gardenManager = new GardenActivityManager();
+        await gardenManager.Run();
     }
 
     private static void InitializeServices()

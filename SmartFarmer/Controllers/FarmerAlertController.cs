@@ -14,22 +14,22 @@ namespace SmartFarmer.Controllers;
 [Authorize]
 public class FarmerAlertController : FarmerControllerBase
 {
-    private readonly ILogger<FarmerGroundController> _logger;
-    private readonly ISmartFarmerGroundControllerService _groundProvider;
+    private readonly ILogger<FarmerAlertController> _logger;
+    private readonly ISmartFarmerGardenControllerService _gardenProvider;
 
     public FarmerAlertController(
-        ILogger<FarmerGroundController> logger,
-        ISmartFarmerGroundControllerService groundProvider,
+        ILogger<FarmerAlertController> logger,
+        ISmartFarmerGardenControllerService gardenProvider,
         ISmartFarmerUserAuthenticationService userManager)
         : base(userManager)
     {
         _logger = logger;
-        _groundProvider = groundProvider;
+        _gardenProvider = gardenProvider;
     }
     
-    [HttpGet("alertsInGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<IEnumerable<IFarmerAlert>>> GetAlertsByGround(string id)
+    [HttpGet("alertsInGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<IEnumerable<IFarmerAlert>>> GetAlertsByGarden(string id)
     {
         var userId = await GetUserIdByContext();
 
@@ -37,15 +37,15 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            await _groundProvider
-                .GetFarmerAlertsByGroundIdAsync(userId, id);
+            await _gardenProvider
+                .GetFarmerAlertsByGardenIdAsync(userId, id);
 
         return Ok(alerts);
     }
 
-    [HttpGet("alertsCountInGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<int>> GetAlertsCountByGround(string id)
+    [HttpGet("alertsCountInGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<int>> GetAlertsCountByGarden(string id)
     {
         var userId = await GetUserIdByContext();
 
@@ -53,15 +53,15 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            (await _groundProvider
-                .GetFarmerAlertsByGroundIdAsync(userId, id))?.ToArray();
+            (await _gardenProvider
+                .GetFarmerAlertsByGardenIdAsync(userId, id))?.ToArray();
 
         return Ok(alerts?.Length);
     }
 
-    [HttpGet("alertsCountToReadInGround")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
-    public async Task<ActionResult<IEnumerable<IFarmerAlert>>> GetAlertsToReadCountByGround(string id)
+    [HttpGet("alertsCountToReadInGarden")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<IEnumerable<IFarmerAlert>>> GetAlertsToReadCountByGarden(string id)
     {
         var userId = await GetUserIdByContext();
 
@@ -69,8 +69,8 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            (await _groundProvider
-                .GetFarmerAlertsByGroundIdAsync(userId, id))?
+            (await _gardenProvider
+                .GetFarmerAlertsByGardenIdAsync(userId, id))?
                     .Where(a => !a.MarkedAsRead)
                     .ToArray();
 
@@ -78,7 +78,7 @@ public class FarmerAlertController : FarmerControllerBase
     }
 
     [HttpGet("alerts")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
     public async Task<ActionResult<IEnumerable<IFarmerAlert>>> GetAlertsByIds(string ids)
     {
         var userId = await GetUserIdByContext();
@@ -87,14 +87,14 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            await _groundProvider
+            await _gardenProvider
                 .GetFarmerAlertsByIdAsync(userId, ids.Split("#"));
 
         return Ok(alerts);
     }
 
     [HttpGet("markAlert")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
     public async Task<ActionResult<bool>> MarkAlertAsRead(string alertId, bool read)
     {
         var userId = await GetUserIdByContext();
@@ -103,14 +103,14 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var result =
-            await _groundProvider
+            await _gardenProvider
                 .MarkFarmerAlertAsRead(userId, alertId, read);
 
         return Ok(result);
     }
 
     [HttpPost("createAlert")]
-    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GROUND)]
+    [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
     public async Task<ActionResult<string>> CreateAlert([FromBody]FarmerAlertRequestData data)
     {
         var userId = await GetUserIdByContext();
@@ -119,7 +119,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var result =
-            await _groundProvider
+            await _gardenProvider
                 .CreateFarmerAlert(userId, data);
 
         return Ok(result);

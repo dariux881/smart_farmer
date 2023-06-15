@@ -19,32 +19,32 @@ using SmartFarmer.Tasks.Movement;
 
 namespace SmartFarmer.Services;
 
-public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerService 
+public class SmartFarmerGardenControllerService : ISmartFarmerGardenControllerService 
 {
     private readonly ISmartFarmerRepository _repository;
 
-    public SmartFarmerGroundControllerService(ISmartFarmerRepository repository)
+    public SmartFarmerGardenControllerService(ISmartFarmerRepository repository)
     {
         _repository = repository;
     }
 
     public event EventHandler<DevicePositionEventArgs> NewDevicePosition;
     public event EventHandler<DevicePositionsEventArgs> NewDevicePositions;
-    public event EventHandler<NewPlantEventArgs> NewPlantInGround;
+    public event EventHandler<NewPlantEventArgs> NewPlantInGarden;
     public event EventHandler<PlanEventArgs> NewPlan;
     public event EventHandler<PlanEventArgs> PlanDeleted;
     public event EventHandler<PlanEventArgs> NewAutoIrrigationPlan;
     public event EventHandler<NewAlertEventArgs> NewAlert;
     public event EventHandler<NewAlertStatusEventArgs> NewAlertStatus;
 
-    public async Task<IEnumerable<IFarmerGround>> GetFarmerGroundByUserIdAsync(string userId)
+    public async Task<IEnumerable<IFarmerGarden>> GetFarmerGardenByUserIdAsync(string userId)
     {
-        return await _repository.GetFarmerGroundByUserIdAsync(userId);
+        return await _repository.GetFarmerGardenByUserIdAsync(userId);
     }
     
-    public async Task<IFarmerGround> GetFarmerGroundByIdForUserAsync(string userId, string groundId)
+    public async Task<IFarmerGarden> GetFarmerGardenByIdForUserAsync(string userId, string gardenId)
     {
-        return await _repository.GetFarmerGroundByIdForUserAsync(userId, groundId);
+        return await _repository.GetFarmerGardenByIdForUserAsync(userId, gardenId);
     }
 
     public async Task<IFarmerPlantInstance> GetFarmerPlantInstanceByIdForUserAsync(string userId, string plantId)
@@ -83,9 +83,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerPlanByIdAsync(planId, userId);
     }
     
-    public async Task<IEnumerable<string>> GetFarmerPlanIdsInGroundAsync(string userId, string groundId)
+    public async Task<IEnumerable<string>> GetFarmerPlanIdsInGardenAsync(string userId, string gardenId)
     {
-        return await _repository.GetFarmerPlansInGround(groundId, userId);
+        return await _repository.GetFarmerPlansInGarden(gardenId, userId);
     }
 
     public async Task<IEnumerable<IFarmerPlan>> GetFarmerPlanByIdsForUserAsync(string userId, string[] planIds)
@@ -98,9 +98,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return await _repository.GetFarmerPlanStepByIdsAsync(ids);
     }
 
-    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGroundIdAsync(string userId, string groundId)
+    public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByGardenIdAsync(string userId, string gardenId)
     {
-        return await _repository.GetFarmerAlertsByGroundIdAsync(userId, groundId);
+        return await _repository.GetFarmerAlertsByGardenIdAsync(userId, gardenId);
     }
 
     public async Task<IEnumerable<IFarmerAlert>> GetFarmerAlertsByIdAsync(string userId, string[] ids)
@@ -112,7 +112,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         var alertId = await _repository.CreateFarmerAlert(userId, data);
 
-        NewAlert?.Invoke(this, new NewAlertEventArgs(data.FarmerGroundId, alertId));
+        NewAlert?.Invoke(this, new NewAlertEventArgs(data.GardenId, alertId));
 
         return alertId;
     }
@@ -130,7 +130,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
                 NewAlertStatus?.Invoke(
                     this, 
                     new NewAlertStatusEventArgs(
-                        alert.FarmerGroundId, 
+                        alert.FarmerGardenId, 
                         id, 
                         alert.MarkedAsRead));
             }
@@ -139,9 +139,9 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return alertStatusChanged;
     }
 
-    public async Task<IFarmerGround> CreateFarmerGround(string userId, FarmerGroundRequestData data)
+    public async Task<IFarmerGarden> CreateFarmerGarden(string userId, FarmerGardenRequestData data)
     {
-        return await _repository.CreateFarmerGround(userId, data);
+        return await _repository.CreateFarmerGarden(userId, data);
     }
 
     public async Task<bool> AddFarmerPlantInstance(string userId, FarmerPlantRequestData data)
@@ -150,7 +150,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
 
         if (!string.IsNullOrEmpty(newPlantId))
         {
-            NewPlantInGround?.Invoke(this, new NewPlantEventArgs(data.FarmerGroundId, newPlantId));
+            NewPlantInGarden?.Invoke(this, new NewPlantEventArgs(data.GardenId, newPlantId));
         }
 
         return newPlantId != null;
@@ -159,17 +159,17 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     public async Task<string> AddPlan(string userId, FarmerPlanRequestData planRequestData)
     {
         if (planRequestData == null) throw new ArgumentNullException(nameof(planRequestData));
-        if (string.IsNullOrEmpty(planRequestData.GroundId)) throw new ArgumentNullException(nameof(planRequestData.GroundId));
+        if (string.IsNullOrEmpty(planRequestData.GardenId)) throw new ArgumentNullException(nameof(planRequestData.GardenId));
         if (planRequestData.Steps.IsNullOrEmpty()) throw new ArgumentNullException(nameof(planRequestData.Steps));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, planRequestData.GroundId) as FarmerGround;
-        if (ground == null) return null; // no valid ground
+        var garden = await GetFarmerGardenByIdForUserAsync(userId, planRequestData.GardenId) as FarmerGarden;
+        if (garden == null) return null; // no valid garden
 
         var plan = 
             new FarmerPlan()
             {
                 Name = planRequestData.PlanName,
-                GroundId = planRequestData.GroundId,
+                GardenId = planRequestData.GardenId,
                 CronSchedule = planRequestData.CronSchedule,
                 Priority = planRequestData.Priority,
                 ValidFromDt = planRequestData.ValidFromDt,
@@ -194,7 +194,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
 
         if (!string.IsNullOrEmpty(planId))
         {
-            NewPlan?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
+            NewPlan?.Invoke(this, new PlanEventArgs(plan.GardenId, planId));
         }
 
         return planId;
@@ -209,51 +209,51 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
 
         var result = await _repository.DeleteFarmerPlan(plan);
 
-        PlanDeleted?.Invoke(this, new PlanEventArgs(plan.GroundId, planId));
+        PlanDeleted?.Invoke(this, new PlanEventArgs(plan.GardenId, planId));
 
         return result;
     }
 
-    public async Task<string> BuildIrrigationPlan(string userId, string groundId)
+    public async Task<string> BuildIrrigationPlan(string userId, string gardenId)
     {
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, groundId) as FarmerGround;
-        if (ground == null) return null; // no valid ground
+        var garden = await GetFarmerGardenByIdForUserAsync(userId, gardenId) as FarmerGarden;
+        if (garden == null) return null; // no valid garden
 
-        var plan = CreateIrrigationPlan(ground);
+        var plan = CreateIrrigationPlan(garden);
 
         if (plan == null)
         {
-            SmartFarmerLog.Error($"No valid irrigation plan created for ground {ground.ID}");
+            SmartFarmerLog.Error($"No valid irrigation plan created for garden {garden.ID}");
             return null;
         }
 
         // return plan ID
         var planId = await _repository.SaveFarmerPlan(plan);
 
-        // save plan to irrigationPlan on ground
-        ground.GroundIrrigationPlanId = planId;
+        // save plan to irrigationPlan on garden
+        garden.IrrigationPlanId = planId;
 
         var settings = await _repository.GetUserSettings(userId);
         if (settings != null)
         {
             plan.CronSchedule = settings.AUTOIRRIGATION_PLANNED_CRONSCHEDULE;
-            ground.CanIrrigationPlanStart = settings.AUTOIRRIGATION_AUTOSTART;
+            garden.CanIrrigationPlanStart = settings.AUTOIRRIGATION_AUTOSTART;
         }
 
-        if (!await _repository.SaveGroundUpdates())
+        if (!await _repository.SaveGardenUpdates())
         {
-            SmartFarmerLog.Error($"Failing in saving {planId} as irrigation plan for ground {ground.ID}");
+            SmartFarmerLog.Error($"Failing in saving {planId} as irrigation plan for garden {garden.ID}");
             return null;
         }
 
-        NewAutoIrrigationPlan?.Invoke(this, new PlanEventArgs(groundId, planId));
+        NewAutoIrrigationPlan?.Invoke(this, new PlanEventArgs(gardenId, planId));
 
         return planId;
     }
 
-    public IFarmerCliCommand BuildAndCheckCliCommand(string userId, string groundId, string commandStr)
+    public IFarmerCliCommand BuildAndCheckCliCommand(string userId, string gardenId, string commandStr)
     {
-        IFarmerCliCommand command = BuildCliCommand(userId, groundId, commandStr);
+        IFarmerCliCommand command = BuildCliCommand(userId, gardenId, commandStr);
 
         // check command
         if (!IsCliCommandValid(command))
@@ -268,8 +268,8 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         if (position == null) throw new ArgumentNullException(nameof(position));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, position.GroundId) as FarmerGround;
-        if (ground == null) return null; // no valid ground
+        var garden = await GetFarmerGardenByIdForUserAsync(userId, position.GardenId) as FarmerGarden;
+        if (garden == null) return null; // no valid garden
 
         var storedPosition = await _repository.SaveDevicePosition(userId, position);
 
@@ -285,8 +285,8 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
     {
         if (positions == null) throw new ArgumentNullException(nameof(positions));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, positions.GroundId) as FarmerGround;
-        if (ground == null) return false; // no valid ground
+        var garden = await GetFarmerGardenByIdForUserAsync(userId, positions.GardenId) as FarmerGarden;
+        if (garden == null) return false; // no valid garden
 
         var ids = await _repository.SaveDevicePositions(userId, positions);
 
@@ -298,30 +298,30 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         return ids != null && ids.Any();
     }
 
-    public async Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string groundId, string runId)
+    public async Task<IEnumerable<FarmerDevicePosition>> GetDeviceDevicePositionHistory(string userId, string gardenId, string runId)
     {
         if (userId == null) throw new ArgumentNullException(nameof(userId));
-        if (groundId == null) throw new ArgumentNullException(nameof(groundId));
+        if (gardenId == null) throw new ArgumentNullException(nameof(gardenId));
 
-        var ground = await GetFarmerGroundByIdForUserAsync(userId, groundId) as FarmerGround;
-        if (ground == null) return null; // no valid ground
+        var garden = await GetFarmerGardenByIdForUserAsync(userId, gardenId) as FarmerGarden;
+        if (garden == null) return null; // no valid garden
 
-        return await _repository.GetDevicePositionHistory(userId, groundId, runId);
+        return await _repository.GetDevicePositionHistory(userId, gardenId, runId);
     }
 
-    private FarmerPlan CreateIrrigationPlan(FarmerGround ground)
+    private FarmerPlan CreateIrrigationPlan(FarmerGarden garden)
     {
         // Steps:
         // - list all plants, minimizing movements
         var orderedPlants = 
-            OrderPlantsToMinimizeMovements(ground.Plants);
+            OrderPlantsToMinimizeMovements(garden.Plants);
         
         var steps = CreateSteps(orderedPlants);
 
         return new FarmerPlan()
         {
-            GroundId = ground.ID,
-            Name = $"AutoIrrigationPlan_ground{ground.ID}_{DateTime.UtcNow}",
+            GardenId = garden.ID,
+            Name = $"AutoIrrigationPlan_garden{garden.ID}_{DateTime.UtcNow}",
             Steps = steps
         };
     }
@@ -367,7 +367,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
                 .ToList();
     }
 
-    private static IFarmerCliCommand BuildCliCommand(string userId, string groundId, string commandStr)
+    private static IFarmerCliCommand BuildCliCommand(string userId, string gardenId, string commandStr)
     {
         if (!ExtractCliCommandParts(commandStr, out var command, out var args))
         {
@@ -377,7 +377,7 @@ public class SmartFarmerGroundControllerService : ISmartFarmerGroundControllerSe
         IFarmerCliCommand cliCommand = new FarmerCliCommand()
         {
             UserId = userId,
-            GroundId = groundId,
+            GardenId = gardenId,
             Command = command,
             Args = args
         };

@@ -23,9 +23,9 @@ public class FarmerPlan : IFarmerPlan
     public IReadOnlyList<string> StepIds => Steps.Select(x => x.ID).ToList().AsReadOnly();
 
     [JsonIgnore]
-    public FarmerGround Ground { get; set; }
+    public FarmerGarden Garden { get; set; }
     [JsonIgnore]
-    public string GroundId { get; set; }
+    public string GardenId { get; set; }
 
     [JsonIgnore]
     public bool IsInProgress { get; private set; }

@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 namespace SmartFarmer.Tests
 {
     [TestFixture]
-    public class GroundLoadingTests
+    public class GardenLoadingTests
     {
-        private IFarmerGround _ground;
+        private IFarmerGarden _garden;
 
-        public GroundLoadingTests() 
+        public GardenLoadingTests() 
         {
-            _ground = new FarmerGround(
+            _garden = new FarmerGarden(
                 FarmerPlantProvider.Instance, 
                 FarmerIrrigationInfoProvider.Instance, 
                 FarmerPlantInstanceProvider.Instance, 
@@ -37,21 +37,21 @@ namespace SmartFarmer.Tests
                 await FarmerPlantProvider.Instance.AddFarmerService(plant);
             }
 
-            var plantsInGround = await InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
+            var plantsInGarden = await InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
             
-            foreach (var plant in plantsInGround)
+            foreach (var plant in plantsInGarden)
             {
                 await FarmerPlantInstanceProvider.Instance.AddFarmerService(plant);
             }
             
-            _ground.AddPlants(plantsInGround.Select(x => x.ID).ToArray());
+            _garden.AddPlants(plantsInGarden.Select(x => x.ID).ToArray());
         }
 
         [Test]
-        public void GroundExists()
+        public void GardenExists()
         {
-            Assert.IsNotNull(_ground);
-            Assert.IsNotEmpty(_ground.PlantIds);
+            Assert.IsNotNull(_garden);
+            Assert.IsNotEmpty(_garden.PlantIds);
         }
     }
 }

@@ -13,7 +13,7 @@ public class FarmerDevicePositionTypeConfiguration : IEntityTypeConfiguration<Fa
             .ValueGeneratedOnAdd();
             
         builder
-            .Property(p => p.GroundId)
+            .Property(p => p.GardenId)
             .IsRequired();
             
         builder
@@ -21,8 +21,8 @@ public class FarmerDevicePositionTypeConfiguration : IEntityTypeConfiguration<Fa
             .IsRequired();
             
         builder
-            .HasOne(p => p.Ground)
+            .HasOne(p => p.Garden)
             .WithMany()
-            .HasForeignKey(nameof(FarmerDevicePosition.GroundId));
+            .HasForeignKey(nameof(FarmerDevicePosition.GardenId));
     }
 }

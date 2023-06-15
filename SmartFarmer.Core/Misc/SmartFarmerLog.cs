@@ -66,7 +66,7 @@ public static class SmartFarmerLog
 
         if (alert != null)
         {
-            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.GardenId);
             return await alertHandler.RaiseAlert(alert);
         }
         return null;
@@ -84,7 +84,7 @@ public static class SmartFarmerLog
         
         if (alert != null)
         {
-            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.GardenId);
             return await alertHandler.RaiseAlert(alert);
         }
         return null;
@@ -108,7 +108,7 @@ public static class SmartFarmerLog
 
         if (alert != null)
         {
-            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.FarmerGroundId);
+            var alertHandler = FarmerServiceLocator.GetService<IFarmerAlertHandler>(true, alert.GardenId);
             return await alertHandler.RaiseAlert(alert);
         }
         return null;

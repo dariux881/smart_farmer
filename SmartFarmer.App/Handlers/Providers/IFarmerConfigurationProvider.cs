@@ -5,7 +5,7 @@ namespace SmartFarmer.Handlers.Providers;
 
 public interface IFarmerConfigurationProvider
 {
-    GroundConfiguration GetGroundConfiguration(string groundId);
+    GardenConfiguration GetGardenConfiguration(string gardenId);
     AppConfiguration GetAppConfiguration();
     ApiConfiguration GetApiConfiguration();
     UserConfiguration GetUserConfiguration();

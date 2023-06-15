@@ -14,7 +14,7 @@ using SmartFarmer.Misc;
 
 namespace SmartFarmer.Data;
 
-public class FarmerGround : IFarmerGround
+public class FarmerGarden : IFarmerGarden
 {
     private string[] plantIdsToResolve;
     private string[] planIdsToResolve;
@@ -26,7 +26,7 @@ public class FarmerGround : IFarmerGround
     private SemaphoreSlim _planExecSem;
 
 
-    public FarmerGround()
+    public FarmerGarden()
     {
         _alerts = new List<IFarmerAlert>();
         _plants = new List<IFarmerPlantInstance>();
@@ -36,7 +36,7 @@ public class FarmerGround : IFarmerGround
     }
 
     [JsonConstructor]
-    public FarmerGround(        
+    public FarmerGarden(        
         string[] plantIds,
         string[] planIds,
         string[] alertIds)
@@ -48,7 +48,7 @@ public class FarmerGround : IFarmerGround
     }
 
     public string ID { get; set; }
-    public string GroundName { get; set; }
+    public string GardenName { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
@@ -61,7 +61,7 @@ public class FarmerGround : IFarmerGround
     public IReadOnlyList<IFarmerAlert> Alerts => _alerts.AsReadOnly();
     public IReadOnlyList<string> AlertIds => _alerts.Select(x => x.ID).ToList().AsReadOnly();
 
-    public string GroundIrrigationPlanId { get; set; }
+    public string IrrigationPlanId { get; set; }
     public bool CanIrrigationPlanStart { get; set; }
     
     public double WidthInMeters { get; set; }
@@ -159,7 +159,7 @@ public class FarmerGround : IFarmerGround
             .Where(x => x is FarmerPlan)
             .Cast<FarmerPlan>()
             .ToList()
-            .ForEach(plan => plan.PropagateGround(this));
+            .ForEach(plan => plan.PropagateGarden(this));
 
         _plans.AddRange(plans);
     }

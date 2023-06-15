@@ -20,7 +20,7 @@ namespace SmartFarmer.Tests
     [TestFixture]
     public class SerializationTest
     {
-        private IFarmerGround _ground;
+        private IFarmerGarden _garden;
 
         private class TestableFarmerTask : IFarmerTask
         {
@@ -87,9 +87,9 @@ namespace SmartFarmer.Tests
 
         public SerializationTest() 
         {
-            _ground = new FarmerGround(
-                "test_ground_id",
-                "ground_name",
+            _garden = new FarmerGarden(
+                "test_garden_id",
+                "garden_name",
                 10.0,
                 11.0,
                 10,
@@ -119,20 +119,20 @@ namespace SmartFarmer.Tests
                 await FarmerPlantProvider.Instance.AddFarmerService(plant);
             }
 
-            var plantsInGround = await InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
+            var plantsInGarden = await InformationLoader.LoadPlantInstanceFromCsvFile(Path.Combine(basePath, "PlantsInstance.csv"));
 
-            foreach (var plant in plantsInGround)
+            foreach (var plant in plantsInGarden)
             {
                 await FarmerPlantInstanceProvider.Instance.AddFarmerService(plant);
             }
 
-            _ground.AddPlants(plantsInGround.Select(x => x.ID).ToArray());
+            _garden.AddPlants(plantsInGarden.Select(x => x.ID).ToArray());
         }
 
         [Test]
         public void PlantSerialization_ExpectedNotEmpty()
         {
-            var plant = FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds.First());
+            var plant = FarmerPlantInstanceProvider.Instance.GetFarmerService(_garden.PlantIds.First());
 
             var jsonPlant = JsonConvert.SerializeObject(plant);
             Assert.IsNotNull(jsonPlant);
@@ -141,7 +141,7 @@ namespace SmartFarmer.Tests
         [Test]
         public async Task PlantDeserialization_ExpectedSame()
         {
-            var plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds.Last());
+            var plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_garden.PlantIds.Last());
 
             var jsonPlant = JsonConvert.SerializeObject(plant);
             Assert.IsNotNull(jsonPlant);
@@ -232,51 +232,51 @@ namespace SmartFarmer.Tests
         }
 
         [Test]
-        public void GroundSerialization_ExpectedNotNull()
+        public void GardenSerialization_ExpectedNotNull()
         {
-            var jsonGround = JsonConvert.SerializeObject(_ground);
-            Assert.IsNotNull(jsonGround);
+            var jsonGarden = JsonConvert.SerializeObject(_garden);
+            Assert.IsNotNull(jsonGarden);
         }
 
         [Test]
-        public async Task GroundDeserialization_ExpectedSame()
+        public async Task GardenDeserialization_ExpectedSame()
         {
-            var jsonGround = JsonConvert.SerializeObject(_ground);
-            Assert.IsNotNull(jsonGround);
+            var jsonGarden = JsonConvert.SerializeObject(_garden);
+            Assert.IsNotNull(jsonGarden);
 
-            var deserializedGround = JsonConvert.DeserializeObject<FarmerGround>(jsonGround);
+            var deserializedGarden = JsonConvert.DeserializeObject<FarmerGarden>(jsonGarden);
 
-            Assert.IsNotNull(deserializedGround);
-            Assert.AreEqual(_ground.ID, deserializedGround.ID);
-            Assert.AreEqual(_ground.GroundName, deserializedGround.GroundName);
-            Assert.AreEqual(_ground.Latitude, deserializedGround.Latitude);
-            Assert.AreEqual(_ground.Longitude, deserializedGround.Longitude);
-            Assert.AreEqual(_ground.WidthInMeters, deserializedGround.WidthInMeters);
-            Assert.AreEqual(_ground.LengthInMeters, deserializedGround.LengthInMeters);
-            Assert.AreEqual(_ground.UserID, deserializedGround.UserID);
-            Assert.AreEqual(_ground.PlantIds.Count, deserializedGround.Plants.Count);
-            Assert.AreEqual(_ground.PlanIds.Count, deserializedGround.Plans.Count);
+            Assert.IsNotNull(deserializedGarden);
+            Assert.AreEqual(_garden.ID, deserializedGarden.ID);
+            Assert.AreEqual(_garden.GardenName, deserializedGarden.GardenName);
+            Assert.AreEqual(_garden.Latitude, deserializedGarden.Latitude);
+            Assert.AreEqual(_garden.Longitude, deserializedGarden.Longitude);
+            Assert.AreEqual(_garden.WidthInMeters, deserializedGarden.WidthInMeters);
+            Assert.AreEqual(_garden.LengthInMeters, deserializedGarden.LengthInMeters);
+            Assert.AreEqual(_garden.UserID, deserializedGarden.UserID);
+            Assert.AreEqual(_garden.PlantIds.Count, deserializedGarden.Plants.Count);
+            Assert.AreEqual(_garden.PlanIds.Count, deserializedGarden.Plans.Count);
 
-            for (int i = 0; i < _ground.PlantIds.Count; i++)
+            for (int i = 0; i < _garden.PlantIds.Count; i++)
             {
-                IFarmerPlantInstance plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds[i]);
-                Assert.AreEqual(plant.ID, _ground.PlantIds[i]);
+                IFarmerPlantInstance plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_garden.PlantIds[i]);
+                Assert.AreEqual(plant.ID, _garden.PlantIds[i]);
             }
 
-            for (int i = 0; i < _ground.PlanIds.Count; i++)
+            for (int i = 0; i < _garden.PlanIds.Count; i++)
             {
-                var plan = await FarmerPlanProvider.Instance.GetFarmerService(_ground.PlanIds[i]);
-                Assert.AreEqual(plan.ID, _ground.PlanIds[i]);
+                var plan = await FarmerPlanProvider.Instance.GetFarmerService(_garden.PlanIds[i]);
+                Assert.AreEqual(plan.ID, _garden.PlanIds[i]);
             }
 
-            Assert.AreEqual(_ground.PlanIds.Count, deserializedGround.PlanIds.Count);
+            Assert.AreEqual(_garden.PlanIds.Count, deserializedGarden.PlanIds.Count);
         }
         
         // [Test]
-        // public async Task GroundDeserializationWithPlans_ExpectedSame()
+        // public async Task GardenDeserializationWithPlans_ExpectedSame()
         // {
         //     var planId = FarmerPlanProvider.Instance.GenerateServiceId();
-        //     var plan = new BaseFarmerPlan(planId, "test4ground");
+        //     var plan = new BaseFarmerPlan(planId, "test4garden");
 
         //     var stepCount = 4;
         //     var stepIds = new List<string>();
@@ -298,41 +298,41 @@ namespace SmartFarmer.Tests
         //     }
 
         //     await FarmerPlanProvider.Instance.AddFarmerService(plan);
-        //     _ground.AddPlan(planId);
+        //     _garden.AddPlan(planId);
 
-        //     var jsonGround = JsonConvert.SerializeObject(_ground);
-        //     Assert.IsNotNull(jsonGround);
+        //     var jsonGarden = JsonConvert.SerializeObject(_garden);
+        //     Assert.IsNotNull(jsonGarden);
 
-        //     var deserializedGround = JsonConvert.DeserializeObject<FarmerGround>(jsonGround);
+        //     var deserializedGarden = JsonConvert.DeserializeObject<FarmerGarden>(jsonGarden);
 
-        //     Assert.IsNotNull(deserializedGround);
-        //     Assert.AreEqual(_ground.ID, deserializedGround.ID);
-        //     Assert.AreEqual(_ground.GroundName, deserializedGround.GroundName);
-        //     Assert.AreEqual(_ground.Latitude, deserializedGround.Latitude);
-        //     Assert.AreEqual(_ground.Longitude, deserializedGround.Longitude);
-        //     Assert.AreEqual(_ground.WidthInMeters, deserializedGround.WidthInMeters);
-        //     Assert.AreEqual(_ground.LengthInMeters, deserializedGround.LengthInMeters);
-        //     Assert.AreEqual(_ground.UserID, deserializedGround.UserID);
-        //     Assert.AreEqual(_ground.PlantIds.Count, deserializedGround.Plants.Count);
-        //     Assert.AreEqual(_ground.PlanIds.Count, deserializedGround.Plans.Count);
+        //     Assert.IsNotNull(deserializedGarden);
+        //     Assert.AreEqual(_garden.ID, deserializedGarden.ID);
+        //     Assert.AreEqual(_garden.GardenName, deserializedGarden.GardenName);
+        //     Assert.AreEqual(_garden.Latitude, deserializedGarden.Latitude);
+        //     Assert.AreEqual(_garden.Longitude, deserializedGarden.Longitude);
+        //     Assert.AreEqual(_garden.WidthInMeters, deserializedGarden.WidthInMeters);
+        //     Assert.AreEqual(_garden.LengthInMeters, deserializedGarden.LengthInMeters);
+        //     Assert.AreEqual(_garden.UserID, deserializedGarden.UserID);
+        //     Assert.AreEqual(_garden.PlantIds.Count, deserializedGarden.Plants.Count);
+        //     Assert.AreEqual(_garden.PlanIds.Count, deserializedGarden.Plans.Count);
 
-        //     for (int i = 0; i < _ground.PlantIds.Count; i++)
+        //     for (int i = 0; i < _garden.PlantIds.Count; i++)
         //     {
-        //         IFarmerPlantInstance plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_ground.PlantIds[i]);
-        //         Assert.AreEqual(plant.ID, _ground.PlantIds[i]);
+        //         IFarmerPlantInstance plant = await FarmerPlantInstanceProvider.Instance.GetFarmerService(_garden.PlantIds[i]);
+        //         Assert.AreEqual(plant.ID, _garden.PlantIds[i]);
         //     }
 
-        //     for (int i = 0; i < _ground.PlanIds.Count; i++)
+        //     for (int i = 0; i < _garden.PlanIds.Count; i++)
         //     {
-        //         var gatheredPlan = await FarmerPlanProvider.Instance.GetFarmerService(_ground.PlanIds[i]);
-        //         Assert.AreEqual(gatheredPlan.ID, _ground.PlanIds[i]);
+        //         var gatheredPlan = await FarmerPlanProvider.Instance.GetFarmerService(_garden.PlanIds[i]);
+        //         Assert.AreEqual(gatheredPlan.ID, _garden.PlanIds[i]);
         //     }
 
-        //     Assert.AreEqual(_ground.PlanIds.Count, deserializedGround.PlanIds.Count);
+        //     Assert.AreEqual(_garden.PlanIds.Count, deserializedGarden.PlanIds.Count);
         // }
 
         [Test]
-        public async Task GroundDeserializationWithAlerts_ExpectedSame()
+        public async Task GardenDeserializationWithAlerts_ExpectedSame()
         {
             var receivedAlerts = new List<IFarmerAlert>();
             var alertCount = 4;
@@ -349,20 +349,20 @@ namespace SmartFarmer.Tests
                 await alertHandler.RaiseAlert("message " + i, AlertCode.Unknown, null, null, null, AlertLevel.Warning, AlertSeverity.Low);
             }
 
-            Assert.AreEqual(receivedAlerts.Count, _ground.AlertIds.Count);
+            Assert.AreEqual(receivedAlerts.Count, _garden.AlertIds.Count);
 
-            var jsonGround = JsonConvert.SerializeObject(_ground);
-            Assert.IsNotNull(jsonGround);
+            var jsonGarden = JsonConvert.SerializeObject(_garden);
+            Assert.IsNotNull(jsonGarden);
 
-            var deserializedGround = JsonConvert.DeserializeObject<FarmerGround>(jsonGround);
+            var deserializedGarden = JsonConvert.DeserializeObject<FarmerGarden>(jsonGarden);
 
-            Assert.IsNotNull(deserializedGround);
-            Assert.AreEqual(_ground.ID, deserializedGround.ID);
-            Assert.AreEqual(_ground.GroundName, deserializedGround.GroundName);
+            Assert.IsNotNull(deserializedGarden);
+            Assert.AreEqual(_garden.ID, deserializedGarden.ID);
+            Assert.AreEqual(_garden.GardenName, deserializedGarden.GardenName);
 
-            for (int i = 0; i < _ground.AlertIds.Count; i++)
+            for (int i = 0; i < _garden.AlertIds.Count; i++)
             {
-                var alert = receivedAlerts.FirstOrDefault(x => x.ID == _ground.AlertIds[i]);
+                var alert = receivedAlerts.FirstOrDefault(x => x.ID == _garden.AlertIds[i]);
 
                 Assert.IsNotNull(alert);
  

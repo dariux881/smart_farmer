@@ -5,7 +5,7 @@ namespace SmartFarmer.Tasks;
 public class FarmerPlanRequestData
 {
     public string PlanName { get; set; }
-    public string GroundId { get; set; }
+    public string GardenId { get; set; }
     public int Priority { get; set; }
     public DateTime? ValidFromDt { get; set; }
     public DateTime? ValidToDt { get; set; }

@@ -15,8 +15,8 @@ public class FarmerDevicePosition : FarmerDevicePositionInTime
     
     public string ID { get; set; }
     [JsonIgnore]
-    public FarmerGround Ground { get; set; }
-    public string GroundId { get; set; }
+    public FarmerGarden Garden { get; set; }
+    public string GardenId { get; set; }
     [JsonIgnore]
     public User User { get; set; }
     public string UserId { get; set; }

@@ -15,34 +15,34 @@ using SmartFarmer.Tasks;
 namespace SmartFarmer.Hubs;
 
 [Authorize]
-public class FarmerGroundHub : Hub
+public class FarmerGardenHub : Hub
 {
-    private readonly ILogger<FarmerGroundController> _logger;
-    private readonly ISmartFarmerGroundControllerService _groundProvider;
+    private readonly ILogger<FarmerGardenController> _logger;
+    private readonly ISmartFarmerGardenControllerService _gardenProvider;
 
-    public FarmerGroundHub(
-        ILogger<FarmerGroundController> logger,
-        ISmartFarmerGroundControllerService groundProvider)
+    public FarmerGardenHub(
+        ILogger<FarmerGardenController> logger,
+        ISmartFarmerGardenControllerService gardenProvider)
     {
         _logger = logger;
-        _groundProvider = groundProvider;
+        _gardenProvider = gardenProvider;
     }
 
-    public async Task AddToGroupAsync(string groundId)
+    public async Task AddToGroupAsync(string gardenId)
     {
-        if (string.IsNullOrEmpty(groundId)) throw new ArgumentNullException(nameof(groundId));
+        if (string.IsNullOrEmpty(gardenId)) throw new ArgumentNullException(nameof(gardenId));
 
         var connectionId = Context.ConnectionId;
-        if (!string.IsNullOrEmpty(groundId))
+        if (!string.IsNullOrEmpty(gardenId))
         {
             // subscribing to groups
-            await Groups.AddToGroupAsync(Context.ConnectionId, groundId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, gardenId);
         }
     }
 
-    public async Task RemoveFromGroupAsync(string groundId)
+    public async Task RemoveFromGroupAsync(string gardenId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groundId);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, gardenId);
     }
 
     public async Task InsertNewPositionAsync(string positionStr)
@@ -50,47 +50,47 @@ public class FarmerGroundHub : Hub
         var userId = Context.UserIdentifier;
         var position = JsonSerializer.Deserialize<FarmerDevicePositionRequestData>(positionStr);
 
-        var result = await _groundProvider.NotifyDevicePosition(userId, position);
+        var result = await _gardenProvider.NotifyDevicePosition(userId, position);
 
         if (result != null)
         {
-            await NotifyNewPositionAsync(result.GroundId, result);
+            await NotifyNewPositionAsync(result.GardenId, result);
         }
     }
 
-    public async Task NotifyNewPositionAsync(string groundId, string positionStr)
+    public async Task NotifyNewPositionAsync(string gardenId, string positionStr)
     {
         var position = JsonSerializer.Deserialize<FarmerDevicePositionInTime>(positionStr);
-        await NotifyNewPositionAsync(groundId, position);
+        await NotifyNewPositionAsync(gardenId, position);
     }
 
-    public async Task NotifyNewPlanAsync(string groundId, string planId)
+    public async Task NotifyNewPlanAsync(string gardenId, string planId)
         => await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.NewPlan, planId);
 
-    public async Task NotifyDeletedPlanAsync(string groundId, string planId)
+    public async Task NotifyDeletedPlanAsync(string gardenId, string planId)
         => await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.DeletedPlan, planId);
 
-    public async Task NotifyNewAutoIrrigationPlanAsync(string groundId, string planId)
+    public async Task NotifyNewAutoIrrigationPlanAsync(string gardenId, string planId)
         => await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.NewAutoIrrigationPlan, planId);
         
-    public async Task NotifyNewAlertAsync(string groundId, string alertId)
+    public async Task NotifyNewAlertAsync(string gardenId, string alertId)
         => await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.NewAlert, alertId);
 
     public async Task SendNewAlertStatusAsync(string alertId, bool alertRead)
     {
-        var result = await _groundProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
+        var result = await _gardenProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
 
         if (result)
         {
@@ -101,7 +101,7 @@ public class FarmerGroundHub : Hub
     public async Task NotifyNewAlertStatusAsync(string alertId, bool alertRead)
     {
         var alert =
-            (await _groundProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
+            (await _gardenProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
                 ?.FirstOrDefault()
                 as FarmerAlert;
 
@@ -113,15 +113,15 @@ public class FarmerGroundHub : Hub
 
         await
             Clients
-                .OthersInGroup(alert.FarmerGroundId)
+                .OthersInGroup(alert.FarmerGardenId)
                 .SendAsync(HubConstants.AlertStatusChanged, alertId, alertRead);
     }
 
-    public async Task SendCliCommandAsync(string groundId, string commandStr)
+    public async Task SendCliCommandAsync(string gardenId, string commandStr)
     {
         var userId = Context.UserIdentifier;
 
-        IFarmerCliCommand command = _groundProvider.BuildAndCheckCliCommand(userId, groundId, commandStr);
+        IFarmerCliCommand command = _gardenProvider.BuildAndCheckCliCommand(userId, gardenId, commandStr);
 
         if (command == null)
         {
@@ -131,23 +131,23 @@ public class FarmerGroundHub : Hub
 
         await
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.NewCliCommand, JsonSerializer.Serialize(command));
     }
 
-    public async Task NotifyCliCommandResult(string groundId, string commandResult)
+    public async Task NotifyCliCommandResult(string gardenId, string commandResult)
     {
         await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.ReceiveCliCommandResult, commandResult);
     }
 
-    private async Task NotifyNewPositionAsync(string groundId, FarmerDevicePositionInTime position)
+    private async Task NotifyNewPositionAsync(string gardenId, FarmerDevicePositionInTime position)
     {
         await 
             Clients
-                .OthersInGroup(groundId)
+                .OthersInGroup(gardenId)
                 .SendAsync(HubConstants.NewPositionReceivedMessage, JsonSerializer.Serialize(position));
     }
 }

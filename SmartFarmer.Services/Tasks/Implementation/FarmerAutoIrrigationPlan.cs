@@ -40,7 +40,7 @@ namespace SmartFarmer.Tasks.Implementation
                     new object[] {irrigationInfo.AmountOfWaterInLitersPerTime}));
         }
 
-        public bool CanAutoGroundIrrigationPlanStart { get; set; }
+        public bool CanAutoIrrigationPlanStart { get; set; }
 
         public DateTime PlannedAt { get; set; }
     }

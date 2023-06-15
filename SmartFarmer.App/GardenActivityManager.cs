@@ -9,7 +9,7 @@ using SmartFarmer.OperationalManagement;
 
 namespace SmartFarmer;
 
-public class GroundActivityManager
+public class GardenActivityManager
 {
     private List<IOperationalModeManager> _operationalManagers;
     private OperationalManagerRequestExecutor _requestExecutor;
@@ -19,7 +19,7 @@ public class GroundActivityManager
     private readonly IFarmerSessionManager _sessionManager;
     private CancellationTokenSource _managementTokenSource;
 
-    public GroundActivityManager()
+    public GardenActivityManager()
     {
         _requestExecutor = new OperationalManagerRequestExecutor();
         _managementTokenSource = new CancellationTokenSource();
@@ -59,7 +59,7 @@ public class GroundActivityManager
     {
         FillOperationalManagers();
 
-        await _localInfoManager.InitializeGroundsAsync(token);
+        await _localInfoManager.InitializeGardensAsync(token);
 
         var tasks = new List<Task>();
         foreach (var opManager in _operationalManagers)

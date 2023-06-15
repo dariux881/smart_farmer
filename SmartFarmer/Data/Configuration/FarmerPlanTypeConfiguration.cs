@@ -13,9 +13,9 @@ public class FarmerPlanTypeConfiguration : IEntityTypeConfiguration<FarmerPlan>
             .ValueGeneratedOnAdd();
             
         builder
-            .HasOne(p => p.Ground)
+            .HasOne(p => p.Garden)
             .WithMany(g => g.Plans)
-            .HasForeignKey("GroundId");
+            .HasForeignKey(nameof(FarmerPlan.GardenId));
         
         builder
             .Ignore(s => s.IsInProgress);

@@ -12,7 +12,7 @@ namespace SmartFarmer.Plants
         string IrrigationInfoId { get; }
 
         /// <summary>
-        /// values in cells, where cells size depend on ground
+        /// values in cells, where cells size depend on garden
         /// </summary>
         int PlantWidth { get; }
         int PlantDepth { get; }
