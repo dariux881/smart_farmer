@@ -24,20 +24,7 @@ public class FarmerPlant : IFarmerPlant
         }
     }
 
-    [JsonIgnore]
     public string IrrigationTaskInfoSerialized { get; set; }
-
-    public IFarmerIrrigationTaskInfo IrrigationTaskInfoString 
-    { 
-        get {
-            if (string.IsNullOrEmpty(IrrigationTaskInfoSerialized))
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<FarmerIrrigationTaskInfo>(IrrigationTaskInfoSerialized);
-        }
-    }
 
     public int PlantWidth { get; set; }
 

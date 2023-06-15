@@ -18,15 +18,8 @@ public class FarmerPlanStepTypeConfiguration : IEntityTypeConfiguration<FarmerPl
             .HasForeignKey("PlanId");
         
         builder
-            .Ignore(s => s.BuildParameters);
-        
-        builder
-            .Ignore(s => s.BuildParametersString);
-            
-        builder
-            .Ignore(s => s.IsInProgress);
-        
-        builder
+            .Ignore(s => s.BuildParameters)
+            .Ignore(s => s.IsInProgress)
             .Ignore(s => s.LastException);
     }
 }

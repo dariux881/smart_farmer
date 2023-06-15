@@ -14,10 +14,10 @@ public class FarmerPlant : IFarmerPlant
     }
     
     [JsonConstructor]
-    public FarmerPlant(string irrigationTaskInfoString)
+    public FarmerPlant(string irrigationTaskInfoSerialized)
         : this()
     {
-        IrrigationTaskInfo = irrigationTaskInfoString.Deserialize<FarmerIrrigationTaskInfo>();
+        IrrigationTaskInfo = irrigationTaskInfoSerialized.Deserialize<FarmerIrrigationTaskInfo>();
     }
 
     public string Code { get; set; }

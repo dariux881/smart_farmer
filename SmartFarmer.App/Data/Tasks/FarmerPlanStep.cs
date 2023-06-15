@@ -22,10 +22,10 @@ public class FarmerPlanStep : IFarmerPlanStep
     }
 
     [JsonConstructor]
-    public FarmerPlanStep(string buildParametersString)
+    public FarmerPlanStep(string buildParametersSerialized)
         : this()
     {
-        BuildParameters = buildParametersString.Deserialize<Dictionary<string, string>>();
+        BuildParameters = buildParametersSerialized.Deserialize<Dictionary<string, string>>();
     }
 
     public string TaskClassFullName { get; set; }

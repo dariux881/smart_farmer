@@ -30,20 +30,7 @@ public class FarmerPlanStep : IFarmerPlanStep
         }
     }
 
-    [JsonIgnore]
     public string BuildParametersSerialized { get; set; }
-
-    public IDictionary<string, string> BuildParametersString 
-    { 
-        get {
-            if (string.IsNullOrEmpty(BuildParametersSerialized))
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<IDictionary<string, string>>(BuildParametersSerialized);
-        }
-    }
 
     [JsonIgnore]
     public FarmerPlan Plan { get; set;}

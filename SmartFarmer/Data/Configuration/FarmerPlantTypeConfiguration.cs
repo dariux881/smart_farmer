@@ -11,5 +11,9 @@ public class FarmerPlantTypeConfiguration : IEntityTypeConfiguration<FarmerPlant
         builder
             .Property(f => f.ID)
             .ValueGeneratedOnAdd();
+        
+        builder
+            .Ignore(p => p.IrrigationTaskInfo);
+
     }
 }
