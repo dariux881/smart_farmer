@@ -92,7 +92,7 @@ public class FarmerGarden : IFarmerGarden
             return false;
         }
 
-        var plan = _plans.FirstOrDefault(x => x.ID == planId);
+        var plan = _plans.FirstOrDefault(x => x.ID == planId) as IFarmerRunningPlan;
         if (plan == null)
         {
             SmartFarmerLog.Error("Invalid plan");
@@ -102,7 +102,9 @@ public class FarmerGarden : IFarmerGarden
         }
 
         _planExecSem.Wait();
-        try {
+        
+        try 
+        {
             await plan.Execute(token);
         }
         catch(Exception ex)

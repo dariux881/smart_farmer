@@ -16,15 +16,15 @@ namespace SmartFarmer.Plants
             ID = id;
             Code = code;
             FriendlyName = friendlyName;
-            IrrigationInfo = irrigationInfo;
+            IrrigationTaskInfo = irrigationInfo;
         }
 
         public string ID { get; set; }
         public string Code { get; set; }
         public string FriendlyName { get; set; }
 
-        public string IrrigationInfoId => IrrigationInfo?.ID;
-        public IFarmerIrrigationTaskInfo IrrigationInfo { get; set; }
+        public string IrrigationInfoId => IrrigationTaskInfo?.ID;
+        public IFarmerIrrigationTaskInfo IrrigationTaskInfo { get; set; }
         public int PlantWidth { get; set; }
         public int PlantDepth { get; set; }
         public int MonthToPlan { get; set; }

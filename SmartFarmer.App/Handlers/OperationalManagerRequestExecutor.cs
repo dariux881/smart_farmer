@@ -8,6 +8,7 @@ using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;
 using SmartFarmer.OperationalManagement;
 using SmartFarmer.Position;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Handlers;
@@ -366,7 +367,9 @@ public class OperationalManagerRequestExecutor
             var garden = GardenUtils.GetGardenByPlan(planId) as FarmerGarden;
 
             if (garden == null) continue;
-            var plan = garden.Plans.First(x => x.ID == planId);
+            var plan = garden.Plans.First(x => x.ID == planId) as IFarmerRunningPlan;
+
+            if (plan == null) continue;
 
             tasks.Add(
                 Task.Run(async () => {

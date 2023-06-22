@@ -9,7 +9,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Data.Tasks;
 
-public class FarmerPlan : IFarmerPlan
+public class FarmerPlan : IFarmerRunningPlan
 {
     private IFarmerGarden _garden;
 
