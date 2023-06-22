@@ -15,6 +15,7 @@ using SmartFarmer.Helpers;
 using SmartFarmer.Hubs;
 using SmartFarmer.Security;
 using SmartFarmer.Services;
+using SmartFarmer.Services.AI;
 
 namespace SmartFarmer
 {
@@ -33,6 +34,9 @@ namespace SmartFarmer
             services.AddScoped<ISmartFarmerUserAuthenticationService, SmartFarmerUserJWTAuthenticationService>();
             services.AddScoped<ISmartFarmerGardenControllerService, SmartFarmerGardenControllerService>();
             services.AddScoped<ISmartFarmerRepository, SmartFarmerInMemoryRepository>();
+
+            services.AddSingleton<ISmartFarmerAIControllerServiceProvider, SmartFarmerAIControllerServiceProvider>();
+            services.AddScoped<ISmartFarmerAIControllerService, SmartFarmerAIControllerService>();
 
             services.AddDbContext<SmartFarmerDbContext>(
                 options => options.UseInMemoryDatabase("SmartFarmerInMemoryDB"));

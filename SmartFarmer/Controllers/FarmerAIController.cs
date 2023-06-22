@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Helpers;
 using SmartFarmer.Services;
+using SmartFarmer.Services.AI;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Controllers;
 
@@ -29,7 +31,7 @@ public class FarmerAIController : FarmerControllerBase
 
     [HttpGet("GetPlanForPlant")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<FarmerPlan>> GetPlanToAnalysePlant(string plantId)
+    public async Task<ActionResult<FarmerHoverPlan>> GetPlanToAnalysePlant(string plantId)
     {
         var userId = await GetUserIdByContext();
 
@@ -43,4 +45,17 @@ public class FarmerAIController : FarmerControllerBase
         return Ok(plan);
     }
     
+    [HttpPost("AnalysePlan")]
+    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
+    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerHoverPlanResult hoverPlanResult)
+    {
+        var userId = await GetUserIdByContext();
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var result = await _aiService.AnalyseHoverPlanResult(userId, hoverPlanResult);
+
+        return Ok(result);
+    }
 }
