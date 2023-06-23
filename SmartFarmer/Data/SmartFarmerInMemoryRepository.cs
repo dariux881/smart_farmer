@@ -48,12 +48,12 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         var plant1 = new FarmerPlant { 
             //ID = "plant1", 
-            Code = "123",
+            BotanicalName = "123",
             FriendlyName="plant 1", 
             IrrigationTaskInfo = irrInfo1 };
         var plant2 = new FarmerPlant { 
             //ID = "plant2", 
-            Code = "124",
+            BotanicalName = "124",
             FriendlyName="plant 2", 
             IrrigationTaskInfo = irrInfo2 };
 

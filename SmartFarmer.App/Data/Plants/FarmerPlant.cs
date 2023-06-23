@@ -20,7 +20,7 @@ public class FarmerPlant : IFarmerPlant
         IrrigationTaskInfo = irrigationTaskInfoSerialized.Deserialize<FarmerIrrigationTaskInfo>();
     }
 
-    public string Code { get; set; }
+    public string BotanicalName { get; set; }
 
     public string FriendlyName { get; set; }
 

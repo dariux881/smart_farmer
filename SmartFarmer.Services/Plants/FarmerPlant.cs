@@ -14,13 +14,13 @@ namespace SmartFarmer.Plants
         public FarmerPlant(string id, string code, string friendlyName, IFarmerIrrigationTaskInfo irrigationInfo)
         {
             ID = id;
-            Code = code;
+            BotanicalName = code;
             FriendlyName = friendlyName;
             IrrigationTaskInfo = irrigationInfo;
         }
 
         public string ID { get; set; }
-        public string Code { get; set; }
+        public string BotanicalName { get; set; }
         public string FriendlyName { get; set; }
 
         public string IrrigationInfoId => IrrigationTaskInfo?.ID;

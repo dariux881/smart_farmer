@@ -10,7 +10,7 @@ public class FarmerPlant : IFarmerPlant
 {
     private IFarmerIrrigationTaskInfo _irrigationTaskInfo;
 
-    public string Code { get; set; }
+    public string BotanicalName { get; set; }
 
     public string FriendlyName { get; set; }
 
