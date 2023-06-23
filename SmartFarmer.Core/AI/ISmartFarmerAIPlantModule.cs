@@ -4,10 +4,8 @@ using SmartFarmer.Tasks;
 
 namespace SmartFarmer.AI;
 
-public interface ISmartFarmerAIPlantModule
+public interface ISmartFarmerAIPlantModule : ISmartFarmerAIModule<IFarmerPlantInstance>
 {
     string PlantId { get; }
     string PlantBotanicalName { get; }
-    Task<IFarmerHoverPlan> GenerateHoverPlan(IFarmerPlantInstance plant);
-    Task<bool> StartDetection(FarmerHoverPlanResult planResult);
 }

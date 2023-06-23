@@ -12,11 +12,11 @@ namespace SmartFarmer.AI;
 public class SmartFarmerTestModule : ISmartFarmerAIPlantModule
 {
     public string PlantId => null;
-
     public string PlantBotanicalName => "PlantBotanicalName_1";
 
-    public Task<bool> StartDetection(FarmerHoverPlanResult planResult)
+    public async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerHoverPlanResult planResult)
     {
+        await Task.CompletedTask;
         throw new NotImplementedException();
     }
 

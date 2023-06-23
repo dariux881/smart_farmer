@@ -44,7 +44,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
         await RemoveStoredPlan(userId, result.PlanId);
 
-        return await aiModule.StartDetection(result);
+        return await aiModule.ExecuteDetection(result) != null;
     }
 
     public async Task<IFarmerHoverPlan> GenerateHoverPlan(string userId, string plantInstanceId)
