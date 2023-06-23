@@ -5,7 +5,7 @@ namespace SmartFarmer.Services.AI;
 
 public interface ISmartFarmerAIPlantModule
 {
-    string PlantKindId { get; }
+    string PlantId { get; }
     Task<IFarmerHoverPlan> GenerateHoverPlan(string plantKindId);
     Task<bool> Execute(FarmerHoverPlanResult planResult);
 }
