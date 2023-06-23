@@ -31,7 +31,7 @@ public class FarmerAIController : FarmerControllerBase
 
     [HttpGet("GetPlanForPlant")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<FarmerHoverPlan>> GetPlanToAnalysePlant(string plantId)
+    public async Task<ActionResult<IFarmerHoverPlan>> GetPlanToAnalysePlant(string plantId)
     {
         var userId = await GetUserIdByContext();
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
 using SmartFarmer.Misc;
+using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Services.AI;
@@ -32,32 +33,32 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         var planCheck = await IsValidHoverPlan(userId, result.PlanId);
         if (!planCheck) throw new InvalidOperationException();
 
-        var plantKindId = await GetPlantKindByPlantInstance(result.PlantInstanceId, userId);
+        var plantInstance = await GetPlantInstance(result.PlantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantKindId);
+        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantInstance.ID, plantInstance.PlantKindID);
         if (aiModule == null)
         {
-            SmartFarmerLog.Error($"no such AI Module found for plant {plantKindId}");
+            SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
             return false;
         }
 
         await RemoveStoredPlan(userId, result.PlanId);
 
-        return await aiModule.Execute(result);
+        return await aiModule.StartDetection(result);
     }
 
     public async Task<IFarmerHoverPlan> GenerateHoverPlan(string userId, string plantInstanceId)
     {
-        var plantKindId = await GetPlantKindByPlantInstance(plantInstanceId, userId);
+        var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantKindId);
+        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantInstance.ID, plantInstance.PlantKindID);
         if (aiModule == null)
         {
-            SmartFarmerLog.Error($"no such AI Module found for plant {plantKindId}");
+            SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance}");
             return null;
         }
 
-        var hoverPlan = await aiModule.GenerateHoverPlan(plantKindId);
+        var hoverPlan = await aiModule.GenerateHoverPlan(plantInstance);
 
         if (hoverPlan == null)
         {
@@ -69,11 +70,9 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return hoverPlan;
     }
 
-    private async Task<string> GetPlantKindByPlantInstance(string plantInstanceId, string userId)
+    private async Task<IFarmerPlantInstance> GetPlantInstance(string plantInstanceId, string userId)
     {
-        var plantInstance = await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId);
-
-        return plantInstance?.PlantKindID;
+        return await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId);
     }
 
     private async Task StoreHoverPlan(string userId, IFarmerHoverPlan hoverPlan)

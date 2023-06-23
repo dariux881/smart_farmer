@@ -9,5 +9,5 @@ public interface ISmartFarmerAIPlantModule
     string PlantId { get; }
     string PlantBotanicalName { get; }
     Task<IFarmerHoverPlan> GenerateHoverPlan(IFarmerPlantInstance plant);
-    Task<bool> Execute(FarmerHoverPlanResult planResult);
+    Task<bool> StartDetection(FarmerHoverPlanResult planResult);
 }

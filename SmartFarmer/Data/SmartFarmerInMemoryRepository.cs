@@ -47,13 +47,11 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.SaveChanges();
 
         var plant1 = new FarmerPlant { 
-            //ID = "plant1", 
-            BotanicalName = "123",
+            BotanicalName = "PlantBotanicalName_1",
             FriendlyName="plant 1", 
             IrrigationTaskInfo = irrInfo1 };
         var plant2 = new FarmerPlant { 
-            //ID = "plant2", 
-            BotanicalName = "124",
+            BotanicalName = "PlantBotanicalName_2",
             FriendlyName="plant 2", 
             IrrigationTaskInfo = irrInfo2 };
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using SmartFarmer.AI;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Services.AI;
@@ -22,9 +23,29 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
         GatherAIModules();
     }
 
-    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlantId(string plantId)
+    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlantId(string plantInstanceId, string plantKindId)
     {
-        return _aiModules[plantId];
+        if (_aiModules.TryGetValue(plantInstanceId, out var specificModule))
+        {
+            return specificModule;
+        }
+
+        if (_aiModules.TryGetValue(plantKindId, out var genericModule))
+        {
+            return genericModule;
+        }
+        
+        return null;
+    }
+
+    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlantBotanicalName(string botanicalName)
+    {
+        if (_aiModules.TryGetValue(botanicalName, out var genericModule))
+        {
+            return genericModule;
+        }
+        
+        return null;
     }
 
     private void GatherAIModules()
@@ -52,7 +73,15 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
                 SmartFarmerLog.Error($"failing initialization of {module.FullName}");
             }
 
-            _aiModules.TryAdd(moduleInstance.PlantId, moduleInstance);
+            if (!string.IsNullOrEmpty(moduleInstance.PlantId))
+            {
+                _aiModules.TryAdd(moduleInstance.PlantId, moduleInstance);
+            }
+
+            if (!string.IsNullOrEmpty(moduleInstance.PlantBotanicalName))
+            {
+                _aiModules.TryAdd(moduleInstance.PlantBotanicalName, moduleInstance);
+            }
         }
 
         SmartFarmerLog.Information($"Found {_aiModules.Count} AI modules");

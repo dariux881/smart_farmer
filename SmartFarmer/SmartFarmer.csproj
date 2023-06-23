@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartFarmer.Core\SmartFarmer.Core.csproj" />
+    <ProjectReference Include="..\Smartfarmer.AI\SmartFarmer.AI.csproj" />
   </ItemGroup>
 
 </Project>
