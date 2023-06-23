@@ -7,11 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer", "SmartFarmer\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Core", "SmartFarmer.Core\SmartFarmer.Core.csproj", "{8FD22286-EA6C-4392-8FCA-65E04A4427C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tests", "SmartFarmer.Tests\SmartFarmer.Tests.csproj", "{B153139E-460C-498C-B860-62BE428BF1DA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.Tasks.Mock", "SmartFarmer.Tasks.Mock\SmartFarmer.Tasks.Mock.csproj", "{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.TestsPlan", "SmartFarmer.TestsPlan\SmartFarmer.TestsPlan.csproj", "{93BA8B70-1997-4B85-90FB-F66867132D85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartFarmer.App", "SmartFarmer.App\SmartFarmer.App.csproj", "{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}"
 EndProject
@@ -29,18 +25,10 @@ Global
 		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FD22286-EA6C-4392-8FCA-65E04A4427C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B153139E-460C-498C-B860-62BE428BF1DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B153139E-460C-498C-B860-62BE428BF1DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B153139E-460C-498C-B860-62BE428BF1DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B153139E-460C-498C-B860-62BE428BF1DA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60774AE0-B8E2-424F-9B70-1AC4DF051F3E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93BA8B70-1997-4B85-90FB-F66867132D85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93BA8B70-1997-4B85-90FB-F66867132D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93BA8B70-1997-4B85-90FB-F66867132D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93BA8B70-1997-4B85-90FB-F66867132D85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D8CA18B-5997-4BE8-9BB4-47EE63CE4322}.Release|Any CPU.ActiveCfg = Release|Any CPU
