@@ -1,11 +1,13 @@
 using System.Threading.Tasks;
+using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 
-namespace SmartFarmer.Services.AI;
+namespace SmartFarmer.AI;
 
 public interface ISmartFarmerAIPlantModule
 {
     string PlantId { get; }
-    Task<IFarmerHoverPlan> GenerateHoverPlan(string plantKindId);
+    string PlantBotanicalName { get; }
+    Task<IFarmerHoverPlan> GenerateHoverPlan(IFarmerPlantInstance plant);
     Task<bool> Execute(FarmerHoverPlanResult planResult);
 }
