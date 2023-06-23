@@ -17,7 +17,7 @@ public class FarmerPlant : IFarmerPlant
     public FarmerPlant(string irrigationTaskInfoSerialized)
         : this()
     {
-        IrrigationTaskInfo = irrigationTaskInfoSerialized.Deserialize<FarmerIrrigationTaskInfo>();
+        IrrigationTaskInfo = irrigationTaskInfoSerialized?.Deserialize<FarmerIrrigationTaskInfo>();
     }
 
     public string BotanicalName { get; set; }
