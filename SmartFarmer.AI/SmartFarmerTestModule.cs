@@ -24,77 +24,93 @@ public class SmartFarmerTestModule : ISmartFarmerAIPlantModule
     {
         var plan = new FarmerHoverPlan();
 
-        plan.ID = PlantBotanicalName + plant.ID + DateTime.UtcNow.ToString("G");
+        plan.ID = PlantBotanicalName + "_" + plant.ID + "_" + DateTime.UtcNow.ToString("G");
         plan.Name = "Hover plan for " + plant.ID;
         
         // go to plant.PlantX - plant.PlantWidth / 2, plant.PlantY
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
-            BuildParameters =
-                new Dictionary<string, string>() 
-                {
-                    { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX - plant.PlantWidth) },
-                    { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+plant.PlantY }
-                },
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX - plant.PlantWidth) },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+plant.PlantY }
+                    },
         });
 
         //TODO point to plant
 
         // take picture
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
         });
         
         // go to plant.PlantX, plant.PlantY - plant.PlantDepth / 2
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
-            BuildParameters =
-                new Dictionary<string, string>() 
-                {
-                    { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
-                    { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY - plant.PlantDepth / 2) }
-                },
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY - plant.PlantDepth / 2) }
+                    },
         });
 
         //TODO point to plant
         // take picture
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
         });
         
         // go to plant.PlantX + plant.PlantWidth / 2, plant.PlantY
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
-            BuildParameters =
-                new Dictionary<string, string>() 
-                {
-                    { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX + plant.PlantWidth / 2) },
-                    { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY) }
-                },
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX + plant.PlantWidth / 2) },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY) }
+                    },
         });
 
         //TODO point to plant
         // take picture
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
         });
 
         //TODO go to plant.PlantX, plant.PlantY + plant.Depth / 2
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
-            BuildParameters =
-                new Dictionary<string, string>() 
-                {
-                    { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
-                    { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY + plant.PlantDepth / 2) }
-                },
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
+                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY + plant.PlantDepth / 2) }
+                    },
         });
 
         //TODO point to plant
 
         // take picture
-        plan.Steps.Add(new FarmerHoverPlanStep() { 
-            TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+        plan.Steps.Add(
+            new FarmerHoverPlanStep() { 
+                ID = plan.ID + "_" + plan.Steps.Count,
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
         });
 
         await Task.CompletedTask;
