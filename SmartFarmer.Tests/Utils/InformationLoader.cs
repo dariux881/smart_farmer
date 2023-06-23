@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SmartFarmer.Data.Plants;
+using SmartFarmer.Data.Tasks;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 using SmartFarmer.Utils;
@@ -45,12 +47,12 @@ namespace SmartFarmer.Tests.Utils
 
                     await FarmerIrrigationInfoProvider.Instance.AddFarmerService(irrigationInfo);
 
-                    plants.Add(new FarmerPlant(
-                        id + "", 
-                        code, 
-                        name,
-                        irrigationInfo)
+                    plants.Add(new FarmerPlant()
                     {
+                        ID = id + "",
+                        BotanicalName = code,
+                        FriendlyName = name,
+                        IrrigationTaskInfo = irrigationInfo,
                         MonthToPlan = int.Parse(month, CultureInfo.InvariantCulture),
                         NumberOfWeeksToHarvest = int.Parse(weeksToHarvest, CultureInfo.InvariantCulture),
                         PlantWidth = int.Parse(width, CultureInfo.InvariantCulture),

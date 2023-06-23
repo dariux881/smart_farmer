@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartFarmer.Core\SmartFarmer.Core.csproj" />
-    <ProjectReference Include="..\SmartFarmer.Services\SmartFarmer.Services.csproj" />
+    <ProjectReference Include="..\SmartFarmer.App\SmartFarmer.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>
