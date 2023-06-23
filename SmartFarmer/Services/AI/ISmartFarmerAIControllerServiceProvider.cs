@@ -1,9 +1,9 @@
 using SmartFarmer.AI;
+using SmartFarmer.DTOs.Plants;
 
 namespace SmartFarmer.Services.AI;
 
 public interface ISmartFarmerAIControllerServiceProvider
 {
-    ISmartFarmerAIPlantModule GetAIPlantModuleByPlantId(string plantInstanceId, string plantKindId);
-    ISmartFarmerAIPlantModule GetAIPlantModuleByPlantBotanicalName(string botanicalName);
+    ISmartFarmerAIPlantModule GetAIPlantModuleByPlant(FarmerPlantInstance plant);
 }

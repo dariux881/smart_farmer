@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
+using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Misc;
-using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Services.AI;
@@ -35,7 +35,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
         var plantInstance = await GetPlantInstance(result.PlantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantInstance.ID, plantInstance.PlantKindID);
+        var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
@@ -51,7 +51,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
     {
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIPlantModuleByPlantId(plantInstance.ID, plantInstance.PlantKindID);
+        var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance}");
@@ -70,9 +70,9 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return hoverPlan;
     }
 
-    private async Task<IFarmerPlantInstance> GetPlantInstance(string plantInstanceId, string userId)
+    private async Task<FarmerPlantInstance> GetPlantInstance(string plantInstanceId, string userId)
     {
-        return await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId);
+        return await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId) as FarmerPlantInstance;
     }
 
     private async Task StoreHoverPlan(string userId, IFarmerHoverPlan hoverPlan)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using SmartFarmer.AI;
+using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Services.AI;
@@ -23,14 +24,19 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
         GatherAIModules();
     }
 
-    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlantId(string plantInstanceId, string plantKindId)
+    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlant(FarmerPlantInstance plant)
     {
-        if (_aiModules.TryGetValue(plantInstanceId, out var specificModule))
+        if (_aiModules.TryGetValue(plant.ID, out var specificModule))
         {
             return specificModule;
         }
 
-        if (_aiModules.TryGetValue(plantKindId, out var genericModule))
+        if (_aiModules.TryGetValue(plant.PlantKindID, out var genericModule))
+        {
+            return genericModule;
+        }
+
+        if (_aiModules.TryGetValue(plant.Plant.BotanicalName, out genericModule))
         {
             return genericModule;
         }
