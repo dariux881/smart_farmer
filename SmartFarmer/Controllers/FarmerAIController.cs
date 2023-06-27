@@ -48,7 +48,7 @@ public class FarmerAIController : FarmerControllerBase
     
     [HttpPost("AnalysePlan")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerHoverPlanExecutionResult hoverPlanResult)
+    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerPlanExecutionResult hoverPlanResult)
     {
         var userId = await GetUserIdByContext();
 

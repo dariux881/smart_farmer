@@ -7,5 +7,5 @@ namespace SmartFarmer.AI;
 public interface ISmartFarmerAIModule<T>
 {
     Task<IFarmerPlan> GenerateHoverPlan(T planTarget);
-    Task<FarmerAIDetectionLog> ExecuteDetection(FarmerHoverPlanExecutionResult planResult);
+    Task<FarmerAIDetectionLog> ExecuteDetection(FarmerPlanExecutionResult planResult);
 }

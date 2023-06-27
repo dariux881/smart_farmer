@@ -19,15 +19,18 @@ public class FarmerGardenController : FarmerControllerBase
 {
     private readonly ILogger<FarmerGardenController> _logger;
     private readonly ISmartFarmerGardenControllerService _gardenProvider;
+    private readonly ISmartFarmerPlantControllerService _plantProvider;
 
     public FarmerGardenController(
         ILogger<FarmerGardenController> logger,
         ISmartFarmerGardenControllerService gardenProvider,
+        ISmartFarmerPlantControllerService plantProvider,
         ISmartFarmerUserAuthenticationService userManager)
         : base(userManager)
     {
         _logger = logger;
         _gardenProvider = gardenProvider;
+        _plantProvider = plantProvider;
     }
 
     [HttpGet]
@@ -72,7 +75,7 @@ public class FarmerGardenController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _gardenProvider
+            await _plantProvider
                 .GetFarmerPlantInstanceByIdForUserAsync(
                     userId,
                     id);
@@ -90,7 +93,7 @@ public class FarmerGardenController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _gardenProvider
+            await _plantProvider
                 .GetFarmerPlantInstanceByIdsForUserAsync(
                     userId,
                     idsSplit.Split('#'));
@@ -108,7 +111,7 @@ public class FarmerGardenController : FarmerControllerBase
             return Unauthorized();
 
         var plant =
-            await _gardenProvider
+            await _plantProvider
                 .GetFarmerIrrigationHistoryByPlantAsync(
                     userId,
                     plantId);
@@ -126,7 +129,7 @@ public class FarmerGardenController : FarmerControllerBase
             return Unauthorized();
         
         var result = 
-            await _gardenProvider
+            await _plantProvider
                 .MarkIrrigationInstance(userId, irrigation);
 
         return Ok(result);
@@ -136,7 +139,7 @@ public class FarmerGardenController : FarmerControllerBase
     public async Task<ActionResult<IFarmerPlant>> GetPlant(string id)
     {
         var plant =
-            await _gardenProvider
+            await _plantProvider
                 .GetFarmerPlantByIdAsync(id);
 
         return Ok(plant);
@@ -146,7 +149,7 @@ public class FarmerGardenController : FarmerControllerBase
     public async Task<ActionResult<IEnumerable<IFarmerPlant>>> GetPlants(string idsSplit)
     {
         var plant =
-            await _gardenProvider
+            await _plantProvider
                 .GetFarmerPlantByIdsAsync(idsSplit.Split('#'));
 
         return Ok(plant);
@@ -189,7 +192,7 @@ public class FarmerGardenController : FarmerControllerBase
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var result = await _gardenProvider
+        var result = await _plantProvider
             .AddFarmerPlantInstance(userId, data);
 
         if (result)

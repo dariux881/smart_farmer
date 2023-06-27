@@ -32,7 +32,12 @@ namespace SmartFarmer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ISmartFarmerUserAuthenticationService, SmartFarmerUserJWTAuthenticationService>();
+            
             services.AddScoped<ISmartFarmerGardenControllerService, SmartFarmerGardenControllerService>();
+            services.AddScoped<ISmartFarmerPlanControllerService, SmartFarmerPlanControllerService>();
+            services.AddScoped<ISmartFarmerPlantControllerService, SmartFarmerPlantControllerService>();
+            services.AddScoped<ISmartFarmerAlertControllerService, SmartFarmerAlertControllerService>();
+            
             services.AddScoped<ISmartFarmerRepository, SmartFarmerInMemoryRepository>();
 
             services.AddSingleton<ISmartFarmerAIControllerServiceProvider, SmartFarmerAIControllerServiceProvider>();

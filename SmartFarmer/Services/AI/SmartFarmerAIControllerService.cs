@@ -27,7 +27,17 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         _repository = repository;
     }
 
-    public async Task<bool> AnalyseHoverPlanResult(string userId, FarmerHoverPlanExecutionResult result)
+    public bool IsHoverPlan(string userId, string planId)
+    {
+        if (!_plansByUser.ContainsKey(userId))
+        {
+            return false;
+        }
+
+        return _plansByUser[userId].Contains(planId);
+    }
+
+    public async Task<bool> AnalyseHoverPlanResult(string userId, FarmerPlanExecutionResult result)
     {
         if (result == null) throw new ArgumentNullException(nameof(result));
 

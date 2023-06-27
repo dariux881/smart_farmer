@@ -19,13 +19,16 @@ public class FarmerGardenHub : Hub
 {
     private readonly ILogger<FarmerGardenController> _logger;
     private readonly ISmartFarmerGardenControllerService _gardenProvider;
+    private readonly ISmartFarmerAlertControllerService _alertProvider;
 
     public FarmerGardenHub(
         ILogger<FarmerGardenController> logger,
-        ISmartFarmerGardenControllerService gardenProvider)
+        ISmartFarmerGardenControllerService gardenProvider,
+        ISmartFarmerAlertControllerService alertProvider)
     {
         _logger = logger;
         _gardenProvider = gardenProvider;
+        _alertProvider = alertProvider;
     }
 
     public async Task AddToGroupAsync(string gardenId)
@@ -90,7 +93,7 @@ public class FarmerGardenHub : Hub
 
     public async Task SendNewAlertStatusAsync(string alertId, bool alertRead)
     {
-        var result = await _gardenProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
+        var result = await _alertProvider.MarkFarmerAlertAsRead(Context.UserIdentifier, alertId, alertRead);
 
         if (result)
         {
@@ -101,7 +104,7 @@ public class FarmerGardenHub : Hub
     public async Task NotifyNewAlertStatusAsync(string alertId, bool alertRead)
     {
         var alert =
-            (await _gardenProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
+            (await _alertProvider.GetFarmerAlertsByIdAsync(Context.UserIdentifier, new[] { alertId }))
                 ?.FirstOrDefault()
                 as FarmerAlert;
 

@@ -15,7 +15,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
     public virtual string PlantId => null;
     public virtual string PlantBotanicalName => "PlantBotanicalName_1";
 
-    public virtual async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerHoverPlanExecutionResult planResult)
+    public virtual async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerPlanExecutionResult planResult)
     {
         await Task.CompletedTask;
         throw new NotImplementedException();

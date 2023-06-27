@@ -15,16 +15,16 @@ namespace SmartFarmer.Controllers;
 public class FarmerAlertController : FarmerControllerBase
 {
     private readonly ILogger<FarmerAlertController> _logger;
-    private readonly ISmartFarmerGardenControllerService _gardenProvider;
+    private readonly ISmartFarmerAlertControllerService _alertProvider;
 
     public FarmerAlertController(
         ILogger<FarmerAlertController> logger,
-        ISmartFarmerGardenControllerService gardenProvider,
+        ISmartFarmerAlertControllerService alertProvider,
         ISmartFarmerUserAuthenticationService userManager)
         : base(userManager)
     {
         _logger = logger;
-        _gardenProvider = gardenProvider;
+        _alertProvider = alertProvider;
     }
     
     [HttpGet("alertsInGarden")]
@@ -37,7 +37,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            await _gardenProvider
+            await _alertProvider
                 .GetFarmerAlertsByGardenIdAsync(userId, id);
 
         return Ok(alerts);
@@ -53,7 +53,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            (await _gardenProvider
+            (await _alertProvider
                 .GetFarmerAlertsByGardenIdAsync(userId, id))?.ToArray();
 
         return Ok(alerts?.Length);
@@ -69,7 +69,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            (await _gardenProvider
+            (await _alertProvider
                 .GetFarmerAlertsByGardenIdAsync(userId, id))?
                     .Where(a => !a.MarkedAsRead)
                     .ToArray();
@@ -87,7 +87,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var alerts =
-            await _gardenProvider
+            await _alertProvider
                 .GetFarmerAlertsByIdAsync(userId, ids.Split("#"));
 
         return Ok(alerts);
@@ -103,7 +103,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var result =
-            await _gardenProvider
+            await _alertProvider
                 .MarkFarmerAlertAsRead(userId, alertId, read);
 
         return Ok(result);
@@ -119,7 +119,7 @@ public class FarmerAlertController : FarmerControllerBase
             return Unauthorized();
 
         var result =
-            await _gardenProvider
+            await _alertProvider
                 .CreateFarmerAlert(userId, data);
 
         return Ok(result);
