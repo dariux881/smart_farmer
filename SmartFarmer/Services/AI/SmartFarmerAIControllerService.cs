@@ -128,32 +128,41 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         foreach (var step in stepsWithResult)
         {
             SmartFarmerLog.Debug($"processing step {step.ID} on task {step.TaskInterfaceFullName}");
+            FarmerAIDetectionLog detectionLog = null;
 
+            // check if refers to PlantInstance
             if (HasPlantInstance(step, out var plantInstanceId))
             {
-                var detectionLog = await AnalysePlantBasedStep(userId, plantInstanceId, result.TaskResults[step.ID]);
+                detectionLog = await AnalysePlantBasedStep(
+                    userId, 
+                    step.ID, 
+                    plantInstanceId, 
+                    result.TaskResults[step.ID]);
+            }
+            else
+            {
+                detectionLog = await AnalyseTaskBasedStep(
+                    userId, 
+                    step.ID, 
+                    step.TaskInterfaceFullName, 
+                    result.TaskResults[step.ID]);
             }
 
-            //TODO check if refers to PlantInstance
-            //TODO if generic, then look for aiModule based on step.TaskInterfaceFullName
-
-            // var plantInstance = await GetPlantInstance(result.PlantInstanceId, userId);
-            
-            // var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
-            // if (aiModule == null)
-            // {
-            //     SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
-            //     return log;
-            // }
-
-            // var moduleResult = await aiModule.ExecuteDetection(result);
+            if (detectionLog != null)
+            {
+                log.InjectFrom(detectionLog);
+            }
         }
 
         await Task.CompletedTask;
         return log;
     }
 
-    private async Task<FarmerAIDetectionLog> AnalysePlantBasedStep(string userId, string plantInstanceId, object stepData)
+    private async Task<FarmerAIDetectionLog> AnalysePlantBasedStep(
+        string userId, 
+        string stepId,
+        string plantInstanceId, 
+        object stepData)
     {
         
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
@@ -162,7 +171,39 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
-            return null;
+
+            return 
+                new FarmerAIDetectionLog(
+                    new FarmerAIDetectionLogMessage()
+                    {
+                        Level = LogMessageLevel.Error,
+                        Message = $"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}",
+                        StepID = stepId
+                    });
+        }
+
+        return await aiModule.ExecuteDetection(stepData);
+    }
+
+    private async Task<FarmerAIDetectionLog> AnalyseTaskBasedStep(
+        string userId, 
+        string stepId,
+        string taskInterfaceFullName, 
+        object stepData)
+    {
+        var aiModule = _aiProvider.GetAITaskModuleByTask(taskInterfaceFullName);
+        if (aiModule == null)
+        {
+            SmartFarmerLog.Error($"no such AI Module found for task {taskInterfaceFullName}");
+            
+            return 
+                new FarmerAIDetectionLog(
+                    new FarmerAIDetectionLogMessage()
+                    {
+                        Level = LogMessageLevel.Error,
+                        Message = $"no such AI Module found for task {taskInterfaceFullName}",
+                        StepID = stepId
+                    });
         }
 
         return await aiModule.ExecuteDetection(stepData);

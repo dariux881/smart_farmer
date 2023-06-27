@@ -7,4 +7,12 @@ public class FarmerAIDetectionLogMessage
     
     //TODO evaluate
     public bool RequiresAction { get; set; }
+    public LogMessageLevel Level { get; set; }
+}
+
+public enum LogMessageLevel
+{
+    Error,
+    Warning,
+    Information
 }
