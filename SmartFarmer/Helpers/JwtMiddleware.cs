@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartFarmer.Security;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Helpers;
 

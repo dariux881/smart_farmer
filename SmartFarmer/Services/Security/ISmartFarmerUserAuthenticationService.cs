@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using SmartFarmer.Data.Security;
 using SmartFarmer.DTOs.Security;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Security;
 
 public interface ISmartFarmerUserAuthenticationService
 {

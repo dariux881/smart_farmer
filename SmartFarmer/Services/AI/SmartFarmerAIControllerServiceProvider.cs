@@ -13,42 +13,43 @@ namespace SmartFarmer.Services.AI;
 
 public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerServiceProvider
 {
-    private readonly ConcurrentDictionary<string, ISmartFarmerAIPlantModule> _aiModules;
+    private readonly ConcurrentDictionary<string, ISmartFarmerAIModule> _aiModules;
     private static Assembly[] _loadedAssemblies;
 
     public SmartFarmerAIControllerServiceProvider()
     {
-        _aiModules = new ConcurrentDictionary<string, ISmartFarmerAIPlantModule>();
+        _aiModules = new ConcurrentDictionary<string, ISmartFarmerAIModule>();
 
         LoadAssembliesFromFolder();
         GatherAIModules();
     }
 
-    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlant(FarmerPlantInstance plant)
+    public ISmartFarmerAIPlantModule GetAIModuleByPlant(FarmerPlantInstance plant)
     {
-        if (_aiModules.TryGetValue(plant.ID, out var specificModule))
+        if (_aiModules.TryGetValue(plant.ID, out var specificModule) && specificModule is ISmartFarmerAIPlantModule)
         {
-            return specificModule;
+            return specificModule as ISmartFarmerAIPlantModule;
         }
 
-        if (_aiModules.TryGetValue(plant.PlantKindID, out var genericModule))
+        if (_aiModules.TryGetValue(plant.PlantKindID, out var genericModule) && genericModule is ISmartFarmerAIPlantModule)
         {
-            return genericModule;
+            return genericModule as ISmartFarmerAIPlantModule;
         }
 
-        if (_aiModules.TryGetValue(plant.Plant.BotanicalName, out genericModule))
+        if (_aiModules.TryGetValue(plant.Plant.BotanicalName, out genericModule) && genericModule is ISmartFarmerAIPlantModule)
         {
-            return genericModule;
+            return genericModule as ISmartFarmerAIPlantModule;
         }
         
         return null;
     }
 
-    public ISmartFarmerAIPlantModule GetAIPlantModuleByPlantBotanicalName(string botanicalName)
+    public ISmartFarmerAITaskModule GetAITaskModuleByTask(string taskInterfaceFullName)
     {
-        if (_aiModules.TryGetValue(botanicalName, out var genericModule))
+        
+        if (_aiModules.TryGetValue(taskInterfaceFullName, out var genericModule) && genericModule is ISmartFarmerAITaskModule)
         {
-            return genericModule;
+            return genericModule as ISmartFarmerAITaskModule;
         }
         
         return null;
@@ -57,42 +58,66 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
     private void GatherAIModules()
     {
         var assemblies = _loadedAssemblies ?? AppDomain.CurrentDomain.GetAssemblies();
-        var taskType = typeof(ISmartFarmerAIPlantModule);
+        var plantType = typeof(ISmartFarmerAIPlantModule);
+        var taskType = typeof(ISmartFarmerAITaskModule);
 
-        var modules = assemblies
+        var types = assemblies
             .SelectMany(s => s.GetTypes())
             .Where(p =>
                 p.IsClass && 
                 !p.IsAbstract &&
                 (
-                    p.GetInterfaces().Any(x => x.GUID == taskType.GUID)// &&
-                    //taskType.IsAssignableFrom(p)
+                    p.GetInterfaces().Any(x => x.GUID == plantType.GUID) ||
+                    p.GetInterfaces().Any(x => x.GUID == taskType.GUID)
                 ));
         
-        foreach (var module in modules)
+        foreach (var type in types)
         {
-            var moduleInstance = Activator.CreateInstance(module) as ISmartFarmerAIPlantModule;
+            var moduleInstance = Activator.CreateInstance(type) as ISmartFarmerAIPlantModule;
 
-            if (moduleInstance == null)
+            if (moduleInstance is ISmartFarmerAIPlantModule plantModule)
+            {
+                AddPlantAIModule(plantModule);
+            }
+            else if (moduleInstance is ISmartFarmerAITaskModule taskModule)
+            {
+                AddTaskAIModule(taskModule);
+            }
+            else
             {
                 // AI Module initialization failure
-                SmartFarmerLog.Error($"failing initialization of {module.FullName}");
-            }
-
-            if (!string.IsNullOrEmpty(moduleInstance.PlantId))
-            {
-                _aiModules.TryAdd(moduleInstance.PlantId, moduleInstance);
-            }
-
-            if (!string.IsNullOrEmpty(moduleInstance.PlantBotanicalName))
-            {
-                _aiModules.TryAdd(moduleInstance.PlantBotanicalName, moduleInstance);
+                SmartFarmerLog.Error($"failing initialization of {type.FullName}");
             }
         }
 
         SmartFarmerLog.Information($"Found {_aiModules.Count} AI modules");
     }
+
+    private void AddTaskAIModule(ISmartFarmerAITaskModule taskModule)
+    {
+        if (string.IsNullOrEmpty(taskModule.TaskInterfaceFullName))
+        {
+            SmartFarmerLog.Error($"task module does not specify Task Interface FullName");
+            return;
+        }
+
+        _aiModules.TryAdd(taskModule.TaskInterfaceFullName, taskModule);
+    }
+
+    private void AddPlantAIModule(ISmartFarmerAIPlantModule plantModule)
+    {
     
+        if (!string.IsNullOrEmpty(plantModule.PlantId))
+        {
+            _aiModules.TryAdd(plantModule.PlantId, plantModule);
+        }
+
+        if (!string.IsNullOrEmpty(plantModule.PlantBotanicalName))
+        {
+            _aiModules.TryAdd(plantModule.PlantBotanicalName, plantModule);
+        }
+    }
+
     /// <summary>
     /// Load assemblies from folder to include all assemblies in current domain. 
     /// By default, not used assemblies are not loaded in current domain

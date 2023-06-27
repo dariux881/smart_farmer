@@ -66,7 +66,7 @@ public class FarmerPlan : IFarmerPlan
 
                 if (taskResult != null)
                 {
-                    result.TaskResults.Add(step.TaskID, taskResult);
+                    result.TaskResults.Add(step.ID, taskResult);
                 }
             }
         }

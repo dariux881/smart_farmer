@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SmartFarmer.Data;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Helpers;
 

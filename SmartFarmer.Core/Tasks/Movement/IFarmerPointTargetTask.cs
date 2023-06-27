@@ -4,9 +4,8 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public interface IFarmerPointTargetTask : IFarmerTask
+public interface IFarmerPointTargetTask : IFarmerTask, IHasTargetDegrees
 {
-    double TargetDegrees { get; }
     Task<object> TurnDeviceToDegrees(double degrees, CancellationToken token);
     double GetCurrentDegrees();
 }

@@ -9,7 +9,7 @@ public class SmartFarmerTestModule : SmartFarmerPlantDetectionModuleBase
     public override string PlantId => null;
     public override string PlantBotanicalName => "PlantBotanicalName_1";
 
-    public override async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerPlanExecutionResult planResult)
+    public override async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
     {
         await Task.CompletedTask;
         throw new NotImplementedException();

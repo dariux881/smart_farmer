@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs.Security;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Security;
 

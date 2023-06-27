@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Helpers;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 using SmartFarmer.Services.AI;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
@@ -44,19 +41,5 @@ public class FarmerAIController : FarmerControllerBase
                 .GenerateHoverPlan(userId, plantId);
 
         return Ok(plan);
-    }
-    
-    [HttpPost("AnalysePlan")]
-    [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerPlanExecutionResult hoverPlanResult)
-    {
-        var userId = await GetUserIdByContext();
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        var result = await _aiService.AnalyseHoverPlanResult(userId, hoverPlanResult);
-
-        return Ok(result);
     }
 }

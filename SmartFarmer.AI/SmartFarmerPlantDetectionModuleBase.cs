@@ -15,7 +15,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
     public virtual string PlantId => null;
     public virtual string PlantBotanicalName => "PlantBotanicalName_1";
 
-    public virtual async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerPlanExecutionResult planResult)
+    public virtual async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
     {
         await Task.CompletedTask;
         throw new NotImplementedException();
@@ -36,8 +36,8 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
                 BuildParameters =
                     new Dictionary<string, string>() 
                     {
-                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX - plant.PlantWidth) },
-                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+plant.PlantY }
+                        { nameof(IHasTargetGridPosition.TargetXInCm), ""+(plant.PlantX - plant.PlantWidth) },
+                        { nameof(IHasTargetGridPosition.TargetYInCm), ""+plant.PlantY }
                     },
         });
 
@@ -58,8 +58,8 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
                 BuildParameters =
                     new Dictionary<string, string>() 
                     {
-                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
-                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY - plant.PlantDepth / 2) }
+                        { nameof(IHasTargetGridPosition.TargetXInCm), ""+(plant.PlantX) },
+                        { nameof(IHasTargetGridPosition.TargetYInCm), ""+(plant.PlantY - plant.PlantDepth / 2) }
                     },
         });
 
@@ -79,8 +79,8 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
                 BuildParameters =
                     new Dictionary<string, string>() 
                     {
-                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX + plant.PlantWidth / 2) },
-                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY) }
+                        { nameof(IHasTargetGridPosition.TargetXInCm), ""+(plant.PlantX + plant.PlantWidth / 2) },
+                        { nameof(IHasTargetGridPosition.TargetYInCm), ""+(plant.PlantY) }
                     },
         });
 
@@ -100,8 +100,8 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
                 BuildParameters =
                     new Dictionary<string, string>() 
                     {
-                        { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+(plant.PlantX) },
-                        { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+(plant.PlantY + plant.PlantDepth / 2) }
+                        { nameof(IHasTargetGridPosition.TargetXInCm), ""+(plant.PlantX) },
+                        { nameof(IHasTargetGridPosition.TargetYInCm), ""+(plant.PlantY + plant.PlantDepth / 2) }
                     },
         });
 

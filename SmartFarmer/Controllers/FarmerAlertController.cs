@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SmartFarmer.Alerts;
 using SmartFarmer.Helpers;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Alert;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Controllers;
 

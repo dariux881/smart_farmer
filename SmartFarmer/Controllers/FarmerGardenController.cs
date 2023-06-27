@@ -9,6 +9,8 @@ using SmartFarmer.Services;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Movement;
 using SmartFarmer.DTOs.Movements;
+using SmartFarmer.Services.Plant;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Controllers;
 

@@ -5,7 +5,7 @@ using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Plants;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Plant;
 
 public class SmartFarmerPlantControllerService : ISmartFarmerPlantControllerService 
 {

@@ -4,7 +4,7 @@ using SmartFarmer.Data;
 using SmartFarmer.Data.Security;
 using SmartFarmer.DTOs.Security;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Security;
 
 public abstract class SmartFarmerUserAuthenticationService : ISmartFarmerUserAuthenticationService
 {

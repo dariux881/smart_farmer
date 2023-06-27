@@ -11,6 +11,7 @@ using SmartFarmer.Movement;
 using SmartFarmer.Services;
 using SmartFarmer.DTOs.Alerts;
 using SmartFarmer.Tasks;
+using SmartFarmer.Services.Alert;
 
 namespace SmartFarmer.Hubs;
 

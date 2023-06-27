@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Alert;
 
 public interface ISmartFarmerAlertControllerService
 {

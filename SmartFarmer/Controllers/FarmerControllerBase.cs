@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SmartFarmer.Helpers;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Controllers;
 

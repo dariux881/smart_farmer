@@ -6,7 +6,7 @@ using SmartFarmer.Alerts;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs.Alerts;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Alert;
 
 public class SmartFarmerAlertControllerService : ISmartFarmerAlertControllerService 
 {

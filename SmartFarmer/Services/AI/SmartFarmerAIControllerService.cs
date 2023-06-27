@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Services.Plant;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
@@ -15,19 +17,19 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 {
     private readonly ISmartFarmerAIControllerServiceProvider _aiProvider;
     private readonly ConcurrentDictionary<string, HashSet<string>> _plansByUser;
-    private readonly ISmartFarmerRepository _repository;
+    private readonly ISmartFarmerPlantControllerService _plantService;
 
     public SmartFarmerAIControllerService(
         ISmartFarmerAIControllerServiceProvider aiProvider,
-        ISmartFarmerRepository repository)
+        ISmartFarmerPlantControllerService plantService)
     {
         _plansByUser = new ConcurrentDictionary<string, HashSet<string>>();
 
         _aiProvider = aiProvider;
-        _repository = repository;
+        _plantService = plantService;
     }
 
-    public bool IsHoverPlan(string userId, string planId)
+    public bool IsValidHoverPlan(string userId, string planId)
     {
         if (!_plansByUser.ContainsKey(userId))
         {
@@ -37,32 +39,30 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return _plansByUser[userId].Contains(planId);
     }
 
-    public async Task<bool> AnalyseHoverPlanResult(string userId, FarmerPlanExecutionResult result)
+    public async Task<bool> AnalyseHoverPlanResult(
+        string userId, 
+        FarmerPlan plan,
+        FarmerPlanExecutionResult result)
     {
+        if (plan == null) throw new ArgumentNullException(nameof(plan));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
-        var planCheck = await IsValidHoverPlan(userId, result.PlanId);
+        if (plan.ID != result.PlanId) throw new InvalidOperationException($"plan result is not related to given plan");
+
+        var planCheck = IsValidHoverPlan(userId, result.PlanId);
         if (!planCheck) throw new InvalidOperationException();
 
-        var plantInstance = await GetPlantInstance(result.PlantInstanceId, userId);
-        
-        var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
-        if (aiModule == null)
-        {
-            SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
-            return false;
-        }
-
+        await AnalysePlanCore(userId, plan, result);
         await RemoveStoredPlan(userId, result.PlanId);
 
-        return await aiModule.ExecuteDetection(result) != null;
+        return true;
     }
 
     public async Task<IFarmerPlan> GenerateHoverPlan(string userId, string plantInstanceId)
     {
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
+        var aiModule = _aiProvider.GetAIModuleByPlant(plantInstance);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance}");
@@ -83,7 +83,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
     private async Task<FarmerPlantInstance> GetPlantInstance(string plantInstanceId, string userId)
     {
-        return await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId) as FarmerPlantInstance;
+        return await _plantService.GetFarmerPlantInstanceByIdForUserAsync(userId, plantInstanceId) as FarmerPlantInstance;
     }
 
     private async Task StoreHoverPlan(string userId, IFarmerPlan hoverPlan)
@@ -103,18 +103,6 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         await Task.CompletedTask;
     }
 
-    private async Task<bool> IsValidHoverPlan(string userId, string planId)
-    {
-        await Task.CompletedTask;
-
-        if (!_plansByUser.TryGetValue(userId, out var plans))
-        {
-            return false;
-        }
-
-        return plans.Any(x => x == planId);
-    }
-
     private async Task RemoveStoredPlan(string userId, string planId)
     {
         await Task.CompletedTask;
@@ -125,5 +113,72 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         }
 
         plans.Remove(planId);
+    }
+
+    private async Task<FarmerAIDetectionLog> AnalysePlanCore(string userId, FarmerPlan plan, FarmerPlanExecutionResult result)
+    {
+        FarmerAIDetectionLog log = new FarmerAIDetectionLog();
+        var stepsWithResult = plan.Steps.Where(x => result.TaskResults.ContainsKey(x.ID));
+
+        if (!stepsWithResult.Any())
+        {
+            return log;
+        }
+
+        foreach (var step in stepsWithResult)
+        {
+            SmartFarmerLog.Debug($"processing step {step.ID} on task {step.TaskInterfaceFullName}");
+
+            if (HasPlantInstance(step, out var plantInstanceId))
+            {
+                var detectionLog = await AnalysePlantBasedStep(userId, plantInstanceId, result.TaskResults[step.ID]);
+            }
+
+            //TODO check if refers to PlantInstance
+            //TODO if generic, then look for aiModule based on step.TaskInterfaceFullName
+
+            // var plantInstance = await GetPlantInstance(result.PlantInstanceId, userId);
+            
+            // var aiModule = _aiProvider.GetAIPlantModuleByPlant(plantInstance);
+            // if (aiModule == null)
+            // {
+            //     SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
+            //     return log;
+            // }
+
+            // var moduleResult = await aiModule.ExecuteDetection(result);
+        }
+
+        await Task.CompletedTask;
+        return log;
+    }
+
+    private async Task<FarmerAIDetectionLog> AnalysePlantBasedStep(string userId, string plantInstanceId, object stepData)
+    {
+        
+        var plantInstance = await GetPlantInstance(plantInstanceId, userId);
+        
+        var aiModule = _aiProvider.GetAIModuleByPlant(plantInstance);
+        if (aiModule == null)
+        {
+            SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
+            return null;
+        }
+
+        return await aiModule.ExecuteDetection(stepData);
+    }
+
+    private bool HasPlantInstance(FarmerPlanStep step, out string plantInstanceId)
+    {
+        plantInstanceId = null;
+        var attributeName = nameof(IHasPlantInstanceReference.PlantInstanceID);
+
+        if (step.BuildParameters.ContainsKey(attributeName))
+        {
+            plantInstanceId = step.BuildParameters[attributeName];
+            return true;
+        }
+
+        return false;
     }
 }

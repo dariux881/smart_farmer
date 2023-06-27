@@ -16,6 +16,10 @@ using SmartFarmer.Hubs;
 using SmartFarmer.Security;
 using SmartFarmer.Services;
 using SmartFarmer.Services.AI;
+using SmartFarmer.Services.Alert;
+using SmartFarmer.Services.Plan;
+using SmartFarmer.Services.Plant;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer
 {

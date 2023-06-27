@@ -18,8 +18,6 @@ public class FarmerHoverPlanStep : IFarmerPlanStep
 
     public string TaskClassFullName { get; set; }
     public string TaskInterfaceFullName { get; set; }
-    [JsonIgnore]
-    public string TaskID { get; }
 
     public TimeSpan Delay { get; set; }
 

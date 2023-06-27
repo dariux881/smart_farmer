@@ -31,7 +31,6 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string TaskClassFullName { get; set; }
     public string TaskInterfaceFullName { get; set; }
-    public string TaskID => _task?.ID;
 
     public TimeSpan Delay { get; set; }
 

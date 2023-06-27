@@ -20,7 +20,7 @@ public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenModule
         throw new System.NotImplementedException();
     }
 
-    public async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerPlanExecutionResult planResult)
+    public async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
     {
         await Task.CompletedTask;
         throw new System.NotImplementedException();

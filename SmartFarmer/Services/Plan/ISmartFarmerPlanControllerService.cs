@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Plan;
 
 public interface ISmartFarmerPlanControllerService
 {

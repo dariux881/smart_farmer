@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using SmartFarmer.Data.Security;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.Helpers;
-using SmartFarmer.Services;
+using SmartFarmer.Services.Security;
 
 namespace SmartFarmer.Controllers;
 

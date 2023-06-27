@@ -5,5 +5,6 @@ namespace SmartFarmer.Services.AI;
 
 public interface ISmartFarmerAIControllerServiceProvider
 {
-    ISmartFarmerAIPlantModule GetAIPlantModuleByPlant(FarmerPlantInstance plant);
+    ISmartFarmerAIPlantModule GetAIModuleByPlant(FarmerPlantInstance plant);
+    ISmartFarmerAITaskModule GetAITaskModuleByTask(string taskInterfaceFullName);
 }

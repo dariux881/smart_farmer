@@ -7,24 +7,29 @@ using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Misc;
+using SmartFarmer.Services.AI;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Plan;
 
 public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerService
 {
     private readonly ISmartFarmerRepository _repository;
     private readonly ISmartFarmerGardenControllerService _gardenController;
+    private readonly ISmartFarmerAIControllerService _aiService;
 
     public SmartFarmerPlanControllerService(
         ISmartFarmerRepository repository,
-        ISmartFarmerGardenControllerService gardenController)
+        ISmartFarmerGardenControllerService gardenController,
+        ISmartFarmerAIControllerService aiService)
     {
         _repository = repository;
+
         _gardenController = gardenController;
+        _aiService = aiService;
     }
 
     public event EventHandler<PlanEventArgs> NewPlan;
@@ -146,8 +151,19 @@ public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerServic
         return planId;
     }
 
-    public Task AnalysePlanResult(string userId, FarmerPlanExecutionResult result)
+    public async Task AnalysePlanResult(string userId, FarmerPlanExecutionResult result)
     {
+        if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
+        if (result == null) throw new ArgumentNullException(nameof(result));
+
+        var plan = await GetFarmerPlanByIdForUserAsync(userId, result.PlanId) as FarmerPlan;
+
+        if (_aiService.IsValidHoverPlan(userId, result.PlanId))
+        {
+            await _aiService.AnalyseHoverPlanResult(userId, plan, result);
+            return;
+        }
+
         throw new NotImplementedException();
     }
 
@@ -180,8 +196,8 @@ public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerServic
                     BuildParameters = 
                         new Dictionary<string, string>() 
                         {
-                            { nameof(IFarmerMoveOnGridTask.TargetXInCm), ""+plant.PlantX },
-                            { nameof(IFarmerMoveOnGridTask.TargetYInCm), ""+plant.PlantY }
+                            { nameof(IHasTargetGridPosition.TargetXInCm), ""+plant.PlantX },
+                            { nameof(IHasTargetGridPosition.TargetYInCm), ""+plant.PlantY }
                         },
                     TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName
                 },

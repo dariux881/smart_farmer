@@ -1,6 +1,6 @@
 using System;
 
-namespace SmartFarmer.Services;
+namespace SmartFarmer.Services.Plan;
 
 public class PlanEventArgs : EventArgs
 {
