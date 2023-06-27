@@ -24,15 +24,17 @@ public class FarmerWeedRemovalTask : FarmerBaseTask, IFarmerWeedRemovalTask
 
     public override string TaskName => "Removal of week task";
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
         Exception _ex = null;
         PrepareTask();
 
         try
         {
-            await DetectWeed(token);
+            var weed = await DetectWeed(token);
             await RemoveWeed(token);
+
+            return weed;
         }
         catch(Exception ex)
         {
@@ -45,9 +47,11 @@ public class FarmerWeedRemovalTask : FarmerBaseTask, IFarmerWeedRemovalTask
         }
     }
 
-    private async Task DetectWeed(CancellationToken token) {
+    private async Task<object> DetectWeed(CancellationToken token) {
         //TODO enqueue in _weedPositionQueue
         await Task.CompletedTask;
+
+        return null;
     }
 
     private async Task RemoveWeed(CancellationToken token) 

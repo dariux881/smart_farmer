@@ -5,11 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Exceptions;
 using SmartFarmer.Misc;
+using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Data.Tasks;
 
-public class FarmerPlan : IFarmerRunningPlan
+public class FarmerPlan : IFarmerPlan
 {
     private IFarmerGarden _garden;
 
@@ -44,8 +45,12 @@ public class FarmerPlan : IFarmerRunningPlan
         return this;
     }
 
-    public async Task Execute(CancellationToken token)
+    public async Task<FarmerPlanExecutionResult> Execute(CancellationToken token)
     {
+        var result = new FarmerPlanExecutionResult();
+
+        result.PlanId = ID;
+
         // resetting last exception, related to previous executions
         LastException = null;
         IsInProgress = true;
@@ -57,7 +62,12 @@ public class FarmerPlan : IFarmerRunningPlan
         {
             foreach (var step in Steps)
             {
-                await step.Execute(null, token);
+                var taskResult = await step.Execute(null, token);
+
+                if (taskResult != null)
+                {
+                    result.TaskResults.Add(step.TaskID, taskResult);
+                }
             }
         }
         catch (FarmerBaseException fEx)
@@ -103,5 +113,10 @@ public class FarmerPlan : IFarmerRunningPlan
         {
             SmartFarmerLog.Information($"Plan \"{Name}\" completed");
         }
+
+        result.IsSuccess = LastException == null;
+        result.LastException = LastException;
+
+        return result;
     }
 }

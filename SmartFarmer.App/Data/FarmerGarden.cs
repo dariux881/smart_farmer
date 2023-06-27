@@ -92,7 +92,7 @@ public class FarmerGarden : IFarmerGarden
             return false;
         }
 
-        var plan = _plans.FirstOrDefault(x => x.ID == planId) as IFarmerRunningPlan;
+        var plan = _plans.FirstOrDefault(x => x.ID == planId) as IFarmerPlan;
         if (plan == null)
         {
             SmartFarmerLog.Error("Invalid plan");

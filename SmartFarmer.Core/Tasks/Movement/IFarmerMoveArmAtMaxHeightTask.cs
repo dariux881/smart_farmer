@@ -6,6 +6,6 @@ namespace SmartFarmer.Tasks.Movement;
 
 public interface IFarmerMoveArmAtMaxHeightTask : IFarmerTask
 {
-    Task MoveToMaxHeight(CancellationToken token);
+    Task<object> MoveToMaxHeight(CancellationToken token);
     double GetCurrentHeight();
 }

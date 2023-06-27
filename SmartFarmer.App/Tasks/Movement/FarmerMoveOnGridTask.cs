@@ -39,12 +39,12 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         return true;
     }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
-        await MoveToPosition(TargetXInCm, TargetYInCm, token);
+        return await MoveToPosition(TargetXInCm, TargetYInCm, token);
     }
 
-    public async Task MoveToPosition(double x, double y, CancellationToken token)
+    public async Task<object> MoveToPosition(double x, double y, CancellationToken token)
     {
         TargetXInCm = x;
         TargetYInCm = y;
@@ -70,6 +70,8 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
         SmartFarmerLog.Debug($"now on {x}, {y}");
 
         EndTask();
+
+        return null;
     }
 
     public void GetCurrentPosition(out double x, out double y)

@@ -24,12 +24,12 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
     public override string TaskName => "Turn arm task";
     public double TargetDegrees { get; set; }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
-        await TurnArmToDegrees(TargetDegrees, token);
+        return await TurnArmToDegrees(TargetDegrees, token);
     }
 
-    public async Task TurnArmToDegrees(double degrees, CancellationToken token)
+    public async Task<object> TurnArmToDegrees(double degrees, CancellationToken token)
     {
         TargetDegrees = degrees;
         
@@ -55,6 +55,8 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
         SmartFarmerLog.Debug($"now at {degrees} degrees");
 
         EndTask();
+
+        return null;
     }
 
     public double GetCurrentDegrees()

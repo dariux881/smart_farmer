@@ -24,12 +24,12 @@ public class FarmerPointTargetTask : FarmerBaseTask, IFarmerPointTargetTask
     public override string TaskName => "Point target task";
     public double TargetDegrees { get; set; }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
-        await TurnDeviceToDegrees(TargetDegrees, token);
+        return await TurnDeviceToDegrees(TargetDegrees, token);
     }
 
-    public async Task TurnDeviceToDegrees(double degrees, CancellationToken token)
+    public async Task<object> TurnDeviceToDegrees(double degrees, CancellationToken token)
     {
         TargetDegrees = degrees;
         PrepareTask();
@@ -54,6 +54,8 @@ public class FarmerPointTargetTask : FarmerBaseTask, IFarmerPointTargetTask
         SmartFarmerLog.Debug($"now at {degrees} degrees");
 
         EndTask();
+
+        return null;
     }
 
     public double GetCurrentDegrees()

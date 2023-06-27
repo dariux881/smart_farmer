@@ -8,6 +8,7 @@ using SmartFarmer.Helpers;
 using SmartFarmer.Services;
 using SmartFarmer.Services.AI;
 using SmartFarmer.Tasks;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Controllers;
 
@@ -31,7 +32,7 @@ public class FarmerAIController : FarmerControllerBase
 
     [HttpGet("GetPlanForPlant")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<IFarmerHoverPlan>> GetPlanToAnalysePlant(string plantId)
+    public async Task<ActionResult<IFarmerPlan>> GetPlanToAnalysePlant(string plantId)
     {
         var userId = await GetUserIdByContext();
 
@@ -47,7 +48,7 @@ public class FarmerAIController : FarmerControllerBase
     
     [HttpPost("AnalysePlan")]
     [IsUserAuthorizedTo(Constants.AUTH_READ_GARDEN)]
-    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerHoverPlanResult hoverPlanResult)
+    public async Task<ActionResult<bool>> AnalysePlan([FromBody] FarmerHoverPlanExecutionResult hoverPlanResult)
     {
         var userId = await GetUserIdByContext();
 

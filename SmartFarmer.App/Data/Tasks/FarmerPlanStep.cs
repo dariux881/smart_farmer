@@ -4,10 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SmartFarmer.Tasks.Generic;
-using SmartFarmer.Utils;
 using SmartFarmer.Misc;
 using SmartFarmer.Exceptions;
 using System.Collections.Generic;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Data.Tasks;
 
@@ -15,6 +15,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 {
     private IDictionary<string, string> _buildParameters;
     private IFarmerGarden _garden;
+    private IFarmerTask _task;
 
     public FarmerPlanStep() 
     {
@@ -30,6 +31,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public string TaskClassFullName { get; set; }
     public string TaskInterfaceFullName { get; set; }
+    public string TaskID => _task?.ID;
 
     public TimeSpan Delay { get; set; }
 
@@ -57,10 +59,12 @@ public class FarmerPlanStep : IFarmerPlanStep
     /// Executes the plan step. Gathers the task, configures it with the parameters, waits the Delay, then runs the task. 
     /// </summary>
     /// <throws>Exception if task fails</throws>
-    public async Task Execute(IDictionary<string, string> parameters, CancellationToken token)
+    public async Task<object> Execute(
+        IDictionary<string, string> parameters,
+        CancellationToken token)
     {
-        var task = GetTask();        
-        if (task == null) throw new InvalidOperationException("task implementor not found");
+        _task = GetTask();        
+        if (_task == null) throw new InvalidOperationException("task implementor not found");
 
         if (Delay.TotalSeconds > 0)
         {
@@ -72,9 +76,9 @@ public class FarmerPlanStep : IFarmerPlanStep
         {
             IsInProgress = true;
 
-            ConfigureTask(task, parameters ?? BuildParameters);
+            ConfigureTask(_task, parameters ?? BuildParameters);
 
-            await task.Execute(token);
+            return await _task.Execute(token);
         }
         catch(FarmerTaskExecutionException taskEx)
         {
@@ -85,7 +89,7 @@ public class FarmerPlanStep : IFarmerPlanStep
         {
             LastException = ex;
             throw new FarmerTaskExecutionException(
-                task.ID, 
+                _task.ID, 
                 null,
                 ex.Message ?? ex.InnerException?.Message,
                 ex);

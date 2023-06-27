@@ -17,7 +17,7 @@ public abstract class FarmerBaseTask : IFarmerTask
     public Exception LastException { get; protected set; }
     public abstract string TaskName { get; }
 
-    public abstract Task Execute(CancellationToken token);
+    public abstract Task<object> Execute(CancellationToken token);
 
     protected void PrepareTask()
     {

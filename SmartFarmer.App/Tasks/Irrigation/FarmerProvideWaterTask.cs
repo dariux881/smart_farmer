@@ -31,7 +31,7 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
 
     }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
         Exception _ex = null;
         PrepareTask();
@@ -42,10 +42,11 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
             if (!waterNeeded)
             {
                 SmartFarmerLog.Information("irrigation skipped since water is not needed");
-                return;
+                return null;
             }
 
             await ProvideWater(PumpNumber, WaterAmountInLiters, token);
+            return null;
         }
         catch(Exception ex)
         {

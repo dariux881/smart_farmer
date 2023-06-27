@@ -31,12 +31,12 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
         return true;
     }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
-        await MoveToMaxHeight(token);
+        return await MoveToMaxHeight(token);
     }
 
-    public async Task MoveToMaxHeight(CancellationToken token)
+    public async Task<object> MoveToMaxHeight(CancellationToken token)
     {
         PrepareTask();
 
@@ -61,6 +61,8 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
         SmartFarmerLog.Debug($"now on {height} cm");
 
         EndTask();
+
+        return null;
     }
 
     public double GetCurrentHeight()

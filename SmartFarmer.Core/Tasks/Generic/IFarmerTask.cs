@@ -9,5 +9,5 @@ public interface IFarmerTask : IHasProgressCheckInfo, IFarmerService
 {
     string TaskName { get; }
     FarmerTool RequiredTool { get; }
-    Task Execute(CancellationToken token);
+    Task<object> Execute(CancellationToken token);
 }

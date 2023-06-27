@@ -367,7 +367,7 @@ public class OperationalManagerRequestExecutor
             var garden = GardenUtils.GetGardenByPlan(planId) as FarmerGarden;
 
             if (garden == null) continue;
-            var plan = garden.Plans.First(x => x.ID == planId) as IFarmerRunningPlan;
+            var plan = garden.Plans.First(x => x.ID == planId) as IFarmerPlan;
 
             if (plan == null) continue;
 

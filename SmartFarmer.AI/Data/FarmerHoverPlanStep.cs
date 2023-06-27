@@ -8,6 +8,7 @@ using SmartFarmer.Tasks.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Collections.Generic;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Data;
 
@@ -17,6 +18,8 @@ public class FarmerHoverPlanStep : IFarmerPlanStep
 
     public string TaskClassFullName { get; set; }
     public string TaskInterfaceFullName { get; set; }
+    [JsonIgnore]
+    public string TaskID { get; }
 
     public TimeSpan Delay { get; set; }
 
@@ -40,7 +43,9 @@ public class FarmerHoverPlanStep : IFarmerPlanStep
 
     public string ID { get; set; }
 
-    public Task Execute(IDictionary<string, string> parameters, CancellationToken token)
+    public Task<object> Execute(
+        IDictionary<string, string> parameters, 
+        CancellationToken token)
     {
         throw new NotImplementedException();
     }

@@ -22,14 +22,14 @@ public class FarmerCheckIfWaterIsNeededTask : FarmerBaseTask, IFarmerCheckIfWate
     public override string TaskName => "Check if water is needed for plant task";
     public double ExpectedAmountInLiters { get; set; }
 
-    public override async Task Execute(CancellationToken token)
+    public override async Task<object> Execute(CancellationToken token)
     {
         Exception _ex = null;
         PrepareTask();
 
         try
         {
-            await IsWaterNeeded(ExpectedAmountInLiters, token);
+            return await IsWaterNeeded(ExpectedAmountInLiters, token);
         }
         catch(Exception ex)
         {

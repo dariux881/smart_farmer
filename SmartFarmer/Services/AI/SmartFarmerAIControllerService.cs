@@ -7,6 +7,7 @@ using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Services.AI;
 
@@ -26,7 +27,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         _repository = repository;
     }
 
-    public async Task<bool> AnalyseHoverPlanResult(string userId, FarmerHoverPlanResult result)
+    public async Task<bool> AnalyseHoverPlanResult(string userId, FarmerHoverPlanExecutionResult result)
     {
         if (result == null) throw new ArgumentNullException(nameof(result));
 
@@ -47,7 +48,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return await aiModule.ExecuteDetection(result) != null;
     }
 
-    public async Task<IFarmerHoverPlan> GenerateHoverPlan(string userId, string plantInstanceId)
+    public async Task<IFarmerPlan> GenerateHoverPlan(string userId, string plantInstanceId)
     {
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
@@ -75,7 +76,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return await _repository.GetFarmerPlantInstanceById(plantInstanceId, userId) as FarmerPlantInstance;
     }
 
-    private async Task StoreHoverPlan(string userId, IFarmerHoverPlan hoverPlan)
+    private async Task StoreHoverPlan(string userId, IFarmerPlan hoverPlan)
     {
         HashSet<string> plans = null;
 

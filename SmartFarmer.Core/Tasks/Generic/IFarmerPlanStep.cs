@@ -10,9 +10,10 @@ public interface IFarmerPlanStep : IHasProgressCheckInfo, IFarmerService
 {
     string TaskClassFullName { get; }
     string TaskInterfaceFullName { get; }
+    string TaskID { get; }
 
     TimeSpan Delay { get; }
     IDictionary<string, string> BuildParameters { get; }
 
-    Task Execute(IDictionary<string, string> parameters, CancellationToken token);
+    Task<object> Execute(IDictionary<string, string> parameters, CancellationToken token);
 }

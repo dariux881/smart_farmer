@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.AI;
 
@@ -8,7 +8,7 @@ public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenModule
 {
     public FarmerAIDetectionLog Log { get; set; }
 
-    public Task<IFarmerHoverPlan> GenerateHoverPlan(IFarmerGarden garden)
+    public Task<IFarmerPlan> GenerateHoverPlan(IFarmerGarden garden)
     {
         //TODO point to the floor
         //TODO foreach plant
@@ -20,7 +20,7 @@ public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenModule
         throw new System.NotImplementedException();
     }
 
-    public async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerHoverPlanResult planResult)
+    public async Task<FarmerAIDetectionLog> ExecuteDetection(FarmerHoverPlanExecutionResult planResult)
     {
         await Task.CompletedTask;
         throw new System.NotImplementedException();
