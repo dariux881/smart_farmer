@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Configurations;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Handlers;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;

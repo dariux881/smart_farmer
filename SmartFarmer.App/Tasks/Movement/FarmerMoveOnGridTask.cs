@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Exceptions;
-using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Movement;
 using SmartFarmer.Position;
 using SmartFarmer.Tasks.Base;

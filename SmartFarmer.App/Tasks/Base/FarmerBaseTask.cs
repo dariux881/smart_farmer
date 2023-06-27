@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;

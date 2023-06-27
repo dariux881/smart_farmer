@@ -6,6 +6,7 @@ using SmartFarmer.Data;
 using SmartFarmer.DTOs;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
 using SmartFarmer.Services.AI;
 using SmartFarmer.Tasks;

@@ -7,6 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using SmartFarmer.Exceptions;
 using SmartFarmer.Configurations;
 using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 
 namespace SmartFarmer.Handlers;
 

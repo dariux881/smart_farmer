@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using SmartFarmer.Alerts;
+using SmartFarmer.Misc;
 using SmartFarmer.Utils;
 
-namespace SmartFarmer.Misc;
+namespace SmartFarmer.FarmerLogs;
 
 public static class SmartFarmerLog 
 {

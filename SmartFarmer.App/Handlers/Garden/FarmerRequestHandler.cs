@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SmartFarmer.Data;
 using SmartFarmer.Data.Plants;
 using SmartFarmer.Data.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;

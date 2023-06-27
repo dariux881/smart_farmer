@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Quartz;
-using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 
 namespace SmartFarmer.OperationalManagement.Jobs;
 

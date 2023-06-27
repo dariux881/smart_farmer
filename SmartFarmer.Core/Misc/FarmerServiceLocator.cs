@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Misc;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Detection;

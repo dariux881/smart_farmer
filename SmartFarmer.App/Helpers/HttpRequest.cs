@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using SmartFarmer.Configurations;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Handlers;
 using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;

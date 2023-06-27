@@ -2,8 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Exceptions;
-using SmartFarmer.Handlers;
-using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
 

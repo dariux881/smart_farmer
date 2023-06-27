@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Exceptions;
-using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 

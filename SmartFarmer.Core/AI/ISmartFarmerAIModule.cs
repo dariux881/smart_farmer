@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using SmartFarmer.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.AI;

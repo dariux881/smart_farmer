@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
 using SmartFarmer.Position;
 using SmartFarmer.Tasks.Movement;

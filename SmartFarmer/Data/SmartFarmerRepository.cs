@@ -11,7 +11,7 @@ using SmartFarmer.DTOs.Movements;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
-using SmartFarmer.Misc;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Movement;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Generic;

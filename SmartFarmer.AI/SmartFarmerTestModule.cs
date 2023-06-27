@@ -1,6 +1,5 @@
-using System;
 using System.Threading.Tasks;
-using SmartFarmer.Tasks;
+using SmartFarmer.FarmerLogs;
 
 namespace SmartFarmer.AI;
 
@@ -11,7 +10,11 @@ public class SmartFarmerTestModule : SmartFarmerPlantDetectionModuleBase
 
     public override async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
     {
+        FarmerAIDetectionLog log = new FarmerAIDetectionLog();
+
         await Task.CompletedTask;
-        throw new NotImplementedException();
+        SmartFarmerLog.Information($"processing {stepData}");
+
+        return log;
     }
 }

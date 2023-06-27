@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using SmartFarmer.AI;
 using SmartFarmer.DTOs.Plants;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
 
 namespace SmartFarmer.Services.AI;

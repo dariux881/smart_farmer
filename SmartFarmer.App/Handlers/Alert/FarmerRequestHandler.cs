@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
 using SmartFarmer.Data.Alerts;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 
