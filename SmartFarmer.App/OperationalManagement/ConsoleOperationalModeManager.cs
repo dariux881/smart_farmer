@@ -42,14 +42,16 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
 
     public override void ProcessResult(OperationRequestEventArgs args)
     {
-        if (args.ExecutionException != null)
-        {
-            SmartFarmerLog.Error("received\n\t" + args.ExecutionException.Message);
-        }
-
         if (args.Result != null)
         {
-            SmartFarmerLog.Information(args.Result);
+            if (!args.Result.IsSuccess)
+            {
+                SmartFarmerLog.Exception(args.Result.LastException);
+            }
+
+            SmartFarmerLog.Information(args.Result.PlanId + " ended successfully");
+
+            Task.Run(async () => await NotifyPlanExecutionResult(args.Result));
         }
     }
 

@@ -1,4 +1,5 @@
 using System;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.OperationalManagement;
 
@@ -17,7 +18,6 @@ public class OperationRequestEventArgs : EventArgs
     public IOperationalModeManager Sender { get; }
     public AppOperation Operation { get; }
     public string[] AdditionalData { get; }
-    public string Result { get; set; }
+    public FarmerPlanExecutionResult Result { get; set; }
     public bool IsError { get; set; }
-    public Exception ExecutionException { get; set; }
 }

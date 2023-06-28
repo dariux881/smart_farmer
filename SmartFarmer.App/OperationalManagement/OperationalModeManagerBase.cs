@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.FarmerLogs;
+using SmartFarmer.Handlers;
+using SmartFarmer.Tasks;
 
 namespace SmartFarmer.OperationalManagement;
 
@@ -35,4 +37,8 @@ public abstract class OperationalModeManagerBase : IOperationalModeManager
         }
     }
 
+    protected async Task NotifyPlanExecutionResult(FarmerPlanExecutionResult result)
+    {
+        await FarmerRequestHandler.NotifyPlanExecutionResult(result, CancellationToken.None);
+    }
 }

@@ -8,6 +8,7 @@ using SmartFarmer.Alerts;
 using SmartFarmer.Data.Tasks;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Data;
@@ -80,14 +81,14 @@ public class FarmerGarden : IFarmerGarden
         return alertIdsToResolve ?? AlertIds.ToArray();
     }
 
-    public async Task<bool> ExecutePlan(string planId, CancellationToken token)
+    public async Task<FarmerPlanExecutionResult> ExecutePlan(string planId, CancellationToken token)
     {
         if (!PlanIds.Contains(planId))
         {
             SmartFarmerLog.Error("Plan is not defined");
 
             await Task.CompletedTask;
-            return false;
+            return null;
         }
 
         var plan = _plans.FirstOrDefault(x => x.ID == planId) as IFarmerPlan;
@@ -96,14 +97,14 @@ public class FarmerGarden : IFarmerGarden
             SmartFarmerLog.Error("Invalid plan");
 
             await Task.CompletedTask;
-            return false;
+            return null;
         }
 
         _planExecSem.Wait();
         
         try 
         {
-            await plan.Execute(token);
+            return await plan.Execute(token);
         }
         catch(Exception ex)
         {
@@ -114,8 +115,6 @@ public class FarmerGarden : IFarmerGarden
         {
             _planExecSem.Release();
         }
-
-        return true;
     }
 
     public void AddAlerts(List<IFarmerAlert> alerts)

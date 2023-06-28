@@ -71,7 +71,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
 
     public override void ProcessResult(OperationRequestEventArgs args)
     {
-        Task.Run(async () => await NotifyResult(args.ExecutionException?.ToString() ?? args.Result));
+        Task.Run(async () => await NotifyResult(args.Result));
     }
 
     public override void Dispose()
@@ -154,7 +154,14 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
             {
                 Task.Run(async () => 
                     {
-                        await NotifyResult($"received command {command} is not valid");
+                        await NotifyResult(
+                            new FarmerPlanExecutionResult()
+                            {
+                                IsSuccess = false,
+                                LastException = new Exception($"received command {command} is not valid")
+                            },
+                            false);
+                            
                         ResetLocalCommand();
                     });
             }
@@ -256,11 +263,18 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
         return outcome;
     }
 
-    private async Task NotifyResult(string result)
+    private async Task NotifyResult(FarmerPlanExecutionResult result, bool notifyToServer = true)
     {
         if (_localCommand == null) return;
 
-        await _hubHandlers[_localCommand.GardenId].NotifyCliCommandResult(_localCommand.GardenId, result, _operationsToken);
+        var messageToSend = result.IsSuccess ? $"{result.PlanId} completed successfully" : result.LastException?.ToString();
+        
+        if (notifyToServer)
+        {
+            await NotifyPlanExecutionResult(result);
+        }
+
+        await _hubHandlers[_localCommand.GardenId].NotifyCliCommandResult(_localCommand.GardenId, messageToSend, _operationsToken);
     }
 
     private void NewCliCommandReceived(object sender, NewCliCommandEventArgs e)

@@ -12,6 +12,7 @@ using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
 using SmartFarmer.Plants;
+using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Handlers;
@@ -253,6 +254,28 @@ public partial class FarmerRequestHandler
             SmartFarmerLog.Exception(ex);
 
             return null;
+        }
+    }
+
+    public static async Task<bool> NotifyPlanExecutionResult(FarmerPlanExecutionResult result, CancellationToken token)
+    {
+        var httpReq = new HttpRequest();
+
+        try
+        {
+            var response = await 
+                httpReq
+                    .PostAsync(
+                        SmartFarmerApiConstants.NOTIFY_PLAN_EXECUTION_RESULT,
+                        result,
+                        token);
+            
+            return response != null && response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return false;
         }
     }
 

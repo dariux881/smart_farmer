@@ -107,14 +107,16 @@ public class AutomaticOperationalManager :
 
     public override void ProcessResult(OperationRequestEventArgs args)
     {
-        if (args.ExecutionException != null)
-        {
-            SmartFarmerLog.Exception(args.ExecutionException);
-        }
-
         if (args.Result != null)
         {
-            SmartFarmerLog.Debug(args.Result);
+            if (!args.Result.IsSuccess)
+            {
+                SmartFarmerLog.Exception(args.Result.LastException);
+            }
+
+            SmartFarmerLog.Debug(args.Result.PlanId + " ended successfully");
+
+            Task.Run(async () => await NotifyPlanExecutionResult(args.Result));
         }
 
         TryRunNextPlan(GardenUtils.GetGardenByPlan(args.AdditionalData.First())?.ID);

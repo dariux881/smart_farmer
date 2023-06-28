@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emgu.CV;
 using SmartFarmer.Configurations;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Tasks.Base;
 using SmartFarmer.Utils;
 
@@ -26,28 +27,33 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
 
     public override string TaskName => "Take Picture Task";
 
-    public string FilePath { get; private set; }
+    public string FileName { get; private set; }
 
     public override void ConfigureTask(IDictionary<string, string> parameters)
     {
-        var key = nameof(FilePath);
+        var key = nameof(FileName);
         
         if (parameters != null && parameters.ContainsKey(key))
         {
-            FilePath = parameters[key];
+            FileName = parameters[key];
         }
     }
 
     public async override Task<object> Execute(CancellationToken token)
-    {
-        await Task.CompletedTask;
-        
+    {        
         VideoCapture capture = GetVideoCapture(); //create a camera capture
         Bitmap image = capture.QueryFrame().ToBitmap(); //take a picture
 
-        SavePictureToDisk(image);
-
-        return FilePath;
+        await Task.CompletedTask;
+        try
+        {
+            return SavePictureToDisk(image);
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            throw;
+        }
     }
 
     private VideoCapture GetVideoCapture()
@@ -60,7 +66,7 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
         return _videoCapture;
     }
 
-    private void SavePictureToDisk(Bitmap image)
+    private string SavePictureToDisk(Bitmap image)
     {
         // Get an ImageCodecInfo object that represents the JPEG codec.
         var imageCodecInfo = GetEncoderInfo("image/jpeg");
@@ -72,17 +78,35 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
 
         var encoderParameters = new EncoderParameters(1);
 
-        // Save the bitmap as a JPEG file with quality level 75.
-        var encoderParameter = new EncoderParameter(encoder, 75L);
+        // Save the bitmap as a JPEG file with quality level 100.
+        var encoderParameter = new EncoderParameter(encoder, 100L);
         
         encoderParameters.Param[0] = encoderParameter;
 
+        var imageFilename = 
+                string.IsNullOrEmpty(FileName) ? 
+                    GenerateImageFilename() : 
+                    FileName;
+
+        image.Save(imageFilename, imageCodecInfo, encoderParameters);
+
+        return imageFilename;
+    }
+
+    private string GenerateImageFilename()
+    {
+        string imageFilename;
         var prefix = _cameraConfiguration?.FilenamePrefix ?? string.Empty;
-        var filename = prefix + DateTime.UtcNow + "_" + this.GetType().FullName + ".jpeg";
 
-        FilePath = Path.Combine(new [] { "C:", "Temp", "SmartFarmer", filename});
+        var filename =
+            $"{prefix}{DateTime.UtcNow.ToString("yyyyMMdd_HHmmss")}.jpeg";
 
-        image.Save(filename, imageCodecInfo, encoderParameters);
+        var destination =
+            _cameraConfiguration?.DestinationDirectory ??
+            Path.Combine(new[] { "C:", "Temp", "SmartFarmer" });
+
+        imageFilename = Path.Combine(new[] { destination, filename });
+        return imageFilename;
     }
 
     private static ImageCodecInfo GetEncoderInfo(String mimeType)

@@ -34,6 +34,7 @@ public class SmartFarmerApiConstants
     public const string GET_PLAN = PLANS_BASE + "/plan";
     public const string GET_PLANS = PLANS_BASE + "/plans";
     public const string GET_PLAN_STEPS = PLANS_BASE + "/steps";
+    public const string NOTIFY_PLAN_EXECUTION_RESULT = PLANS_BASE + "/planExecutionResult";
 
     #endregion // Plans Management
 
