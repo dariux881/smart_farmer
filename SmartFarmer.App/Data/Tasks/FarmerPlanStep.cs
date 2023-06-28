@@ -1,6 +1,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -101,8 +103,39 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     private void ConfigureTask(IFarmerTask task, IDictionary<string, string> dictionary)
     {
-        //TODO implement
-        throw new NotImplementedException();
+        if (task == null) return;
+
+        task.ConfigureTask(dictionary);
+        // if (dictionary == null || !dictionary.Any()) return;
+
+        // Type taskType = task.GetType();
+        // IList<PropertyInfo> props = new List<PropertyInfo>(taskType.GetProperties().Where(x => dictionary.ContainsKey(x.Name)));
+
+        // foreach (PropertyInfo prop in props)
+        // {
+        //     try
+        //     {
+        //         if (!dictionary.ContainsKey(prop.Name))
+        //         {
+        //             continue;
+        //         }
+
+        //         //get value in sourceObj
+        //         object propValue = dictionary[prop.Name];
+
+        //         //set value in resultObj
+        //         PropertyInfo propResult = task.GetType().GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance);
+                
+        //         if (propResult != null && propResult.CanWrite)
+        //         {
+        //             propResult.SetValue(task, propValue, null);
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {  
+        //         SmartFarmerLog.Exception(ex);
+        //     }
+        // }
     }
 
     /// <summary>

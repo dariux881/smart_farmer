@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -31,6 +32,10 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
         return true;
     }
 
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+    }
+    
     public override async Task<object> Execute(CancellationToken token)
     {
         return await MoveToMaxHeight(token);

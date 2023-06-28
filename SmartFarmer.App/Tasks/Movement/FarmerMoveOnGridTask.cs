@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -7,11 +8,12 @@ using SmartFarmer.FarmerLogs;
 using SmartFarmer.Movement;
 using SmartFarmer.Position;
 using SmartFarmer.Tasks.Base;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisposable
+public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IRequiresInitialization, IDisposable
 {
     private Farmer2dPoint _currentPosition;
     private IFarmerMoveOnGridDevice _deviceHandler;
@@ -31,6 +33,23 @@ public class FarmerMoveOnGridTask : FarmerBaseTask, IFarmerMoveOnGridTask, IDisp
     public override string TaskName => "Move on Grid task";
     public double TargetXInCm { get; set; }
     public double TargetYInCm { get; set; }
+
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+        var key = nameof(TargetXInCm);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            TargetXInCm = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        key = nameof(TargetYInCm);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            TargetYInCm = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
 
     public async Task<bool> InitializeAsync(CancellationToken token)
     {

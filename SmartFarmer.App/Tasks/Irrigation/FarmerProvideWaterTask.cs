@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Exceptions;
@@ -30,6 +31,23 @@ public class FarmerProvideWaterTask : FarmerBaseTask, IFarmerProvideWaterTask, I
 
     }
 
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+        var key = nameof(PumpNumber);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            PumpNumber = int.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+        
+        key = nameof(WaterAmountInLiters);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            WaterAmountInLiters = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+    
     public override async Task<object> Execute(CancellationToken token)
     {
         Exception _ex = null;

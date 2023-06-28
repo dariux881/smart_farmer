@@ -7,11 +7,12 @@ using SmartFarmer.Configurations;
 using SmartFarmer.Data;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Handlers;
 
-public class FarmerAlertHandler : IFarmerAlertHandler
+public class FarmerAlertHandler : IFarmerAlertHandler, IRequiresInitialization
 {
     private IFarmerGarden _garden;
     private FarmerGardenHubHandler _hubHandler;
@@ -31,9 +32,16 @@ public class FarmerAlertHandler : IFarmerAlertHandler
         LocallyUpdateAlert(e.AlertId, e.Status);
     }
 
-    public async Task InitializeAsync(CancellationToken token)
+    public async Task<bool> InitializeAsync(CancellationToken token)
     {
-        await _hubHandler.InitializeAsync(token);
+        try
+        {
+            return await _hubHandler.InitializeAsync(token);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task<string> AddFarmerService(IFarmerAlert service)

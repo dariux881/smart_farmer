@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;
+using SmartFarmer.Tasks.Detection;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
 using SmartFarmer.Utils;
@@ -124,9 +125,15 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>(garden);
         FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>(garden);
         FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerTakePictureTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerTakePictureTask>(garden);
 
         // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(garden), garden);
+
+        var pictureTask = new FarmerTakePictureTask(_configProvider.GetGardenConfiguration(garden.ID)?.CameraConfiguration);
+        FarmerServiceLocator.MapService<IFarmerTakePictureTask>(() => pictureTask, garden);
+        FarmerServiceLocator.MapService<FarmerTakePictureTask>(() => pictureTask, garden);
 
         var alertHandler = new FarmerAlertHandler(garden, _configProvider.GetHubConfiguration());
         FarmerServiceLocator.MapService<IFarmerAlertHandler>(() => alertHandler, garden);

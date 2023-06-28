@@ -22,6 +22,16 @@ public class FarmerCheckIfWaterIsNeededTask : FarmerBaseTask, IFarmerCheckIfWate
     public override string TaskName => "Check if water is needed for plant task";
     public double ExpectedAmountInLiters { get; set; }
 
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+        var key = nameof(ExpectedAmountInLiters);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            ExpectedAmountInLiters = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+
     public override async Task<object> Execute(CancellationToken token)
     {
         Exception _ex = null;

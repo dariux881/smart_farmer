@@ -7,10 +7,11 @@ using SmartFarmer.FarmerLogs;
 using SmartFarmer.Helpers;
 using SmartFarmer.Misc;
 using SmartFarmer.Movement;
+using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Handlers;
 
-public class FarmerGardenHubHandler : IAsyncDisposable
+public class FarmerGardenHubHandler : IRequiresInitialization, IAsyncDisposable
 {
     private HubConnection _connection;
     private HubConnectionConfiguration _hubConfiguration;
@@ -37,7 +38,7 @@ public class FarmerGardenHubHandler : IAsyncDisposable
     public event EventHandler<NewCliCommandEventArgs> NewCliCommandReceived;
     public event EventHandler<CliCommandResultEventArgs> CliCommandResultReceived;
 
-    public async Task InitializeAsync(CancellationToken token)
+    public async Task<bool> InitializeAsync(CancellationToken token)
     {
         // Opening SignalR connection
         _connection = new HubConnectionBuilder()
@@ -74,7 +75,10 @@ public class FarmerGardenHubHandler : IAsyncDisposable
         catch (Exception ex)
         {
             SmartFarmerLog.Exception(ex);
+            return false;
         }
+
+        return true;
     }
 
     public async ValueTask DisposeAsync()

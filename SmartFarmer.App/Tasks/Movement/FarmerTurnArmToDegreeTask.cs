@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -23,6 +24,16 @@ public class FarmerTurnArmToDegreeTask : FarmerBaseTask, IFarmerTurnArmToDegreeT
 
     public override string TaskName => "Turn arm task";
     public double TargetDegrees { get; set; }
+
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+        var key = nameof(TargetDegrees);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            TargetDegrees = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
 
     public override async Task<object> Execute(CancellationToken token)
     {

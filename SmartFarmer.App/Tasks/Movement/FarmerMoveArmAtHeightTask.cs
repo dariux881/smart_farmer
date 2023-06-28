@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Alerts;
@@ -6,11 +7,12 @@ using SmartFarmer.Exceptions;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Movement;
 using SmartFarmer.Tasks.Base;
+using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Utils;
 
 namespace SmartFarmer.Tasks.Movement;
 
-public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightTask
+public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightTask, IRequiresInitialization
 {
     private double _currentHeight = double.NaN;
     private IFarmerMoveAtHeightDevice _deviceHandler;
@@ -33,6 +35,16 @@ public class FarmerMoveArmAtHeightTask : FarmerBaseTask, IFarmerMoveArmAtHeightT
         return true;
     }
 
+    public override void ConfigureTask(IDictionary<string, string> parameters)
+    {
+        var key = nameof(TargetHeightInCm);
+        
+        if (parameters != null && parameters.ContainsKey(key))
+        {
+            TargetHeightInCm = double.Parse(parameters[key], System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+    
     public override async Task<object> Execute(CancellationToken token)
     {
         return await MoveToHeight(TargetHeightInCm, token);

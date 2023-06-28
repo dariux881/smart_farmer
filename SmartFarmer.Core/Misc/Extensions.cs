@@ -36,6 +36,8 @@ public static class Extensions
 
     public static T Deserialize<T>(this string obj)
     {
+        if (string.IsNullOrEmpty(obj)) return default(T);
+        
         return JsonConvert.DeserializeObject<T>(obj);
     }
 

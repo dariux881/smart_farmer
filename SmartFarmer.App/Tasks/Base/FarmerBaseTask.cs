@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.FarmerLogs;
@@ -16,6 +17,8 @@ public abstract class FarmerBaseTask : IFarmerTask
 
     public Exception LastException { get; protected set; }
     public abstract string TaskName { get; }
+
+    public abstract void ConfigureTask(IDictionary<string, string> parameters);
 
     public abstract Task<object> Execute(CancellationToken token);
 
