@@ -164,8 +164,6 @@ public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerServic
             await _aiService.AnalyseHoverPlanResult(userId, plan, result);
             return;
         }
-
-        throw new NotImplementedException();
     }
 
     private FarmerPlan CreateIrrigationPlan(FarmerGarden garden)
