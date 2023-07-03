@@ -19,9 +19,11 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
     private readonly IFarmerConfigurationProvider _configProvider;
     private readonly IFarmerAppCommunicationHandler _communicationHandler;
     private IFarmerDeviceKindProvider _deviceProvider;
+    private ConcurrentDictionary<string, object> _volatileDictionary;
 
     public FarmerLocalInformationManager()
     {
+        _volatileDictionary = new ConcurrentDictionary<string, object>();
         Gardens = new ConcurrentDictionary<string, IFarmerGarden>();
 
         _configProvider = FarmerServiceLocator.GetService<IFarmerConfigurationProvider>(true);
@@ -111,6 +113,21 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
 
             Gardens.Clear();
         }
+    }
+
+    public void PushVolatileData(string key, object data)
+    {
+        _volatileDictionary.TryAdd(key, data);
+    }
+
+    public object PickVolatileData(string key)
+    {
+        if (_volatileDictionary.TryGetValue(key, out var data))
+        {
+            return data;
+        }
+
+        return null;
     }
 
     private async Task InitializeServicesForSingleGarden(IFarmerGarden garden, CancellationToken cancellationToken)

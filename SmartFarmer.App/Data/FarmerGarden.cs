@@ -163,14 +163,31 @@ public class FarmerGarden : IFarmerGarden
         _plans.AddRange(plans);
     }
 
+    public void AddPlan(IFarmerPlan plan)
+    {
+        if (plan == null) throw new ArgumentNullException(nameof(plan));
+
+        if (_plans.Any(x => x.ID == plan.ID)) 
+        {
+            throw new InvalidOperationException();
+        }
+
+        _plans.Add(plan);
+    }
+
     public void AddPlan(string planId)
     {
-        throw new InvalidOperationException();
+        throw new NotImplementedException();
     }
 
     public void RemovePlan(string planId)
     {
-        throw new InvalidOperationException();
+        if (!_plans.Any(x => x.ID == planId)) 
+        {
+            return;
+        }
+
+        _plans.Remove(_plans.First(x => x.ID == planId));
     }
 
     public void AddPlant(string plantId)

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using SmartFarmer.Helpers;
 using SmartFarmer.Services.Security;
 using SmartFarmer.Services.AI;
-using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.Controllers;

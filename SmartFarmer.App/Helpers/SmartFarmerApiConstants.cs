@@ -47,4 +47,10 @@ public class SmartFarmerApiConstants
 
     #endregion // Alerts Management
 
+    #region AI
+
+    public const string AI_BASE = "farmerAI";
+    public const string GENERATE_PLAN_FOR_PLANT = AI_BASE + "/GetPlanForPlant";
+
+    #endregion
 }

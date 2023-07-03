@@ -72,6 +72,8 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
             "5 - update garden\n"+
             "6 - update gardens\n"+
             "7 - cli command\n" +
+            "8 - send test position\n" +
+            "9 - run AI plan for plant\n" +
             "-1 - exit\n"+
             " select: ";
 
@@ -210,6 +212,14 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
                 }
 
                 break;
+            
+            case 9: // generate AI plan
+                {
+                    HandleAIPlan();
+                }
+
+                break;
+
             default:
                 return false;
         }
@@ -248,6 +258,38 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
 
         Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
         gardenId = GetGardenIdFromInputOrDefault();
+    }
+
+    private async void HandleAIPlan()
+    {
+        Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
+        var gardenId = GetGardenIdFromInputOrDefault();
+
+        var garden = _localInfoManager.Gardens[gardenId];
+
+        Console.WriteLine("Plants in garden:");
+        foreach (var currentPlant in garden.PlantIds)
+        {
+            Console.WriteLine("\t" + currentPlant);
+        }
+
+        Console.WriteLine("insert plant ID");
+        var plantId = Console.ReadLine().Trim();
+
+        // Generate plan
+        var plan = await FarmerRequestHandler.GetHoverPlanForPlant(plantId, CancellationToken.None);
+
+        if (plan == null)
+        {
+            Console.WriteLine("Invalid generated plan");
+            return;
+        }
+
+        // Push volatile plan
+        _localInfoManager.PushVolatileData(plan.ID, plan);
+
+        // Run execution
+        SendNewOperation(AppOperation.RunVolatilePlan, new [] {plan.ID, gardenId} );
     }
 
     private string GetGardenIdFromInputOrDefault()

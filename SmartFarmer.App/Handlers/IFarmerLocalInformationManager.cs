@@ -16,4 +16,7 @@ public interface IFarmerLocalInformationManager
         bool clearGardens = false,
         bool clearLoggedUser = false,
         bool clearToken = false);
+
+    void PushVolatileData(string key, object data);
+    object PickVolatileData(string key);
 }

@@ -1,11 +1,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using SmartFarmer.Exceptions;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
@@ -16,19 +13,13 @@ namespace SmartFarmer.Data.Tasks;
 public class FarmerPlanStep : IFarmerPlanStep
 {
     private IDictionary<string, string> _buildParameters;
+
     private IFarmerGarden _garden;
     private IFarmerTask _task;
 
     public FarmerPlanStep() 
     {
 
-    }
-
-    [JsonConstructor]
-    public FarmerPlanStep(string buildParametersSerialized)
-        : this()
-    {
-        BuildParameters = buildParametersSerialized.Deserialize<Dictionary<string, string>>();
     }
 
     public string TaskClassFullName { get; set; }

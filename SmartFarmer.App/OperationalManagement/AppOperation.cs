@@ -3,6 +3,7 @@ namespace SmartFarmer.OperationalManagement;
 public enum AppOperation
 {
     RunPlan,
+    RunVolatilePlan,
     RunAutoIrrigationPlan,
     SchedulePlans,
     StopRunningPlan,

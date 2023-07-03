@@ -21,7 +21,7 @@ public class FarmerPlanStep : IFarmerPlanStep
 
     public TimeSpan Delay { get; set; }
 
-    [JsonIgnore]
+    // [JsonIgnore]
     public IDictionary<string, string> BuildParameters 
     { 
         get => _buildParameters;
@@ -31,6 +31,7 @@ public class FarmerPlanStep : IFarmerPlanStep
         }
     }
 
+    [JsonIgnore]
     public string BuildParametersSerialized { get; set; }
 
     [JsonIgnore]

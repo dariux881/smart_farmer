@@ -60,6 +60,21 @@ public class OperationalManagerRequestExecutor
 
                 break;
             
+            case AppOperation.RunVolatilePlan:
+                {
+                    Task.Run(async () =>
+                    {
+                        await ExecuteVolatilePlanAsync(
+                            e.AdditionalData.FirstOrDefault(),
+                            e.AdditionalData.LastOrDefault(),
+                            opManager,
+                            e,
+                            operationToken);
+                    });
+                }
+
+                break;
+
             case AppOperation.RunAutoIrrigationPlan:
                 {
                     Task.Run(async () => 
@@ -321,6 +336,49 @@ public class OperationalManagerRequestExecutor
         return await MarkAlertAsReadAsync(garden.ID, alertId, newState, token);
     }
 
+    private async Task ExecuteVolatilePlanAsync(
+        string planId, 
+        string gardenId,
+        IOperationalModeManager opManager,
+        OperationRequestEventArgs args,
+        CancellationToken token)
+    {
+        var fGarden = _localInfoManager.Gardens[gardenId] as FarmerGarden;
+
+        if (fGarden == null)
+        {
+            SmartFarmerLog.Error("No valid garden found for garden " + gardenId);
+
+            args.Result = 
+                new Tasks.FarmerPlanExecutionResult() 
+                {
+                    IsSuccess = false,
+                    LastException = new Exception("No valid garden found for garden " + gardenId)
+                };
+            opManager?.ProcessResult(args);
+
+            return;
+        }
+
+        IFarmerPlan volatilePlan = _localInfoManager.PickVolatileData(planId) as IFarmerPlan;
+
+        if (volatilePlan == null)
+        {
+            args.IsError = true;
+            args.Result.IsSuccess = false;
+            args.Result.PlanId = planId;
+            args.Result.LastException = new Exception("invalid plan id");
+ 
+            opManager?.ProcessResult(args);
+        }
+
+        fGarden.AddPlan(volatilePlan);
+
+        await ExecutePlanAsync(planId, opManager, args, token);
+
+        fGarden.RemovePlan(planId);
+    }
+
     private async Task ExecutePlanAsync(
         string planId, 
         IOperationalModeManager opManager,
@@ -415,50 +473,6 @@ public class OperationalManagerRequestExecutor
             opManager, 
             args, 
             token);
-    }
-
-    private async Task ExecutePlansAsync(string[] planIds, CancellationToken token)
-    {
-        var tasks = new List<Task>();
-
-        foreach (var planId in planIds)
-        {
-            var garden = GardenUtils.GetGardenByPlan(planId) as FarmerGarden;
-
-            if (garden == null) continue;
-            var plan = garden.Plans.First(x => x.ID == planId) as IFarmerPlan;
-
-            if (plan == null) continue;
-
-            tasks.Add(
-                Task.Run(async () => {
-                    try
-                    {
-                        await plan.Execute(token);
-                    }
-                    catch (TaskCanceledException taskCanceled)
-                    {
-                        SmartFarmerLog.Exception(taskCanceled);
-                    }
-                    catch (Exception ex)
-                    {
-                        SmartFarmerLog.Exception(ex);
-                        SmartFarmerLog.Exception(plan.LastException);
-                    }
-                    finally
-                    {
-                        SmartFarmerLog.Information("stopping plan \"" + plan.Name + "\"");
-                    }
-                }));
-        }
-
-        try {  
-            await Task.WhenAll(tasks);  
-        } 
-        catch(Exception ex) 
-        {
-            SmartFarmerLog.Exception(ex);
-        }
     }
 
     private void ClearLocalData()
