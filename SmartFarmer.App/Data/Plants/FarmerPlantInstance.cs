@@ -1,5 +1,4 @@
 using System;
-using Newtonsoft.Json;
 using SmartFarmer.Plants;
 
 namespace SmartFarmer.Data.Plants;
@@ -8,19 +7,6 @@ public class FarmerPlantInstance : IFarmerPlantInstance
 {
     private string _plantKindIdToResolve;
     private FarmerPlant _plant;
-
-    public FarmerPlantInstance()
-    {
-
-    }
-
-    [JsonConstructor]
-    public FarmerPlantInstance(        
-        string plantKindId)
-        : this()
-    {
-        _plantKindIdToResolve = plantKindId;
-    }
 
     public string PlantName { get; set; }
     public FarmerPlant Plant 
@@ -37,7 +23,15 @@ public class FarmerPlantInstance : IFarmerPlantInstance
         }
     }
 
-    public string PlantKindID  => Plant?.ID ?? _plantKindIdToResolve;
+    public string PlantKindID
+    {
+        get => Plant?.ID ?? _plantKindIdToResolve;
+        set
+        {
+            _plantKindIdToResolve = value;
+        }
+    }
+
     public int PlantX { get; set; }
     public int PlantY { get; set; }
     public int PlantWidth { get; set; }

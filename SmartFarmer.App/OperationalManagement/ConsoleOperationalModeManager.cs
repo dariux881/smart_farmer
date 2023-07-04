@@ -6,6 +6,7 @@ using SmartFarmer.Data;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
 using SmartFarmer.Handlers;
+using SmartFarmer.Data.Tasks;
 
 namespace SmartFarmer.OperationalManagement;
 
@@ -277,13 +278,15 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         var plantId = Console.ReadLine().Trim();
 
         // Generate plan
-        var plan = await FarmerRequestHandler.GetHoverPlanForPlant(plantId, CancellationToken.None);
+        var plan = await FarmerRequestHandler.GetHoverPlanForPlant(plantId, CancellationToken.None) as FarmerPlan;
 
         if (plan == null)
         {
             Console.WriteLine("Invalid generated plan");
             return;
         }
+
+        plan.PropagateGarden(garden);
 
         // Push volatile plan
         _localInfoManager.PushVolatileData(plan.ID, plan);

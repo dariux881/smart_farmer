@@ -10,7 +10,7 @@ public interface IFarmerPlant : IFarmerService
     string BotanicalName { get; }
     string FriendlyName { get; }
 
-    IFarmerIrrigationTaskInfo IrrigationTaskInfo { get; }
+    FarmerIrrigationTaskInfo IrrigationTaskInfo { get; }
 
     /// <summary>
     /// values in cells, where cells size depend on garden

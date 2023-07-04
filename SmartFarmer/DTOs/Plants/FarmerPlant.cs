@@ -1,6 +1,7 @@
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SmartFarmer.DTOs.Tasks;
+using SmartFarmer.FarmerLogs;
 using SmartFarmer.Plants;
 using SmartFarmer.Tasks.Irrigation;
 
@@ -8,23 +9,29 @@ namespace SmartFarmer.DTOs.Plants;
 
 public class FarmerPlant : IFarmerPlant
 {
-    private IFarmerIrrigationTaskInfo _irrigationTaskInfo;
+    private string _irrigationTaskInfoSerialized;
 
     public string BotanicalName { get; set; }
 
     public string FriendlyName { get; set; }
 
-    [JsonIgnore]
-    public IFarmerIrrigationTaskInfo IrrigationTaskInfo 
+    public FarmerIrrigationTaskInfo IrrigationTaskInfo 
     { 
-        get => _irrigationTaskInfo;
+        get => DeserializeIrrigationInfo(IrrigationTaskInfoSerialized);
         set {
-            _irrigationTaskInfo = value;
-            SerializeParameters();
+            SetIrrigationInfo(value);
         }
     }
 
-    public string IrrigationTaskInfoSerialized { get; set; }
+    [JsonIgnore]
+    public string IrrigationTaskInfoSerialized 
+    { 
+        get => _irrigationTaskInfoSerialized;
+        set
+        {
+            _irrigationTaskInfoSerialized = value;
+        }
+    }
 
     public int PlantWidth { get; set; }
 
@@ -36,15 +43,32 @@ public class FarmerPlant : IFarmerPlant
 
     public string ID { get; set; }
     
-    private void SerializeParameters()
+    private void SetIrrigationInfo(FarmerIrrigationTaskInfo value)
     {
-        if (IrrigationTaskInfo == null) {
-            IrrigationTaskInfoSerialized = null;
-            return;
+        IrrigationTaskInfoSerialized = SerializeIrrigationInfo(value);
+    }
+
+    private string SerializeIrrigationInfo(FarmerIrrigationTaskInfo info)
+    {
+        if (info == null) {
+            return null;
         }
 
-        IrrigationTaskInfoSerialized = 
-            JsonSerializer
-                .Serialize(IrrigationTaskInfo);
+        return JsonSerializer.Serialize(info);
+    }
+
+    private FarmerIrrigationTaskInfo DeserializeIrrigationInfo(string json)
+    {
+        if (string.IsNullOrEmpty(json)) return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize<FarmerIrrigationTaskInfo>(json);
+        }
+        catch (Exception ex)
+        {
+            SmartFarmerLog.Exception(ex);
+            return null;
+        }
     }
 }

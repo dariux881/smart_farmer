@@ -7,7 +7,7 @@ namespace SmartFarmer.Tasks.Irrigation
     [Obsolete]
     public interface IFarmerAutoIrrigationPlan : IFarmerPlan
     {
-        void AddIrrigationStep(IFarmerPlantInstance plant, IFarmerIrrigationTaskInfo irrigationInfo);
+        void AddIrrigationStep(IFarmerPlantInstance plant, FarmerIrrigationTaskInfo irrigationInfo);
 
         bool CanAutoIrrigationPlanStart { get; }
         DateTime PlannedAt { get; }
