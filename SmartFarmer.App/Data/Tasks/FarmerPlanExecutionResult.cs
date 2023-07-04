@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
+using SmartFarmer.Tasks;
 
-namespace SmartFarmer.Tasks;
+namespace SmartFarmer.Data.Tasks;
 
-public class FarmerPlanExecutionResult
+public class FarmerPlanExecutionResult : IFarmerPlanExecutionResult
 {
-    private bool _isSuccess = true;
-    private Exception _lastException;
-
     public FarmerPlanExecutionResult()
     {
         TaskResults = new Dictionary<string, object>();

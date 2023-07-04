@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Data;
+using SmartFarmer.Data.Tasks;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Handlers.Providers;
 using SmartFarmer.Misc;
@@ -221,7 +222,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Error($"{serializedPosition} is not a valid point");
             
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception("Invalid destination position")
                 };
@@ -236,7 +237,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Error($"no valid device found for garden {gardenId}");
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception($"No device found for garden {gardenId}")
                 };
@@ -252,7 +253,7 @@ public class OperationalManagerRequestExecutor
             var suffix = result ? "successfully" : "with errors";
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception($"moved finished {suffix}")
                 };
@@ -263,7 +264,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Exception(ex);
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult()
+                new FarmerPlanExecutionResult()
                 {
                     LastException = ex.InnerException
                 };
@@ -275,7 +276,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Exception(ex);
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult()
+                new FarmerPlanExecutionResult()
                 {
                     LastException = ex
                 };
@@ -287,7 +288,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Exception(ex);
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult()
+                new FarmerPlanExecutionResult()
                 {
                     LastException = ex
                 };
@@ -344,7 +345,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Error("No valid garden found for garden " + gardenId);
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception("No valid garden found for garden " + gardenId)
                 };
@@ -358,8 +359,12 @@ public class OperationalManagerRequestExecutor
         if (volatilePlan == null)
         {
             args.IsError = true;
-            args.Result.PlanId = planId;
-            args.Result.LastException = new Exception("invalid plan id");
+            args.Result = 
+                new FarmerPlanExecutionResult() 
+                {
+                    PlanId = planId,
+                    LastException = new Exception("No valid garden found for garden " + gardenId)
+                };
  
             opManager?.ProcessResult(args);
         }
@@ -383,7 +388,7 @@ public class OperationalManagerRequestExecutor
             SmartFarmerLog.Error("No valid garden found for plan " + planId);
 
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception("No valid garden found for plan " + planId)
                 };
@@ -402,7 +407,7 @@ public class OperationalManagerRequestExecutor
         catch (AggregateException ex)
         {
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult()
+                new FarmerPlanExecutionResult()
                 {
                     LastException = ex.InnerException
                 };
@@ -413,7 +418,7 @@ public class OperationalManagerRequestExecutor
         catch (Exception ex)
         {
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult()
+                new FarmerPlanExecutionResult()
                 {
                     LastException = ex
                 };
@@ -432,7 +437,7 @@ public class OperationalManagerRequestExecutor
         if (!_localInfoManager.Gardens.ContainsKey(gardenId))
         {
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception("Invalid garden")
                 };
@@ -446,7 +451,7 @@ public class OperationalManagerRequestExecutor
         if (string.IsNullOrEmpty(garden.IrrigationPlanId))
         {
             args.Result = 
-                new Tasks.FarmerPlanExecutionResult() 
+                new FarmerPlanExecutionResult() 
                 {
                     LastException = new Exception("Invalid irrigation plan")
                 };

@@ -45,7 +45,7 @@ public class FarmerPlan : IFarmerPlan
         return this;
     }
 
-    public async Task<FarmerPlanExecutionResult> Execute(CancellationToken token)
+    public async Task<IFarmerPlanExecutionResult> Execute(CancellationToken token)
     {
         var result = new FarmerPlanExecutionResult();
 

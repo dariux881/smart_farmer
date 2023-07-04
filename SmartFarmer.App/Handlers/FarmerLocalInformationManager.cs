@@ -146,6 +146,10 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(garden);
         FarmerServiceLocator.RemoveService<IFarmerTakePictureTask>(garden);
         FarmerServiceLocator.RemoveService<FarmerTakePictureTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerPointTargetTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerPointTargetTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerTurnArmToDegreeTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerTurnArmToDegreeTask>(garden);
 
         // preparing new services
         FarmerServiceLocator.MapService<IFarmerToolsManager>(() => new FarmerToolsManager(garden), garden);
@@ -175,6 +179,14 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
         FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, garden);
         FarmerServiceLocator.MapService<FarmerProvideWaterTask>(() => provideWaterTask, garden);
+
+        var pointTargetTask = new FarmerPointTargetTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerPointTargetTask>(() => pointTargetTask, garden);
+        FarmerServiceLocator.MapService<FarmerPointTargetTask>(() => pointTargetTask, garden);
+
+        var turnArmTask = new FarmerTurnArmToDegreeTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerTurnArmToDegreeTask>(() => turnArmTask, garden);
+        FarmerServiceLocator.MapService<FarmerTurnArmToDegreeTask>(() => turnArmTask, garden);
 
         await moveOnGridTask.InitializeAsync(cancellationToken);
         await moveAtHeightTask.InitializeAsync(cancellationToken);

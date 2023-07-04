@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartFarmer.Configurations;
+using SmartFarmer.Data.Tasks;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Handlers;
 using SmartFarmer.Misc;
@@ -262,7 +263,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
         return outcome;
     }
 
-    private async Task NotifyResult(FarmerPlanExecutionResult result, bool notifyToServer = true)
+    private async Task NotifyResult(IFarmerPlanExecutionResult result, bool notifyToServer = true)
     {
         if (_localCommand == null) return;
 

@@ -257,7 +257,7 @@ public partial class FarmerRequestHandler
         }
     }
 
-    public static async Task<bool> NotifyPlanExecutionResult(FarmerPlanExecutionResult result, CancellationToken token)
+    public static async Task<bool> NotifyPlanExecutionResult(IFarmerPlanExecutionResult result, CancellationToken token)
     {
         var httpReq = new HttpRequest();
 

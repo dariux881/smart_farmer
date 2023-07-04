@@ -20,6 +20,6 @@ public interface ISmartFarmerPlanControllerService
     Task<string> AddPlan(string userId, FarmerPlanRequestData planRequestData);
     Task<bool> DeletePlan(string userId, string planId);
     Task<string> BuildIrrigationPlan(string userId, string gardenId);
-    Task AnalysePlanResult(string userId, FarmerPlanExecutionResult result);
+    Task AnalysePlanResult(string userId, IFarmerPlanExecutionResult result);
 
 }

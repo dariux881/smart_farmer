@@ -161,7 +161,7 @@ public class FarmerPlanController : FarmerControllerBase
     
     [HttpPost("planExecutionResult")]
     [IsUserAuthorizedTo(Constants.AUTH_EDIT_GARDEN)]
-    public async Task<ActionResult> SendPlanExecutionResult([FromBody] FarmerPlanExecutionResult result)
+    public async Task<ActionResult> SendPlanExecutionResult([FromBody] DTOs.Tasks.FarmerPlanExecutionResult result)
     {
         if (result == null)
         {

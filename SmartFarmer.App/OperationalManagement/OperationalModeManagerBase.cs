@@ -37,7 +37,7 @@ public abstract class OperationalModeManagerBase : IOperationalModeManager
         }
     }
 
-    protected async Task NotifyPlanExecutionResult(FarmerPlanExecutionResult result)
+    protected async Task NotifyPlanExecutionResult(IFarmerPlanExecutionResult result)
     {
         await FarmerRequestHandler.NotifyPlanExecutionResult(result, CancellationToken.None);
     }

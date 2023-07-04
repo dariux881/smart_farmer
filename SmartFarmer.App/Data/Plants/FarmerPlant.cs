@@ -6,8 +6,6 @@ namespace SmartFarmer.Data.Plants;
 
 public class FarmerPlant : IFarmerPlant
 {
-    private FarmerIrrigationTaskInfo _irrigationTaskInfo;
-
     public string BotanicalName { get; set; }
 
     public string FriendlyName { get; set; }

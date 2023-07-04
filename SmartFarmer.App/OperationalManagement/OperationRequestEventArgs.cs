@@ -18,6 +18,6 @@ public class OperationRequestEventArgs : EventArgs
     public IOperationalModeManager Sender { get; }
     public AppOperation Operation { get; }
     public string[] AdditionalData { get; }
-    public FarmerPlanExecutionResult Result { get; set; }
+    public IFarmerPlanExecutionResult Result { get; set; }
     public bool IsError { get; set; }
 }

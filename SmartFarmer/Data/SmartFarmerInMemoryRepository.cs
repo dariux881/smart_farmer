@@ -3,6 +3,7 @@ using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Security;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Helpers;
+using SmartFarmer.Tasks.Detection;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Irrigation;
 using SmartFarmer.Tasks.Movement;
@@ -50,10 +51,14 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         var plant1 = new FarmerPlant { 
             BotanicalName = "PlantBotanicalName_1",
             FriendlyName="plant 1", 
+            PlantWidth = 40,
+            PlantDepth = 40,
             IrrigationTaskInfo = irrInfo1 };
         var plant2 = new FarmerPlant { 
             BotanicalName = "PlantBotanicalName_2",
             FriendlyName="plant 2", 
+            PlantWidth = 40,
+            PlantDepth = 40,
             IrrigationTaskInfo = irrInfo2 };
 
         var garden1 = new DTOs.FarmerGarden(this)
@@ -108,86 +113,99 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         //     CronSchedule = "0/10 * * ? * FRI *"
         // };
 
-        _dbContext.Plans.Add(plan0);
-        // _dbContext.Plans.Add(plan1);
-        // _dbContext.Plans.Add(plan2);
+        var plans = new FarmerPlan[] {
+            plan0
+        };
+
+        _dbContext.Plans.AddRange(plans);
+
         _dbContext.SaveChanges();
 
-        var p0Steps = new [] {
-            new FarmerPlanStep
-            {
-                PlanId = plan0.ID, 
-                BuildParameters = new Dictionary<string, string>() {{ nameof(IHasTargetHeight.TargetHeightInCm), "10.0" }}, 
-                TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
-            },
-            new FarmerPlanStep
-            {
-                PlanId = plan0.ID, 
-                BuildParameters = 
-                    new Dictionary<string, string>() 
-                    {
-                        { nameof(IHasTargetGridPosition.TargetXInCm), "5.0" },
-                        { nameof(IHasTargetGridPosition.TargetYInCm), "5.0" }
-                    },
-                Delay = new System.TimeSpan(0, 0, 2),
-                TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
-            },
-            new FarmerPlanStep
-            {
-                PlanId = plan0.ID, 
-                BuildParameters = 
-                    new Dictionary<string, string>() 
-                    {
-                        { nameof(IFarmerProvideWaterTask.PumpNumber), "1" },
-                        { nameof(IFarmerProvideWaterTask.WaterAmountInLiters), "0.5" }
-                    },
-                Delay = new System.TimeSpan(0, 0, 1),
-                TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName // "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
-            },
-            new FarmerPlanStep
-            {
-                PlanId = plan0.ID, 
-                BuildParameters = 
-                    new Dictionary<string, string>() 
-                    {
-                        { nameof(IHasTargetGridPosition.TargetXInCm), "15.0" },
-                        { nameof(IHasTargetGridPosition.TargetYInCm), "5.0" }
-                    },
-                Delay = new System.TimeSpan(0, 0, 2),
-                TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
-            },
-            new FarmerPlanStep
-            {
-                PlanId = plan0.ID, 
-                BuildParameters = new Dictionary<string, string>() {{ nameof(IHasTargetHeight.TargetHeightInCm), "0.0" }},
-                Delay = new System.TimeSpan(0, 0, 2),
-                TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
-            },
-        };            
+        var planSteps = new List<FarmerPlanStep>() {
+            // new FarmerPlanStep
+            // {
+            //     PlanId = plan0.ID, 
+            //     TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+            // }
+        };
+
+        //planSteps.AddRange(new [] {
+        //     new FarmerPlanStep
+        //     {
+        //         PlanId = plan0.ID, 
+        //         BuildParameters = new Dictionary<string, string>() {{ nameof(IHasTargetHeight.TargetHeightInCm), "10.0" }}, 
+        //         TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+        //     },
+        //     new FarmerPlanStep
+        //     {
+        //         PlanId = plan0.ID, 
+        //         BuildParameters = 
+        //             new Dictionary<string, string>() 
+        //             {
+        //                 { nameof(IHasTargetGridPosition.TargetXInCm), "5.0" },
+        //                 { nameof(IHasTargetGridPosition.TargetYInCm), "5.0" }
+        //             },
+        //         Delay = new System.TimeSpan(0, 0, 2),
+        //         TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+        //     },
+        //     new FarmerPlanStep
+        //     {
+        //         PlanId = plan0.ID, 
+        //         BuildParameters = 
+        //             new Dictionary<string, string>() 
+        //             {
+        //                 { nameof(IFarmerProvideWaterTask.PumpNumber), "1" },
+        //                 { nameof(IFarmerProvideWaterTask.WaterAmountInLiters), "0.5" }
+        //             },
+        //         Delay = new System.TimeSpan(0, 0, 1),
+        //         TaskInterfaceFullName = typeof(IFarmerProvideWaterTask).FullName // "SmartFarmer.Tasks.Irrigation.IFarmerProvideWaterTask"
+        //     },
+        //     new FarmerPlanStep
+        //     {
+        //         PlanId = plan0.ID, 
+        //         BuildParameters = 
+        //             new Dictionary<string, string>() 
+        //             {
+        //                 { nameof(IHasTargetGridPosition.TargetXInCm), "15.0" },
+        //                 { nameof(IHasTargetGridPosition.TargetYInCm), "5.0" }
+        //             },
+        //         Delay = new System.TimeSpan(0, 0, 2),
+        //         TaskClassFullName = typeof(IFarmerMoveOnGridTask).FullName // "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask"
+        //     },
+        //     new FarmerPlanStep
+        //     {
+        //         PlanId = plan0.ID, 
+        //         BuildParameters = new Dictionary<string, string>() {{ nameof(IHasTargetHeight.TargetHeightInCm), "0.0" }},
+        //         Delay = new System.TimeSpan(0, 0, 2),
+        //         TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName // "SmartFarmer.Tasks.Movement.IFarmerMoveArmAtHeightTask"
+        //     },
+        // });
 
 
-        // var p1Step1 = new FarmerPlanStep
+        // planSteps.Add(new FarmerPlanStep
         // {
         //     //ID = "p1s1",
         //     PlanId = plan1.ID,
         //     BuildParameters = new object[] { 5.0 },
         //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeightTask"
-        // };
-        // var p2Step1 = new FarmerPlanStep
+        // });
+
+        // planSteps.Add(new FarmerPlanStep
         // {
         //     //ID = "p1s2",
         //     PlanId = plan2.ID,
         //     BuildParameters = new object[] { 15.0, 2.0 },
         //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveOnGridTask",
         //     Delay = new System.TimeSpan(0, 0, 5)
-        // };
-        // var p2Step2 = new FarmerPlanStep
+        // });
+
+        // planSteps.Add(new FarmerPlanStep
         // {
         //     //ID = "p1s2",
         //     PlanId = plan2.ID,
         //     BuildParameters = new object[] { 3.0 },
         //     TaskClassFullName = "SmartFarmer.Tasks.Movement.FarmerMoveArmAtHeightTask",
-        // };
+        // });
 
         // var alert = new FarmerAlert
         // {
@@ -204,10 +222,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.Authorizations.Add(editUsersAuth);
 
         _dbContext.PlantsInstance.AddRange(new [] {plantInstance1, plantInstance2});
-        _dbContext.PlanSteps.AddRange(p0Steps);
-        // _dbContext.PlanSteps.Add(p1Step1);
-        // _dbContext.PlanSteps.Add(p2Step1);
-        // _dbContext.PlanSteps.Add(p2Step2);
+        _dbContext.PlanSteps.AddRange(planSteps);
 
         // _dbContext.Alerts.Add(alert);
 

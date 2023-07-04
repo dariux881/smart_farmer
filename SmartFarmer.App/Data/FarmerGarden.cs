@@ -81,7 +81,7 @@ public class FarmerGarden : IFarmerGarden
         return alertIdsToResolve ?? AlertIds.ToArray();
     }
 
-    public async Task<FarmerPlanExecutionResult> ExecutePlan(string planId, CancellationToken token)
+    public async Task<IFarmerPlanExecutionResult> ExecutePlan(string planId, CancellationToken token)
     {
         if (!PlanIds.Contains(planId))
         {

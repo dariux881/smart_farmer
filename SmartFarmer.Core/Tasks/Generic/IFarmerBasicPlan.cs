@@ -11,6 +11,6 @@ public interface IFarmerBasicPlan : IFarmerService
     string Name { get; }
     IReadOnlyList<string> StepIds { get; }
     
-    Task<FarmerPlanExecutionResult> Execute(CancellationToken token);
+    Task<IFarmerPlanExecutionResult> Execute(CancellationToken token);
     Exception LastException { get; }
 }

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 //using Newtonsoft.Json;
-using SmartFarmer.Misc;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks;
 
@@ -40,7 +39,7 @@ public class FarmerPlan : IFarmerPlan
     public DateTime? ValidToDt { get; set; }
     public string CronSchedule { get; set; }
 
-    public Task<FarmerPlanExecutionResult> Execute(CancellationToken token)
+    public Task<IFarmerPlanExecutionResult> Execute(CancellationToken token)
     {
         throw new InvalidOperationException();
     }

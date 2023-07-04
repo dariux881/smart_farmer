@@ -42,7 +42,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
     public async Task<bool> AnalyseHoverPlanResult(
         string userId, 
         FarmerPlan plan,
-        FarmerPlanExecutionResult result)
+        IFarmerPlanExecutionResult result)
     {
         if (plan == null) throw new ArgumentNullException(nameof(plan));
         if (result == null) throw new ArgumentNullException(nameof(result));
@@ -115,9 +115,25 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         plans.Remove(planId);
     }
 
-    private async Task<FarmerAIDetectionLog> AnalysePlanCore(string userId, FarmerPlan plan, FarmerPlanExecutionResult result)
+    private async Task<FarmerAIDetectionLog> AnalysePlanCore(string userId, FarmerPlan plan, IFarmerPlanExecutionResult result)
     {
         FarmerAIDetectionLog log = new FarmerAIDetectionLog();
+
+        if (!result.IsSuccess)
+        {
+            SmartFarmerLog.Error(result.ErrorMessage);
+
+            log.Messages.Add(
+                new FarmerAIDetectionLogMessage()
+                {
+                    Level = LogMessageLevel.Error,
+                    Message = result.ErrorMessage,
+                    RequiresAction = false
+                });
+                
+            return log;
+        }
+
         var stepsWithResult = plan.Steps.Where(x => result.TaskResults.ContainsKey(x.ID));
 
         if (!stepsWithResult.Any())

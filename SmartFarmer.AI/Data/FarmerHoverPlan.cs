@@ -31,7 +31,7 @@ public class FarmerHoverPlan : IFarmerPlan
     public int Priority { get; set; }
     public Exception LastException { get; set; }
 
-    public Task<FarmerPlanExecutionResult> Execute(CancellationToken token)
+    public Task<IFarmerPlanExecutionResult> Execute(CancellationToken token)
     {
         throw new NotImplementedException();
     }

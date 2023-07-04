@@ -152,7 +152,7 @@ public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerServic
         return planId;
     }
 
-    public async Task AnalysePlanResult(string userId, FarmerPlanExecutionResult result)
+    public async Task AnalysePlanResult(string userId, IFarmerPlanExecutionResult result)
     {
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (result == null) throw new ArgumentNullException(nameof(result));
