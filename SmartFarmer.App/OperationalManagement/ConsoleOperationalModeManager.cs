@@ -268,7 +268,13 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         Console.WriteLine("insert garden ID [" +  GetDefaultGardenId() +"]: ");
         var gardenId = GetGardenIdFromInputOrDefault();
 
-        var garden = _localInfoManager.Gardens[gardenId];
+        IFarmerGarden garden;
+
+        while (!_localInfoManager.Gardens.TryGetValue(gardenId, out garden))
+        {
+            Console.WriteLine("Retry... Insert a valid garden ID");
+            gardenId = GetGardenIdFromInputOrDefault();
+        }
 
         Console.WriteLine("Plants in garden:");
         foreach (var currentPlant in garden.PlantIds)

@@ -16,14 +16,14 @@ namespace SmartFarmer.Services.AI;
 public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 {
     private readonly ISmartFarmerAIControllerServiceProvider _aiProvider;
-    private readonly ConcurrentDictionary<string, HashSet<string>> _plansByUser;
+    private readonly ConcurrentDictionary<string, List<IFarmerPlan>> _plansByUser;
     private readonly ISmartFarmerPlantControllerService _plantService;
 
     public SmartFarmerAIControllerService(
         ISmartFarmerAIControllerServiceProvider aiProvider,
         ISmartFarmerPlantControllerService plantService)
     {
-        _plansByUser = new ConcurrentDictionary<string, HashSet<string>>();
+        _plansByUser = new ConcurrentDictionary<string, List<IFarmerPlan>>();
 
         _aiProvider = aiProvider;
         _plantService = plantService;
@@ -36,21 +36,21 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
             return false;
         }
 
-        return _plansByUser[userId].Contains(planId);
+        return _plansByUser[userId].Any(x => x.ID == planId);
     }
 
     public async Task<bool> AnalyseHoverPlanResult(
-        string userId, 
-        FarmerPlan plan,
+        string userId,
         IFarmerPlanExecutionResult result)
     {
-        if (plan == null) throw new ArgumentNullException(nameof(plan));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
-        if (plan.ID != result.PlanId) throw new InvalidOperationException($"plan result is not related to given plan");
+        if (string.IsNullOrEmpty(result.PlanId)) throw new InvalidOperationException($"invalid plan result");
 
         var planCheck = IsValidHoverPlan(userId, result.PlanId);
         if (!planCheck) throw new InvalidOperationException();
+
+        var plan = _plansByUser[userId].First(x => x.ID == result.PlanId);
 
         await AnalysePlanCore(userId, plan, result);
         await RemoveStoredPlan(userId, result.PlanId);
@@ -88,14 +88,14 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
     private async Task StoreHoverPlan(string userId, IFarmerPlan hoverPlan)
     {
-        HashSet<string> plans = null;
+        List<IFarmerPlan> plans = null;
 
         if (!_plansByUser.TryGetValue(userId, out plans))
         {
-            plans = new HashSet<string>();
+            plans = new List<IFarmerPlan>();
         }
 
-        plans.Add(hoverPlan.ID);
+        plans.Add(hoverPlan);
 
         _plansByUser.TryAdd(userId, plans);
 
@@ -112,10 +112,17 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
             return;
         }
 
-        plans.Remove(planId);
+        var planToRemove = plans.FirstOrDefault(x => x.ID == planId);
+
+        if (planToRemove == null) return;
+
+        plans.Remove(planToRemove);
     }
 
-    private async Task<FarmerAIDetectionLog> AnalysePlanCore(string userId, FarmerPlan plan, IFarmerPlanExecutionResult result)
+    private async Task<FarmerAIDetectionLog> AnalysePlanCore(
+        string userId, 
+        IFarmerPlan plan, 
+        IFarmerPlanExecutionResult result)
     {
         FarmerAIDetectionLog log = new FarmerAIDetectionLog();
 
@@ -134,7 +141,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
             return log;
         }
 
-        var stepsWithResult = plan.Steps.Where(x => result.TaskResults.ContainsKey(x.ID));
+        var stepsWithResult = plan.StepIds.Where(x => result.TaskResults.ContainsKey(x));
 
         if (!stepsWithResult.Any())
         {
@@ -143,26 +150,27 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
         foreach (var step in stepsWithResult)
         {
-            SmartFarmerLog.Debug($"processing step {step.ID} on task {step.TaskInterfaceFullName}");
+            SmartFarmerLog.Debug($"processing step {step}");
             FarmerAIDetectionLog detectionLog = null;
 
-            // check if refers to PlantInstance
-            if (HasPlantInstance(step, out var plantInstanceId))
-            {
-                detectionLog = await AnalysePlantBasedStep(
-                    userId, 
-                    step.ID, 
-                    plantInstanceId, 
-                    result.TaskResults[step.ID]);
-            }
-            else
-            {
-                detectionLog = await AnalyseTaskBasedStep(
-                    userId, 
-                    step.ID, 
-                    step.TaskInterfaceFullName, 
-                    result.TaskResults[step.ID]);
-            }
+            //TODO fix logic
+            // // check if refers to PlantInstance
+            // if (HasPlantInstance(step, out var plantInstanceId))
+            // {
+            //     detectionLog = await AnalysePlantBasedStep(
+            //         userId, 
+            //         step, 
+            //         plantInstanceId, 
+            //         result.TaskResults[step]);
+            // }
+            // else
+            // {
+            //     detectionLog = await AnalyseTaskBasedStep(
+            //         userId, 
+            //         step, 
+            //         step.TaskInterfaceFullName, 
+            //         result.TaskResults[step]);
+            // }
 
             if (detectionLog != null)
             {
@@ -180,7 +188,6 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         string plantInstanceId, 
         object stepData)
     {
-        
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
         var aiModule = _aiProvider.GetAIModuleByPlant(plantInstance);

@@ -9,5 +9,5 @@ public interface ISmartFarmerAIControllerService
 {
     Task<IFarmerPlan> GenerateHoverPlan(string userId, string plantInstanceId);
     bool IsValidHoverPlan(string userId, string planId);
-    Task<bool> AnalyseHoverPlanResult(string userId, FarmerPlan plan, IFarmerPlanExecutionResult result);
+    Task<bool> AnalyseHoverPlanResult(string userId, IFarmerPlanExecutionResult result);
 }
