@@ -8,7 +8,6 @@ using SmartFarmer.Tasks.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Collections.Generic;
-using SmartFarmer.Tasks;
 
 namespace SmartFarmer.Data;
 

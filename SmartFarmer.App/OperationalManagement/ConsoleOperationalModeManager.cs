@@ -47,10 +47,12 @@ public class ConsoleOperationalModeManager : OperationalModeManagerBase, IConsol
         {
             if (!args.Result.IsSuccess)
             {
-                SmartFarmerLog.Exception(args.Result.LastException);
+                SmartFarmerLog.Error(args.Result.ErrorMessage);
             }
-
-            SmartFarmerLog.Information(args.Result.PlanId + " ended successfully");
+            else
+            {
+                SmartFarmerLog.Information(args.Result.PlanId + " ended successfully");
+            }
 
             Task.Run(async () => await NotifyPlanExecutionResult(args.Result));
         }

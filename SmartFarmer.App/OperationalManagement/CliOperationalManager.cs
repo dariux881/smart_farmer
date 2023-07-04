@@ -157,7 +157,6 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
                         await NotifyResult(
                             new FarmerPlanExecutionResult()
                             {
-                                IsSuccess = false,
                                 LastException = new Exception($"received command {command} is not valid")
                             },
                             false);
@@ -267,7 +266,7 @@ public class CliOperationalManager : OperationalModeManagerBase, ICliOperational
     {
         if (_localCommand == null) return;
 
-        var messageToSend = result.IsSuccess ? $"{result.PlanId} completed successfully" : result.LastException?.ToString();
+        var messageToSend = result.IsSuccess ? $"{result.PlanId} completed successfully" : result.ErrorMessage;
         
         if (notifyToServer)
         {

@@ -223,7 +223,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception("Invalid destination position")
                 };
             opManager?.ProcessResult(args);
@@ -239,7 +238,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception($"No device found for garden {gardenId}")
                 };
             opManager?.ProcessResult(args);
@@ -256,7 +254,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception($"moved finished {suffix}")
                 };
             opManager?.ProcessResult(args);
@@ -268,7 +265,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult()
                 {
-                    IsSuccess = false,
                     LastException = ex.InnerException
                 };
 
@@ -281,7 +277,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult()
                 {
-                    IsSuccess = false,
                     LastException = ex
                 };
 
@@ -294,7 +289,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult()
                 {
-                    IsSuccess = false,
                     LastException = ex
                 };
 
@@ -352,7 +346,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception("No valid garden found for garden " + gardenId)
                 };
             opManager?.ProcessResult(args);
@@ -365,7 +358,6 @@ public class OperationalManagerRequestExecutor
         if (volatilePlan == null)
         {
             args.IsError = true;
-            args.Result.IsSuccess = false;
             args.Result.PlanId = planId;
             args.Result.LastException = new Exception("invalid plan id");
  
@@ -393,7 +385,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception("No valid garden found for plan " + planId)
                 };
             opManager?.ProcessResult(args);
@@ -413,7 +404,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult()
                 {
-                    IsSuccess = false,
                     LastException = ex.InnerException
                 };
 
@@ -425,7 +415,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult()
                 {
-                    IsSuccess = false,
                     LastException = ex
                 };
 
@@ -445,7 +434,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception("Invalid garden")
                 };
             args.IsError = true;
@@ -460,7 +448,6 @@ public class OperationalManagerRequestExecutor
             args.Result = 
                 new Tasks.FarmerPlanExecutionResult() 
                 {
-                    IsSuccess = false,
                     LastException = new Exception("Invalid irrigation plan")
                 };
             args.IsError = true;

@@ -14,24 +14,12 @@ public class FarmerPlanExecutionResult
     }
 
     public string PlanId { get; set; }
-    public bool IsSuccess 
-    { 
-        get => _isSuccess; 
-        set
-        {
-            _isSuccess = value;
-        }
-    }
 
-    public Exception LastException 
-    { 
-        get => _lastException; 
-        set
-        {
-            _lastException = value;
-            if (_lastException != null) IsSuccess = false;
-        }
-    }
+    public bool IsSuccess => LastException == null;
+
+    public string ErrorMessage => LastException?.InnerException?.Message ?? LastException?.Message;
+
+    public Exception LastException { private get; set; }
 
     public Dictionary<string, object> TaskResults { get; set; }
 }

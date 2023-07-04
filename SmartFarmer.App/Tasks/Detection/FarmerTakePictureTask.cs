@@ -40,18 +40,24 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
     }
 
     public async override Task<object> Execute(CancellationToken token)
-    {        
+    {
+        PrepareTask();
+
         VideoCapture capture = GetVideoCapture(); //create a camera capture
         Bitmap image = capture.QueryFrame().ToBitmap(); //take a picture
 
         await Task.CompletedTask;
         try
         {
-            return SavePictureToDisk(image);
+            var result = SavePictureToDisk(image);
+
+            EndTask(string.IsNullOrEmpty(result) && File.Exists(result));
+            return result;
         }
         catch (Exception ex)
         {
             SmartFarmerLog.Exception(ex);
+            EndTask(true);
             throw;
         }
     }
@@ -99,7 +105,7 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
         var prefix = _cameraConfiguration?.FilenamePrefix ?? string.Empty;
 
         var filename =
-            $"{prefix}{DateTime.UtcNow.ToString("yyyyMMdd_HHmmss")}.jpeg";
+            $"{prefix}{DateTime.UtcNow.ToString("yyyyMMdd_HHmmss.fff")}.jpeg";
 
         var destination =
             _cameraConfiguration?.DestinationDirectory ??

@@ -114,7 +114,6 @@ public class FarmerPlan : IFarmerPlan
             SmartFarmerLog.Information($"Plan \"{Name}\" completed");
         }
 
-        result.IsSuccess = LastException == null;
         result.LastException = LastException;
 
         return result;

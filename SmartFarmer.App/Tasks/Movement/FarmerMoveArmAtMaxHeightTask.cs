@@ -67,7 +67,7 @@ public class FarmerMoveArmAtMaxHeightTask : FarmerBaseTask, IFarmerMoveArmAtMaxH
 
         EndTask();
 
-        return null;
+        return _currentHeight;
     }
 
     public double GetCurrentHeight()

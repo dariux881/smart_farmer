@@ -140,6 +140,8 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         FarmerServiceLocator.RemoveService<FarmerMoveOnGridTask>(garden);
         FarmerServiceLocator.RemoveService<IFarmerMoveArmAtHeightTask>(garden);
         FarmerServiceLocator.RemoveService<FarmerMoveArmAtHeightTask>(garden);
+        FarmerServiceLocator.RemoveService<IFarmerMoveArmAtMaxHeightTask>(garden);
+        FarmerServiceLocator.RemoveService<FarmerMoveArmAtMaxHeightTask>(garden);
         FarmerServiceLocator.RemoveService<IFarmerProvideWaterTask>(garden);
         FarmerServiceLocator.RemoveService<FarmerProvideWaterTask>(garden);
         FarmerServiceLocator.RemoveService<IFarmerTakePictureTask>(garden);
@@ -165,6 +167,10 @@ public class FarmerLocalInformationManager : IFarmerLocalInformationManager
         var moveAtHeightTask = new FarmerMoveArmAtHeightTask(deviceHandler);
         FarmerServiceLocator.MapService<IFarmerMoveArmAtHeightTask>(() => moveAtHeightTask, garden);
         FarmerServiceLocator.MapService<FarmerMoveArmAtHeightTask>(() => moveAtHeightTask, garden);
+
+        var moveAtMaxHeightTask = new FarmerMoveArmAtMaxHeightTask(deviceHandler);
+        FarmerServiceLocator.MapService<IFarmerMoveArmAtMaxHeightTask>(() => moveAtMaxHeightTask, garden);
+        FarmerServiceLocator.MapService<FarmerMoveArmAtMaxHeightTask>(() => moveAtMaxHeightTask, garden);
 
         var provideWaterTask = new FarmerProvideWaterTask(deviceHandler);
         FarmerServiceLocator.MapService<IFarmerProvideWaterTask>(() => provideWaterTask, garden);
