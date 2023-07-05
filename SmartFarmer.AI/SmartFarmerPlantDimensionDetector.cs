@@ -8,7 +8,7 @@ public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenPlanGenerat
 {
     public FarmerAIDetectionLog Log { get; set; }
 
-    public Task<IFarmerPlan> GenerateHoverPlan(IFarmerGarden garden)
+    public Task<IFarmerPlan> GenerateHoverPlan(IFarmerGarden garden, string gardenId)
     {
         //TODO point to the floor
         //TODO foreach plant

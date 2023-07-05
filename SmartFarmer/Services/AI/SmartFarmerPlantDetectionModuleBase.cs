@@ -15,11 +15,14 @@ public class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantPlanGenera
     public string PlantId => null;
     public string PlantBotanicalName => null;
 
-    public async Task<IFarmerPlan> GenerateHoverPlan(IFarmerPlantInstance plant)
+    public async Task<IFarmerPlan> GenerateHoverPlan(IFarmerPlantInstance plant, string gardenId)
     {
-        var plan = new FarmerPlan();
-
-        plan.Name = "Hover plan for " + plant.ID;
+        var plan = new FarmerPlan()
+        {
+            ID = $"HoverPlan_{plant.ID}_{DateTime.UtcNow.ToString("yyyyMMdd_HHmmss:fff")}",
+            Name = "Hover plan for " + plant.ID,
+            GardenId = gardenId
+        };
         
         var centerX = plant.PlantX;
         var centerY = plant.PlantY;

@@ -216,31 +216,32 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
     /// Load assemblies from folder to include all assemblies in current domain. 
     /// By default, not used assemblies are not loaded in current domain
     /// </summary>
-    private static void LoadAssembliesFromFolder()
+    private void LoadAssembliesFromFolder()
     {
-        string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        _loadedAssemblies = GetAssemblies().ToArray();
+    }
 
-        var extensionName = "dll";
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD) ||
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            extensionName = "so";
-        }
+    private IEnumerable<Assembly> GetAssemblies()
+    {
+        var list = new List<string>();
+        var stack = new Stack<Assembly>();
 
-        try
-        {
-            var allAssemblies = new List<Assembly>();
-            foreach (string assembly in Directory.GetFiles(path, "*." + extensionName))
-            {
-                allAssemblies.Add(Assembly.LoadFile(assembly));
-            }
+        stack.Push(Assembly.GetEntryAssembly());
 
-            _loadedAssemblies = allAssemblies.ToArray();
-        }
-        catch (Exception)
+        do
         {
-            return;
+            var asm = stack.Pop();
+
+            yield return asm;
+
+            foreach (var reference in asm.GetReferencedAssemblies())
+                if (!list.Contains(reference.FullName))
+                {
+                    stack.Push(Assembly.Load(reference));
+                    list.Add(reference.FullName);
+                }
+
         }
+        while (stack.Count > 0);
     }
 }

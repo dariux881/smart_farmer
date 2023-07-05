@@ -63,14 +63,22 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
             return null;
         }
 
-        var hoverPlan = await aiModule.GenerateHoverPlan(plantInstance) as FarmerPlan;
+        var hoverPlan = await aiModule.GenerateHoverPlan(plantInstance, plantInstance.FarmerGardenId);
 
         if (hoverPlan == null)
         {
-            return hoverPlan;
+            SmartFarmerLog.Error($"error in generating plan for {plantInstance.PlantName}");
+            return null;
         }
-
-        await StoreHoverPlan(userId, hoverPlan);
+        
+        if (hoverPlan is FarmerPlan plan)
+        {
+            await StoreHoverPlan(userId, plan);
+        }
+        else
+        {
+            SmartFarmerLog.Error($"Impossible to save generated hover plan for plant {plantInstance.PlantName}");
+        }
 
         return hoverPlan;
     }

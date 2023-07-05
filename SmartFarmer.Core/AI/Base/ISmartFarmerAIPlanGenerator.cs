@@ -5,5 +5,5 @@ namespace SmartFarmer.AI.Base;
 
 public interface ISmartFarmerAIPlanGenerator<T> : ISmartFarmerAIModule
 {
-    Task<IFarmerPlan> GenerateHoverPlan(T planTarget);
+    Task<IFarmerPlan> GenerateHoverPlan(T planTarget, string gardenId);
 }
