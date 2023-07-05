@@ -3,12 +3,12 @@ using SmartFarmer.FarmerLogs;
 
 namespace SmartFarmer.AI;
 
-public class SmartFarmerTestModule : SmartFarmerPlantDetectionModuleBase
+public class SmartFarmerTestModule : ISmartFarmerAIPlantDetector
 {
-    public override string PlantId => null;
-    public override string PlantBotanicalName => "PlantBotanicalName_1";
+    public string PlantId => null;
+    public string PlantBotanicalName => "PlantBotanicalName_1";
 
-    public override async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
+    public async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
     {
         FarmerAIDetectionLog log = new FarmerAIDetectionLog();
 

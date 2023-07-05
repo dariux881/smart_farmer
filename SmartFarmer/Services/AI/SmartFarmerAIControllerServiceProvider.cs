@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using SmartFarmer.AI;
+using SmartFarmer.AI.Base;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.FarmerLogs;
 using SmartFarmer.Misc;
@@ -14,43 +15,89 @@ namespace SmartFarmer.Services.AI;
 
 public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerServiceProvider
 {
-    private readonly ConcurrentDictionary<string, ISmartFarmerAIModule> _aiModules;
+    private readonly ConcurrentDictionary<string, ISmartFarmerAIPlantPlanGenerator> _aiPlantPlanGenerators;
+    private readonly ConcurrentDictionary<string, ISmartFarmerAITaskPlanGenerator> _aiTaskPlanGenerators;
+    private readonly ConcurrentDictionary<string, ISmartFarmerAIPlantDetector> _aiPlantDetectors;
+    private readonly ConcurrentDictionary<string, ISmartFarmerAITaskDetector> _aiTaskDetectors;
     private static Assembly[] _loadedAssemblies;
 
     public SmartFarmerAIControllerServiceProvider()
     {
-        _aiModules = new ConcurrentDictionary<string, ISmartFarmerAIModule>();
+        _aiPlantPlanGenerators = new ConcurrentDictionary<string, ISmartFarmerAIPlantPlanGenerator>();
+        _aiTaskPlanGenerators = new ConcurrentDictionary<string, ISmartFarmerAITaskPlanGenerator>();
+        _aiPlantDetectors = new ConcurrentDictionary<string, ISmartFarmerAIPlantDetector>();
+        _aiTaskDetectors = new ConcurrentDictionary<string, ISmartFarmerAITaskDetector>();
 
         LoadAssembliesFromFolder();
         GatherAIModules();
     }
 
-    public ISmartFarmerAIPlantModule GetAIModuleByPlant(FarmerPlantInstance plant)
+    public ISmartFarmerAIPlantPlanGenerator GetAIPlantPlanGenerator(FarmerPlantInstance plant)
     {
-        if (_aiModules.TryGetValue(plant.ID, out var specificModule) && specificModule is ISmartFarmerAIPlantModule)
+        ISmartFarmerAIPlantPlanGenerator aiModule;
+
+        if (_aiPlantPlanGenerators.TryGetValue(plant.ID, out aiModule))
         {
-            return specificModule as ISmartFarmerAIPlantModule;
+            return aiModule;
         }
 
-        if (_aiModules.TryGetValue(plant.PlantKindID, out var genericModule) && genericModule is ISmartFarmerAIPlantModule)
+        if (_aiPlantPlanGenerators.TryGetValue(plant.PlantKindID, out aiModule))
         {
-            return genericModule as ISmartFarmerAIPlantModule;
+            return aiModule;
         }
 
-        if (_aiModules.TryGetValue(plant.Plant.BotanicalName, out genericModule) && genericModule is ISmartFarmerAIPlantModule)
+        if (_aiPlantPlanGenerators.TryGetValue(plant.Plant.BotanicalName, out aiModule))
         {
-            return genericModule as ISmartFarmerAIPlantModule;
+            return aiModule;
+        }
+        
+        if (_aiPlantPlanGenerators.TryGetValue("", out aiModule))
+        {
+            return aiModule;
+        }
+
+        return null;
+    }
+
+    public ISmartFarmerAIPlantDetector GetAIPlantDetector(FarmerPlantInstance plant)
+    {
+        ISmartFarmerAIPlantDetector aiModule;
+
+        if (_aiPlantDetectors.TryGetValue(plant.ID, out aiModule))
+        {
+            return aiModule;
+        }
+
+        if (_aiPlantDetectors.TryGetValue(plant.PlantKindID, out aiModule))
+        {
+            return aiModule;
+        }
+
+        if (_aiPlantDetectors.TryGetValue(plant.Plant.BotanicalName, out aiModule))
+        {
+            return aiModule;
         }
         
         return null;
     }
 
-    public ISmartFarmerAITaskModule GetAITaskModuleByTask(string taskInterfaceFullName)
+    public ISmartFarmerAITaskPlanGenerator GetAITaskPlanGenerator(string taskInterfaceFullName)
     {
         
-        if (_aiModules.TryGetValue(taskInterfaceFullName, out var genericModule) && genericModule is ISmartFarmerAITaskModule)
+        if (_aiTaskPlanGenerators.TryGetValue(taskInterfaceFullName, out var genericModule))
         {
-            return genericModule as ISmartFarmerAITaskModule;
+            return genericModule;
+        }
+        
+        return null;
+    }
+
+    public ISmartFarmerAITaskDetector GetAITaskDetector(string taskInterfaceFullName)
+    {
+        
+        if (_aiTaskDetectors.TryGetValue(taskInterfaceFullName, out var genericModule))
+        {
+            return genericModule;
         }
         
         return null;
@@ -59,8 +106,13 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
     private void GatherAIModules()
     {
         var assemblies = _loadedAssemblies ?? AppDomain.CurrentDomain.GetAssemblies();
-        var plantType = typeof(ISmartFarmerAIPlantModule);
-        var taskType = typeof(ISmartFarmerAITaskModule);
+
+        var targetTypeGUIDs = new [] {
+            typeof(ISmartFarmerAIPlantPlanGenerator).GUID,
+            typeof(ISmartFarmerAITaskPlanGenerator).GUID,
+            typeof(ISmartFarmerAIPlantDetector).GUID,
+            typeof(ISmartFarmerAITaskDetector).GUID
+        };
 
         var types = assemblies
             .SelectMany(s => s.GetTypes())
@@ -68,33 +120,42 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
                 p.IsClass && 
                 !p.IsAbstract &&
                 (
-                    p.GetInterfaces().Any(x => x.GUID == plantType.GUID) ||
-                    p.GetInterfaces().Any(x => x.GUID == taskType.GUID)
+                    p.GetInterfaces().Any(x => targetTypeGUIDs.Contains(x.GUID))
                 ));
         
         foreach (var type in types)
         {
-            var moduleInstance = Activator.CreateInstance(type) as ISmartFarmerAIPlantModule;
+            var moduleInstance = Activator.CreateInstance(type) as ISmartFarmerAIModule;
 
-            if (moduleInstance is ISmartFarmerAIPlantModule plantModule)
+            switch (moduleInstance)
             {
-                AddPlantAIModule(plantModule);
-            }
-            else if (moduleInstance is ISmartFarmerAITaskModule taskModule)
-            {
-                AddTaskAIModule(taskModule);
-            }
-            else
-            {
-                // AI Module initialization failure
-                SmartFarmerLog.Error($"failing initialization of {type.FullName}");
+                case ISmartFarmerAIPlantPlanGenerator plantModule:
+                    AddPlantAIPlanGeneratorModule(plantModule);
+                    break;
+                
+                case ISmartFarmerAIPlantDetector plantDetector:
+                    AddPlantAIDetectorModule(plantDetector);
+                    break;
+
+                case ISmartFarmerAITaskPlanGenerator taskModule:
+                    AddTaskAIPlanGeneratorModule(taskModule);
+                    break;
+
+                case ISmartFarmerAITaskDetector taskDetector:
+                    AddTaskAIDetectorModule(taskDetector);
+                    break;
+                
+                default:
+                    // AI Module initialization failure
+                    SmartFarmerLog.Error($"failing initialization of {type.FullName}");
+                    break;
             }
         }
 
-        SmartFarmerLog.Information($"Found {_aiModules.Count} AI modules");
+        SmartFarmerLog.Information($"Found {_aiPlantPlanGenerators.Count} AI modules");
     }
 
-    private void AddTaskAIModule(ISmartFarmerAITaskModule taskModule)
+    private void AddTaskAIPlanGeneratorModule(ISmartFarmerAITaskPlanGenerator taskModule)
     {
         if (string.IsNullOrEmpty(taskModule.TaskInterfaceFullName))
         {
@@ -102,23 +163,55 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
             return;
         }
 
-        _aiModules.TryAdd(taskModule.TaskInterfaceFullName, taskModule);
+        _aiTaskPlanGenerators.TryAdd(taskModule.TaskInterfaceFullName, taskModule);
     }
 
-    private void AddPlantAIModule(ISmartFarmerAIPlantModule plantModule)
+    private void AddTaskAIDetectorModule(ISmartFarmerAITaskDetector taskModule)
     {
-    
+        if (string.IsNullOrEmpty(taskModule.TaskInterfaceFullName))
+        {
+            SmartFarmerLog.Error($"task module does not specify Task Interface FullName");
+            return;
+        }
+
+        _aiTaskDetectors.TryAdd(taskModule.TaskInterfaceFullName, taskModule);
+    }
+
+    private void AddPlantAIPlanGeneratorModule(ISmartFarmerAIPlantPlanGenerator plantModule)
+    {
+        bool addedById = false;
+        bool addedByName = false;
+
         if (!string.IsNullOrEmpty(plantModule.PlantId))
         {
-            _aiModules.TryAdd(plantModule.PlantId, plantModule);
+            addedById = _aiPlantPlanGenerators.TryAdd(plantModule.PlantId, plantModule);
         }
 
         if (!string.IsNullOrEmpty(plantModule.PlantBotanicalName))
         {
-            _aiModules.TryAdd(plantModule.PlantBotanicalName, plantModule);
+            addedByName = _aiPlantPlanGenerators.TryAdd(plantModule.PlantBotanicalName, plantModule);
+        }
+
+        if (!addedById && !addedByName && !_aiPlantPlanGenerators.ContainsKey(string.Empty))
+        {
+            _aiPlantPlanGenerators.TryAdd(string.Empty, plantModule);
         }
     }
 
+    private void AddPlantAIDetectorModule(ISmartFarmerAIPlantDetector plantModule)
+    {
+    
+        if (!string.IsNullOrEmpty(plantModule.PlantId))
+        {
+            _aiPlantDetectors.TryAdd(plantModule.PlantId, plantModule);
+        }
+
+        if (!string.IsNullOrEmpty(plantModule.PlantBotanicalName))
+        {
+            _aiPlantDetectors.TryAdd(plantModule.PlantBotanicalName, plantModule);
+        }
+    }
+    
     /// <summary>
     /// Load assemblies from folder to include all assemblies in current domain. 
     /// By default, not used assemblies are not loaded in current domain

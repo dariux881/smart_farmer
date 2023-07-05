@@ -157,7 +157,7 @@ public class SmartFarmerPlanControllerService : ISmartFarmerPlanControllerServic
         if (string.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
-        if (_aiService.IsValidHoverPlan(userId, result.PlanId))
+        if (await _aiService.IsValidHoverPlan(userId, result.PlanId))
         {
             await _aiService.AnalyseHoverPlanResult(userId, result);
             return;

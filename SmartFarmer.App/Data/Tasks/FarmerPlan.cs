@@ -70,6 +70,7 @@ public class FarmerPlan : IFarmerPlan
                         new FarmerStepExecutionResult()
                         {
                             StepId = step.ID,
+                            Result = taskResult,
                             TaskInterfaceFullName = step.TaskInterfaceFullName,
                             PlantInstanceId = GetPlantInstanceId(step)
                         });

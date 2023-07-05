@@ -1,32 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SmartFarmer.Data;
-using SmartFarmer.FarmerLogs;
+using SmartFarmer.AI;
+using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.Plants;
-using SmartFarmer.Tasks;
 using SmartFarmer.Tasks.Detection;
 using SmartFarmer.Tasks.Generic;
 using SmartFarmer.Tasks.Movement;
 
-namespace SmartFarmer.AI;
+namespace SmartFarmer.Services.AI;
 
-public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantModule
+public class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantPlanGenerator
 {
-    public virtual string PlantId => null;
-    public virtual string PlantBotanicalName => "PlantBotanicalName_1";
+    public string PlantId => null;
+    public string PlantBotanicalName => null;
 
-    public virtual async Task<FarmerAIDetectionLog> ExecuteDetection(object stepData)
-    {
-        await Task.CompletedTask;
-        throw new NotImplementedException();
-    }
-    
     public async Task<IFarmerPlan> GenerateHoverPlan(IFarmerPlantInstance plant)
     {
-        var plan = new FarmerHoverPlan();
+        var plan = new FarmerPlan();
 
-        plan.ID = PlantBotanicalName + "_" + plant.ID + "_" + DateTime.UtcNow.ToString("G");
         plan.Name = "Hover plan for " + plant.ID;
         
         var centerX = plant.PlantX;
@@ -36,7 +28,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // go to target height
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerMoveArmAtHeightTask).FullName,
                 BuildParameters =
@@ -48,7 +40,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // target to plant
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerTurnArmToDegreeTask).FullName,
                 BuildParameters =
@@ -60,7 +52,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
         
         // go to centerX - xBound, centerY
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
                 BuildParameters =
@@ -73,7 +65,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // point to plant
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerTurnArmToDegreeTask).FullName,
                 BuildParameters =
@@ -85,14 +77,19 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // take picture
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
-                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IHasPlantInstanceReference.PlantInstanceID), plant.ID }
+                    },
         });
         
         // go to centerX, centerY - yBound
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
                 BuildParameters =
@@ -105,7 +102,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // point to plant
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerTurnArmToDegreeTask).FullName,
                 BuildParameters =
@@ -117,14 +114,19 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // take picture
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
-                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IHasPlantInstanceReference.PlantInstanceID), plant.ID }
+                    },
         });
         
         // go to centerX + xBound / 2, centerY
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
                 BuildParameters =
@@ -137,7 +139,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // point to plant
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerTurnArmToDegreeTask).FullName,
                 BuildParameters =
@@ -149,14 +151,19 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
         
         // take picture
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
-                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IHasPlantInstanceReference.PlantInstanceID), plant.ID }
+                    },
         });
 
         // go to centerX, centerY + yBound
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerMoveOnGridTask).FullName,
                 BuildParameters =
@@ -169,7 +176,7 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
 
         // point to plant
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
                 TaskInterfaceFullName = typeof(IFarmerTurnArmToDegreeTask).FullName,
                 BuildParameters =
@@ -181,9 +188,14 @@ public abstract class SmartFarmerPlantDetectionModuleBase : ISmartFarmerAIPlantM
         
         // take picture
         plan.Steps.Add(
-            new FarmerHoverPlanStep() { 
+            new FarmerPlanStep() { 
                 ID = plan.ID + "_" + plan.Steps.Count,
-                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName
+                TaskInterfaceFullName = typeof(IFarmerTakePictureTask).FullName,
+                BuildParameters =
+                    new Dictionary<string, string>() 
+                    {
+                        { nameof(IHasPlantInstanceReference.PlantInstanceID), plant.ID }
+                    },
         });
 
         await Task.CompletedTask;

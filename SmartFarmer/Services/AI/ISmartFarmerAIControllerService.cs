@@ -8,6 +8,6 @@ namespace SmartFarmer.Services.AI;
 public interface ISmartFarmerAIControllerService
 {
     Task<IFarmerPlan> GenerateHoverPlan(string userId, string plantInstanceId);
-    bool IsValidHoverPlan(string userId, string planId);
+    Task<bool> IsValidHoverPlan(string userId, string planId);
     Task<bool> AnalyseHoverPlanResult(string userId, IFarmerPlanExecutionResult result);
 }

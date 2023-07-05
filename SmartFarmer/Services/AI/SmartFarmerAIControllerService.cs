@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SmartFarmer.Data;
 using SmartFarmer.DTOs.Plants;
 using SmartFarmer.DTOs.Tasks;
 using SmartFarmer.FarmerLogs;
@@ -16,27 +17,22 @@ namespace SmartFarmer.Services.AI;
 public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 {
     private readonly ISmartFarmerAIControllerServiceProvider _aiProvider;
-    private readonly ConcurrentDictionary<string, List<IFarmerPlan>> _plansByUser;
     private readonly ISmartFarmerPlantControllerService _plantService;
+    private readonly ISmartFarmerRepository _repository;
 
     public SmartFarmerAIControllerService(
         ISmartFarmerAIControllerServiceProvider aiProvider,
-        ISmartFarmerPlantControllerService plantService)
+        ISmartFarmerPlantControllerService plantService,
+        ISmartFarmerRepository repository)
     {
-        _plansByUser = new ConcurrentDictionary<string, List<IFarmerPlan>>();
-
         _aiProvider = aiProvider;
         _plantService = plantService;
+        _repository = repository;
     }
 
-    public bool IsValidHoverPlan(string userId, string planId)
+    public async Task<bool> IsValidHoverPlan(string userId, string planId)
     {
-        if (!_plansByUser.ContainsKey(userId))
-        {
-            return false;
-        }
-
-        return _plansByUser[userId].Any(x => x.ID == planId);
+        return await GetPlan(userId, planId) != null;
     }
 
     public async Task<bool> AnalyseHoverPlanResult(
@@ -47,10 +43,8 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
 
         if (string.IsNullOrEmpty(result.PlanId)) throw new InvalidOperationException($"invalid plan result");
 
-        var planCheck = IsValidHoverPlan(userId, result.PlanId);
-        if (!planCheck) throw new InvalidOperationException();
-
-        var plan = _plansByUser[userId].First(x => x.ID == result.PlanId);
+        var plan = await GetPlan(userId, result.PlanId);
+        if (plan == null) throw new InvalidOperationException($"invalid plan for {result.PlanId}");
 
         await AnalysePlanCore(userId, plan, result);
         await RemoveStoredPlan(userId, result.PlanId);
@@ -62,14 +56,14 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
     {
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIModuleByPlant(plantInstance);
+        var aiModule = _aiProvider.GetAIPlantPlanGenerator(plantInstance);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance}");
             return null;
         }
 
-        var hoverPlan = await aiModule.GenerateHoverPlan(plantInstance);
+        var hoverPlan = await aiModule.GenerateHoverPlan(plantInstance) as FarmerPlan;
 
         if (hoverPlan == null)
         {
@@ -81,42 +75,29 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         return hoverPlan;
     }
 
+    private async Task<IFarmerPlan> GetPlan(string userId, string planId)
+    {
+        return await _repository.GetFarmerPlanByIdAsync(planId, userId);
+    }
+
     private async Task<FarmerPlantInstance> GetPlantInstance(string plantInstanceId, string userId)
     {
         return await _plantService.GetFarmerPlantInstanceByIdForUserAsync(userId, plantInstanceId) as FarmerPlantInstance;
     }
 
-    private async Task StoreHoverPlan(string userId, IFarmerPlan hoverPlan)
+    private async Task StoreHoverPlan(string userId, FarmerPlan hoverPlan)
     {
-        List<IFarmerPlan> plans = null;
-
-        if (!_plansByUser.TryGetValue(userId, out plans))
-        {
-            plans = new List<IFarmerPlan>();
-        }
-
-        plans.Add(hoverPlan);
-
-        _plansByUser.TryAdd(userId, plans);
-
-        //TODO evaluate to store plans in DB
-        await Task.CompletedTask;
+        await _repository.SaveFarmerPlan(hoverPlan);
     }
 
     private async Task RemoveStoredPlan(string userId, string planId)
     {
-        await Task.CompletedTask;
+        var plan = await GetPlan(userId, planId) as FarmerPlan;
 
-        if (!_plansByUser.TryGetValue(userId, out var plans))
+        if (plan != null)
         {
-            return;
+            await _repository.DeleteFarmerPlan(plan);
         }
-
-        var planToRemove = plans.FirstOrDefault(x => x.ID == planId);
-
-        if (planToRemove == null) return;
-
-        plans.Remove(planToRemove);
     }
 
     private async Task<FarmerAIDetectionLog> AnalysePlanCore(
@@ -187,7 +168,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
     {
         var plantInstance = await GetPlantInstance(plantInstanceId, userId);
         
-        var aiModule = _aiProvider.GetAIModuleByPlant(plantInstance);
+        var aiModule = _aiProvider.GetAIPlantDetector(plantInstance);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for plant {plantInstance.ID} / {plantInstance.PlantKindID}");
@@ -211,7 +192,7 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         string taskInterfaceFullName, 
         object stepData)
     {
-        var aiModule = _aiProvider.GetAITaskModuleByTask(taskInterfaceFullName);
+        var aiModule = _aiProvider.GetAITaskDetector(taskInterfaceFullName);
         if (aiModule == null)
         {
             SmartFarmerLog.Error($"no such AI Module found for task {taskInterfaceFullName}");

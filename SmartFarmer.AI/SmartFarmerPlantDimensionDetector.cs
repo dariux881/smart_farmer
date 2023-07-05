@@ -4,7 +4,7 @@ using SmartFarmer.Tasks.Generic;
 
 namespace SmartFarmer.AI;
 
-public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenModule
+public class SmartFarmerPlantDimensionDetector : ISmartFarmerAIGardenPlanGenerator
 {
     public FarmerAIDetectionLog Log { get; set; }
 
