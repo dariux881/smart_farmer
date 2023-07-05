@@ -11,5 +11,5 @@ public class FarmerPlanExecutionResult : IFarmerPlanExecutionResult
 
     public string ErrorMessage { get; set; }
 
-    public Dictionary<string, object> TaskResults { get; set; }
+    public List<FarmerStepExecutionResult> StepResults { get; set; }
 }

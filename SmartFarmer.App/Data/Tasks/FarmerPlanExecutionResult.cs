@@ -8,7 +8,7 @@ public class FarmerPlanExecutionResult : IFarmerPlanExecutionResult
 {
     public FarmerPlanExecutionResult()
     {
-        TaskResults = new Dictionary<string, object>();
+        StepResults = new List<FarmerStepExecutionResult>();
     }
 
     public string PlanId { get; set; }
@@ -19,5 +19,5 @@ public class FarmerPlanExecutionResult : IFarmerPlanExecutionResult
 
     public Exception LastException { private get; set; }
 
-    public Dictionary<string, object> TaskResults { get; set; }
+    public List<FarmerStepExecutionResult> StepResults { get; }
 }

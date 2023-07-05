@@ -141,36 +141,33 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
             return log;
         }
 
-        var stepsWithResult = plan.StepIds.Where(x => result.TaskResults.ContainsKey(x));
-
-        if (!stepsWithResult.Any())
+        if (!result.StepResults.Any())
         {
             return log;
         }
 
-        foreach (var step in stepsWithResult)
+        foreach (var stepResult in result.StepResults)
         {
-            SmartFarmerLog.Debug($"processing step {step}");
+            SmartFarmerLog.Debug($"processing step {stepResult.StepId}");
             FarmerAIDetectionLog detectionLog = null;
 
-            //TODO fix logic
-            // // check if refers to PlantInstance
-            // if (HasPlantInstance(step, out var plantInstanceId))
-            // {
-            //     detectionLog = await AnalysePlantBasedStep(
-            //         userId, 
-            //         step, 
-            //         plantInstanceId, 
-            //         result.TaskResults[step]);
-            // }
-            // else
-            // {
-            //     detectionLog = await AnalyseTaskBasedStep(
-            //         userId, 
-            //         step, 
-            //         step.TaskInterfaceFullName, 
-            //         result.TaskResults[step]);
-            // }
+            // check if refers to PlantInstance
+            if (!string.IsNullOrEmpty(stepResult.PlantInstanceId))
+            {
+                detectionLog = await AnalysePlantBasedStep(
+                    userId, 
+                    stepResult.StepId, 
+                    stepResult.PlantInstanceId, 
+                    stepResult.Result);
+            }
+            else
+            {
+                detectionLog = await AnalyseTaskBasedStep(
+                    userId, 
+                    stepResult.StepId, 
+                    stepResult.TaskInterfaceFullName, 
+                    stepResult.Result);
+            }
 
             if (detectionLog != null)
             {
@@ -230,19 +227,5 @@ public class SmartFarmerAIControllerService : ISmartFarmerAIControllerService
         }
 
         return await aiModule.ExecuteDetection(stepData);
-    }
-
-    private bool HasPlantInstance(FarmerPlanStep step, out string plantInstanceId)
-    {
-        plantInstanceId = null;
-        var attributeName = nameof(IHasPlantInstanceReference.PlantInstanceID);
-
-        if (step.BuildParameters.ContainsKey(attributeName))
-        {
-            plantInstanceId = step.BuildParameters[attributeName];
-            return true;
-        }
-
-        return false;
     }
 }

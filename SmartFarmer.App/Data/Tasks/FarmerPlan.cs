@@ -66,7 +66,13 @@ public class FarmerPlan : IFarmerPlan
 
                 if (taskResult != null)
                 {
-                    result.TaskResults.Add(step.ID, taskResult);
+                    result.StepResults.Add(
+                        new FarmerStepExecutionResult()
+                        {
+                            StepId = step.ID,
+                            TaskInterfaceFullName = step.TaskInterfaceFullName,
+                            PlantInstanceId = GetPlantInstanceId(step)
+                        });
                 }
             }
         }
@@ -117,5 +123,18 @@ public class FarmerPlan : IFarmerPlan
         result.LastException = LastException;
 
         return result;
+    }
+
+    private string GetPlantInstanceId(FarmerPlanStep step)
+    {
+        var attributeName = nameof(IHasPlantInstanceReference.PlantInstanceID);
+
+        if (step.BuildParameters != null && 
+            step.BuildParameters.ContainsKey(attributeName))
+        {
+            return step.BuildParameters[attributeName];
+        }
+
+        return null;
     }
 }
