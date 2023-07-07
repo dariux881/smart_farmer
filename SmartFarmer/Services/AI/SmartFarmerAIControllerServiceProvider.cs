@@ -218,15 +218,18 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
     /// </summary>
     private void LoadAssembliesFromFolder()
     {
-        _loadedAssemblies = GetAssemblies().ToArray();
+        _loadedAssemblies = GetAssemblies("SmartFarmer").ToArray();
     }
 
-    private IEnumerable<Assembly> GetAssemblies()
+    private IEnumerable<Assembly> GetAssemblies(string matchingPrefix = null)
     {
         var list = new List<string>();
         var stack = new Stack<Assembly>();
 
-        stack.Push(Assembly.GetEntryAssembly());
+        var currentAssembly = Assembly.GetEntryAssembly();
+        stack.Push(currentAssembly);
+
+        AddAssembliesInSameFolder(currentAssembly, stack, matchingPrefix);
 
         do
         {
@@ -234,14 +237,48 @@ public class SmartFarmerAIControllerServiceProvider : ISmartFarmerAIControllerSe
 
             yield return asm;
 
+            list.Add(asm.FullName);
+
             foreach (var reference in asm.GetReferencedAssemblies())
-                if (!list.Contains(reference.FullName))
+            {
+                if (!list.Contains(reference.FullName) &&
+                    (matchingPrefix == null || reference.FullName.StartsWith(matchingPrefix)))
                 {
                     stack.Push(Assembly.Load(reference));
                     list.Add(reference.FullName);
                 }
-
+            }
         }
         while (stack.Count > 0);
+    }
+
+    private void AddAssembliesInSameFolder(Assembly currentAssembly, Stack<Assembly> stack, string matchingPrefix = null)
+    {
+        var currentDirectory = new DirectoryInfo(Path.GetDirectoryName(currentAssembly.Location));
+
+        var extension = ".dll";
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+            extension = ".so";
+        }
+
+        var searchPattern = 
+            string.IsNullOrEmpty(matchingPrefix) 
+                ? "*" + extension 
+                : matchingPrefix + "*" + extension;
+
+        var files = 
+            currentDirectory
+                .GetFiles(searchPattern)
+                .Select(x => x.FullName);
+        
+        foreach (var assemblyFilename in files)
+        {
+            var assembly = Assembly.LoadFrom(assemblyFilename);
+            if (stack.Any(x => x.FullName == assembly.FullName)) continue;
+
+            stack.Push(assembly);
+        }
     }
 }
