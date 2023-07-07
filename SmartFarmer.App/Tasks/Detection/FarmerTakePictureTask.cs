@@ -16,7 +16,6 @@ namespace SmartFarmer.Tasks.Detection;
 public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
 {
     private readonly CameraConfiguration _cameraConfiguration;
-    private VideoCapture _videoCapture;
 
     public FarmerTakePictureTask(CameraConfiguration camConfig)
     {
@@ -43,16 +42,18 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
     {
         PrepareTask();
 
-        VideoCapture capture = GetVideoCapture(); //create a camera capture
-        Bitmap image = capture.QueryFrame().ToBitmap(); //take a picture
-
-        await Task.CompletedTask;
         try
         {
-            var result = SavePictureToDisk(image);
+            using (VideoCapture capture = GetVideoCapture())
+            {
+                Bitmap image = capture.QueryFrame().ToBitmap(); //take a picture
 
-            EndTask(string.IsNullOrEmpty(result) && File.Exists(result));
-            return result;
+                await Task.CompletedTask;
+                var result = SavePictureToDisk(image);
+
+                EndTask(string.IsNullOrEmpty(result) && File.Exists(result));
+                return result;
+            }
         }
         catch (Exception ex)
         {
@@ -64,12 +65,7 @@ public class FarmerTakePictureTask : FarmerBaseTask, IFarmerTakePictureTask
 
     private VideoCapture GetVideoCapture()
     {
-        if (_videoCapture == null)
-        {
-            _videoCapture = new VideoCapture(_cameraConfiguration?.CameraIndex ?? 0);
-        }
-
-        return _videoCapture;
+        return new VideoCapture(_cameraConfiguration?.CameraIndex ?? 0);
     }
 
     private string SavePictureToDisk(Bitmap image)
