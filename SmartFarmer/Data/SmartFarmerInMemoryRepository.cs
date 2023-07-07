@@ -48,13 +48,15 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
 
         _dbContext.SaveChanges();
 
-        var plant1 = new FarmerPlant { 
+        var plant1 = new FarmerPlant {
+            ID = "plant1",
             BotanicalName = "PlantBotanicalName_1",
             FriendlyName="plant 1", 
             PlantWidth = 40,
             PlantDepth = 40,
             IrrigationTaskInfo = irrInfo1 };
         var plant2 = new FarmerPlant { 
+            ID = "plant2",
             BotanicalName = "PlantBotanicalName_2",
             FriendlyName="plant 2", 
             PlantWidth = 40,
@@ -73,7 +75,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         _dbContext.SaveChanges();
 
         var plantInstance1 = new FarmerPlantInstance { 
-            //ID = "P1", 
+            ID = "PI1", 
             PlantKindID=plant1.ID, 
             PlantName=plant1.FriendlyName, 
             PlantX=1, 
@@ -82,7 +84,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         };
 
         var plantInstance2 = new FarmerPlantInstance { 
-            //ID = "P2", 
+            ID = "PI2",
             PlantKindID=plant2.ID, 
             PlantName="pianta", 
             PlantX=10, 
@@ -93,7 +95,7 @@ public class SmartFarmerInMemoryRepository : SmartFarmerRepository
         var plan0 = new FarmerPlan
         {
             GardenId = garden1.ID,
-            //ID = "plan1",
+            ID = "defaultPlan",
             Name = "Test plan"
         };
 
