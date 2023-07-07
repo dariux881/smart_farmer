@@ -1,6 +1,6 @@
 namespace SmartFarmer.Utils;
 
-public interface IFarmerService
+public interface IFarmerService : IHasId
 {
-    string ID { get; }
+    
 }
